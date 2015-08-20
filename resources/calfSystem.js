@@ -1069,7 +1069,8 @@ window.Layout = {
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-character-createmap" href="index.php?cmd=notepad&blank=1&subcmd=createmap">Create Maps</a></li>');
 		//guild
 		$(pCL).find('a#nav-guild-storehouse-inventory').parent('li')
-			.after('<li class="nav-level-2"><a class="nav-link" id="nav-guild-guildinvmanager" href="index.php?cmd=notepad&blank=1&subcmd=guildinvmanager">Guild Inventory</a></li>');
+			.after('<li class="nav-level-2"><a class="nav-link" id="nav-guild-guildinvmanager" href="index.php?cmd=notepad&blank=1&subcmd=guildinvmanager">Guild Inventory</a></li>')
+			.after('<li class="nav-level-2"><a class="nav-link" id="nav-guild-guildinvmanager" href="index.php?cmd=notepad&blank=1&subcmd=guildinvmgr">New Inventory</a></li>');
 		if (!System.getValue('useNewGuildLog')) {
 			//if not using the new guild log, show it as a separate menu entry
 			$(pCL).find('a#nav-guild-ledger-guildlog').parent('li')
