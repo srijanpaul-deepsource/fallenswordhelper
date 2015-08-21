@@ -181,12 +181,14 @@ window.System = {
 	},
 
 	intValue: function(theText) {
-if (typeof theText === 'number') {console.log('theText', theText);
-	}else {
-
-		if (!theText) {return 0;}
-		return parseInt(theText.replace(/,/g,''),10);
-	}},
+		if (typeof theText === 'number') {
+			console.log('theText', theText);
+			return theText;
+		} else {
+			if (!theText) {return 0;}
+			return parseInt(theText.replace(/,/g,''),10);
+		}
+	},
 
 	getIntFromRegExp: function(theText, rxSearch) {
 		var result;
@@ -1004,9 +1006,9 @@ window.Data = {
 		Perfect    : 'Perf',
 		Excellent  : 'Exc',
 		'Very Good': 'VG',
-		Good       : 'Gd',
+		Good       : 'Good',
 		Average    : 'Ave',
-		Poor       : 'Pr',
+		Poor       : 'Poor',
 		'Very Poor': 'VPr'
 	},
 
@@ -1050,7 +1052,7 @@ window.Layout = {
 		$(pCL).find('a#nav-character-log').parent('li')
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-character-recipemanager" href="index.php?cmd=notepad&blank=1&subcmd=recipemanager">Recipe Manager</a></li>')
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-character-invmanager" href="index.php?cmd=notepad&blank=1&subcmd=invmanager">Inventory Manager</a></li>')
-			.after('<li class="nav-level-1"><a class="nav-link" id="nav-character-invmanager" href="index.php?cmd=notepad&blank=1&subcmd=invmanagernew">New Inventory</a></li>')
+			//~ .after('<li class="nav-level-1"><a class="nav-link" id="nav-character-invmanager" href="index.php?cmd=notepad&blank=1&subcmd=invmanagernew">New Inventory</a></li>')
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-character-medalguide" href="index.php?cmd=profile&subcmd=medalguide">Medal Guide</a></li>');
 		if (System.getValue('keepBuffLog')) {
 			$(pCL).find('a#nav-character-log').parent('li')
@@ -1069,8 +1071,8 @@ window.Layout = {
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-character-createmap" href="index.php?cmd=notepad&blank=1&subcmd=createmap">Create Maps</a></li>');
 		//guild
 		$(pCL).find('a#nav-guild-storehouse-inventory').parent('li')
-			.after('<li class="nav-level-2"><a class="nav-link" id="nav-guild-guildinvmanager" href="index.php?cmd=notepad&blank=1&subcmd=guildinvmanager">Guild Inventory</a></li>')
-			.after('<li class="nav-level-2"><a class="nav-link" id="nav-guild-guildinvmanager" href="index.php?cmd=notepad&blank=1&subcmd=guildinvmgr">New Inventory</a></li>');
+			.after('<li class="nav-level-2"><a class="nav-link" id="nav-guild-guildinvmanager" href="index.php?cmd=notepad&blank=1&subcmd=guildinvmanager">Guild Inventory</a></li>');
+			//~ .after('<li class="nav-level-2"><a class="nav-link" id="nav-guild-guildinvmanager" href="index.php?cmd=notepad&blank=1&subcmd=guildinvmgr">New Inventory</a></li>');
 		if (!System.getValue('useNewGuildLog')) {
 			//if not using the new guild log, show it as a separate menu entry
 			$(pCL).find('a#nav-guild-ledger-guildlog').parent('li')
