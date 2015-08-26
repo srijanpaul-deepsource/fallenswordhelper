@@ -20,6 +20,10 @@
 .fshNoWrap {white-space: nowrap;}
 .helperQC {cursor: pointer;}
 
+.qbT {margin: 0px auto;}
+.qbTH {text-align: center; padding:0px 4px; color:orange;}
+.qbTD {text-align: center; padding:0px 4px;}
+
 div#fshCompConf {
   position: relative;
   top: -16px;

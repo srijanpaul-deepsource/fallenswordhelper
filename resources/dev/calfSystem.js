@@ -2,8 +2,192 @@
 
 'use strict';
 
-// System functions
+// GM_ApiBrowserCheck
+// @author        GIJoe
+// @license       http://creativecommons.org/licenses/by-nc-sa/3.0/
+var gvar = function(){};
+// Global variables
+function GM_ApiBrowserCheck(){
+	var GMSTORAGE_PATH = 'GM_';
+	// You can change it to avoid conflict with others scripts
+	if (typeof unsafeWindow === 'undefined'){
+		window.unsafeWindow = window;
+	}
+	var needApiUpgrade = false;
+	if (window.navigator.appName.match(/^opera/i) && 
+			typeof window.opera !== 'undefined'){
+		needApiUpgrade = true;
+		gvar.isOpera = true;
+		unsafeWindow.GM_log = window.opera.postError;
+	}
+	if (typeof GM_setValue !== 'undefined'){
+		var gsv;
+		try {
+			gsv=unsafeWindow.GM_setValue.toString();
+		} catch(e) {
+			gsv='staticArgs';
+		}
+		if (gsv.indexOf('staticArgs') > 0){
+			gvar.isGreaseMonkey = true;
+		}
+		// test GM_hitch
+		else if (gsv.match(/not\s+supported/)){
+			needApiUpgrade = true;
+			gvar.isBuggedChrome = true;
+		}
+	} else{
+		needApiUpgrade = true;
+	}
 
+	if (needApiUpgrade){
+		var ws = null;
+		var uid = new Date().toString();
+		var result;
+		try{
+			unsafeWindow.localStorage.setItem(uid, uid);
+			result = unsafeWindow.localStorage.getItem(uid) === uid;
+			unsafeWindow.localStorage.removeItem(uid);
+			if (result) {
+				ws = typeof unsafeWindow.localStorage;
+			} else {
+				console.log('There is a problem with your local storage. ' +
+					'FSH cannot persist your settings.');
+				ws = null;
+			}
+		} catch(e){
+			ws = null;
+		}
+		// Catch Security error
+		if (ws === 'object'){
+			unsafeWindow.GM_getValue = function(name, defValue){
+				var value = unsafeWindow.localStorage.getItem(GMSTORAGE_PATH +
+					name);
+				if (value === null || value === undefined){
+					return defValue;
+				} else{
+					switch (value.substr(0, 2)){
+					case 'S]':
+						return value.substr(2);
+					case 'N]':
+						return parseInt(value.substr(2), 10);
+					case 'B]':
+						return value.substr(2) === 'true';
+					}
+				}
+				return value;
+			};
+			unsafeWindow.GM_setValue = function(name, value){
+				switch (typeof value){
+				case 'string':
+					unsafeWindow.localStorage.setItem(GMSTORAGE_PATH +
+						name, 'S]' + value);
+					break;
+				case 'number':
+					if (value.toString().indexOf('.') < 0){
+						unsafeWindow.localStorage.setItem(GMSTORAGE_PATH +
+							name, 'N]' + value);
+					}
+					break;
+				case 'boolean':
+					unsafeWindow.localStorage.setItem(GMSTORAGE_PATH +
+						name, 'B]' + value);
+					break;
+				}
+			};
+		} else if (!gvar.isOpera || typeof GM_setValue === 'undefined'){
+			gvar.temporarilyStorage = [];
+			unsafeWindow.GM_getValue = function(name, defValue){
+				if (typeof gvar.temporarilyStorage[GMSTORAGE_PATH + name] ===
+					'undefined'){
+					return defValue;
+				} else{
+					return gvar.temporarilyStorage[GMSTORAGE_PATH + name];
+				}
+			};
+			unsafeWindow.GM_setValue = function(name, value){
+				switch (typeof value){
+				case 'string':
+				case 'boolean':
+				case 'number':
+					gvar.temporarilyStorage[GMSTORAGE_PATH + name] = value;
+				}
+			};
+		}
+
+		unsafeWindow.GM_listValues = function(){
+			var list = [];
+			var reKey = new RegExp('^' + GMSTORAGE_PATH);
+			for (var i = 0, il = unsafeWindow.localStorage.length; i < il; i += 1) {
+				var key = unsafeWindow.localStorage.key(i);
+				if (key.match(reKey)) {
+					list.push(key.replace(GMSTORAGE_PATH, ''));
+				}
+			}
+			return list;
+		};
+		// Dummy
+		if (!gvar.isOpera || typeof GM_xmlhttpRequest === 'undefined'){
+			unsafeWindow.GM_xmlhttpRequest = function(obj){
+				var request = new XMLHttpRequest();
+				request.onreadystatechange = function(){
+					if (obj.onreadystatechange){
+						obj.onreadystatechange(request);
+					}
+					if (request.readyState === 4 && obj.onload){
+						obj.onload(request);
+					}
+				};
+				request.onerror = function(){
+					if (obj.onerror){
+						obj.onerror(request);
+					}
+				};
+				try{
+					request.open(obj.method, obj.url, true);
+				} catch(e){
+					if (obj.onerror){
+						obj.onerror({
+							readyState: 4,
+							responseHeaders: '',
+							responseText: '',
+							responseXML: '',
+							status: 403,
+							statusText: 'Forbidden'
+						});
+					}
+					return;
+				}
+				var name;
+				if (obj.headers){
+					for (name in obj.headers){
+						if (!obj.headers.hasOwnProperty(name)) { continue; }
+						request.setRequestHeader(name, obj.headers[name]);
+					}
+				}
+				request.send(obj.data);
+				return request;
+			};
+		}
+	}
+}
+GM_ApiBrowserCheck();
+
+// jquery GM_get/set wrapper
+function GM_JQ_wrapper() {
+	if (typeof GM_setValue !== 'undefined') {
+		var oldGM_setValue = GM_setValue;
+		GM_setValue = function(name, value){
+			setTimeout(function() {oldGM_setValue(name, value);}, 0);
+		};
+		var oldGM_xmlhttpRequest = GM_xmlhttpRequest;
+		GM_xmlhttpRequest = function(details) {
+			setTimeout(function() {oldGM_xmlhttpRequest(details);}, 0);
+		};
+	}
+}
+GM_JQ_wrapper();
+
+// System functions
 window.System = {
 	init: function() {
 		System.server = document.location.protocol + '//' + document.location.host + '/';
@@ -48,7 +232,7 @@ window.System = {
 	},
 
 	findNode: function(xpath, doc) {
-		var nodes=System.findNodes(xpath, doc);
+		var nodes = System.findNodes(xpath, doc);
 		if (!nodes) {return null;}
 		return nodes[0];
 	},
@@ -69,6 +253,9 @@ window.System = {
 		// This only matters in Firefox. evaluate will fail silently if 
 		// the context is not part of the calling object.
 		doc = doc || document;
+
+//~ console.log('doc', doc, '({}).toString.call(doc)', ({}).toString.call(doc));
+
 		if (doc instanceof HTMLDocument) {
 			target = doc;
 		} else {
@@ -319,12 +506,6 @@ window.System = {
 	}
 };
 System.init();
-})();
-
-
-(function() {
-
-'use strict';
 
 window.Data = {
 
@@ -902,7 +1083,10 @@ window.Data = {
 		hideNonPlayerGuildLogMessages: true,
 		listOfAllies: '',
 		listOfEnemies: '',
-		contactList: ''
+		contactList: '',
+		lastUpgradeCheck: 0,
+		needToDoUpgrade: false,
+		characterVirtualLevel: 0
 	},
 
 	saveBoxes: [
@@ -1038,12 +1222,6 @@ window.Data = {
 	}
 
 };
-})();
-
-
-(function() {
-
-'use strict';
 
 window.Layout = {
 
@@ -1205,6 +1383,49 @@ window.Layout = {
 		{title: 'XP Contrib', class: 'dt-center'}
 	],
 
-	places:['first', 'second', 'third', 'fourth']
+	places:['first', 'second', 'third', 'fourth'],
+
+	quickBuffHeader:
+		'<div id="helperQBheader">' +
+		'<table class="qbT"><thead><tr>' +
+		'<th class="qbTH">Sustain</th>' +
+		'<th class="qbTH">Fury Caster</th>' +
+		'<th class="qbTH">Guild Buffer</th>' +
+		'<th class="qbTH">Buff Master</span></th>' +
+		'<th class="qbTH">Extend</span></th>' +
+		'<th class="qbTH">Reinforce</span></th>' +
+		'</tr></thead><tbody><tr>' +
+		'<td id="fshSus" class="qbTD"></td>' +
+		'<td id="fshFur" class="qbTD"></td>' +
+		'<td id="fshGB"  class="qbTD"></td>' +
+		'<td id="fshBM"  class="qbTD"></td>' +
+		'<td id="fshExt" class="qbTD"></td>' +
+		'<td id="fshRI"  class="qbTD"></td>' +
+		'</tr></tbody></table>' +
+		'</div>',
+
+	godsNotification:
+		'<li class="notification">' +
+		'<span id="helperPrayToGods" style="text-align:center"><table><tbody>' +
+		'<tr><td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/0.gif" class="tip-static" data-tipped="Pray to Sahria" ' +
+		'style="cursor: pointer"></td>' +
+		'<td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/1.gif" class="tip-static" data-tipped="Pray to Osverin" ' +
+		'style="cursor: pointer"></td>' +
+		'<td rowspan="2"><a href="index.php?cmd=temple" ' +
+		'class="notification-content">Bow down to the gods.</a></td></tr>' +
+		'<tr><td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/2.gif" class="tip-static" data-tipped="Pray to Gurgriss" ' +
+		'style="cursor: pointer"></td>' +
+		'<td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/3.gif" class="tip-static" data-tipped="Pray to Lindarsil" ' +
+		'style="cursor: pointer"></td></tr></tbody></table></span></li>',
+
+	goldUpgradeMsg:
+		'<li class="notification"><a href="index.php?cmd=points&type=1"><span' +
+		' class="notification-icon"></span><p class="notification-content">Up' +
+		'grade stamina with gold.</p></a></li>'
+
 };
 })();
