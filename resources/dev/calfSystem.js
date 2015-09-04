@@ -152,6 +152,9 @@ window.System = {
 	},
 
 	getValue: function(name) {
+		if (Data.defaults[name] === undefined) {
+			console.log('Data.defaults[' + name + ']=', Data.defaults[name]);
+		}
 		return GM_getValue(name, Data.defaults[name]);
 	},
 
@@ -203,6 +206,9 @@ window.System = {
 		// This only matters in Firefox. evaluate will fail silently if 
 		// the context is not part of the calling object.
 		doc = doc || document;
+
+//~ console.log('doc', doc, '({}).toString.call(doc)', ({}).toString.call(doc));
+
 		if (doc instanceof HTMLDocument) {
 			target = doc;
 		} else {
@@ -307,8 +313,13 @@ window.System = {
 	},
 
 	intValue: function(theText) {
-		if (!theText) {return 0;}
-		return parseInt(theText.replace(/,/g,''),10);
+		if (typeof theText === 'number') {
+			console.log('theText', theText);
+			return theText;
+		} else {
+			if (!theText) {return 0;}
+			return parseInt(theText.replace(/,/g,''),10);
+		}
 	},
 
 	getIntFromRegExp: function(theText, rxSearch) {
@@ -436,6 +447,7 @@ window.System = {
 };
 System.init();
 
+// To be moved back into main script in future as it does not compress well
 window.Data = {
 
 	plantFromComponent: function(aComponent) {
@@ -901,6 +913,7 @@ window.Data = {
 
 		enableTempleAlert: false,
 		enableUpgradeAlert: false,
+		enableComposingAlert: false,
 		autoFillMinBidPrice: true,
 		showPvPSummaryInLog: false,
 		enableQuickDrink: false,
@@ -968,6 +981,8 @@ window.Data = {
 		lastMembrListCheck: 0,
 		disableItemColoring: false,
 		showQuickSendLinks: false,
+		needToCompose: false,
+		lastComposeCheck: 0,
 
 /* jshint -W110 */ // Mixed double and single quotes. (W110)
 
@@ -1127,6 +1142,7 @@ window.Data = {
 		'maxGroupSizeToJoin',
 		'enableTempleAlert',
 		'enableUpgradeAlert',
+		'enableComposingAlert',
 		'autoFillMinBidPrice',
 		'showPvPSummaryInLog',
 		'enableQuickDrink',
@@ -1172,6 +1188,7 @@ window.Data = {
 
 };
 
+// To be moved back into main script in future as it does not compress well
 window.Layout = {
 
 	injectMenu: function() { //jquery
@@ -1189,6 +1206,9 @@ window.Layout = {
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 				'character-invmanager" href="index.php?cmd=notepad&blank=1&' +
 				'subcmd=invmanager">Inventory Manager</a></li>')
+			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
+				'character-invmanager" href="index.php?cmd=notepad&blank=1&' +
+				'subcmd=invmanagernew">New Inventory</a></li>')
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 				'character-medalguide" href="index.php?cmd=profile&subcmd=' +
 				'medalguide">Medal Guide</a></li>');
@@ -1221,7 +1241,10 @@ window.Layout = {
 		$(pCL).find('a#nav-guild-storehouse-inventory').parent('li')
 			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
 				'guild-guildinvmanager" href="index.php?cmd=notepad&blank=1' +
-				'&subcmd=guildinvmanager">Guild Inventory</a></li>');
+				'&subcmd=guildinvmanager">Guild Inventory</a></li>')//;
+			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
+				'guild-guildinvmanager" href="index.php?cmd=notepad&blank=1' +
+				'&subcmd=guildinvmgr">New Inventory</a></li>');
 		if (!System.getValue('useNewGuildLog')) {
 			//if not using the new guild log, show it as a separate menu entry
 			$(pCL).find('a#nav-guild-ledger-guildlog').parent('li')
@@ -1281,7 +1304,7 @@ window.Layout = {
 		$('div#pCL').append('<style>.pCR a { color: #F7EAC9; }</style>');
 	},
 
-	notebookContent: function() {
+	notebookContent: function() { //TODO replace this
 		return System.findNode('//div[@id="pCC"]'); //new interface logic
 	},
 
@@ -1346,6 +1369,16 @@ window.Layout = {
 			'", "fsQuickBuff", 618, 1000, ",scrollbars")';
 	},
 
+	ahHref: function(itemName) {
+		return 'index.php?cmd=auctionhouse&type=-1&order_by=1&search_text=' +
+			encodeURI(itemName);
+	},
+
+	guideHref: function(itemId) {
+		return 'http://guide.fallensword.com/index.php?cmd=items&subcmd=view' +
+			'&item_id=' + itemId;
+	},
+
 	advisorColumns: [
 		{title: 'Member'},
 		{title: 'Lvl', class: 'dt-center'},
@@ -1384,10 +1417,33 @@ window.Layout = {
 		'</tr></tbody></table>' +
 		'</div>',
 
+	godsNotification:
+		'<li class="notification">' +
+		'<span id="helperPrayToGods" style="text-align:center"><table><tbody>' +
+		'<tr><td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/0.gif" class="tip-static" data-tipped="Pray to Sahria" ' +
+		'style="cursor: pointer"></td>' +
+		'<td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/1.gif" class="tip-static" data-tipped="Pray to Osverin" ' +
+		'style="cursor: pointer"></td>' +
+		'<td rowspan="2"><a href="index.php?cmd=temple" ' +
+		'class="notification-content">Bow down to the gods</a></td></tr>' +
+		'<tr><td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/2.gif" class="tip-static" data-tipped="Pray to Gurgriss" ' +
+		'style="cursor: pointer"></td>' +
+		'<td style="padding: 1px"><img src="' + System.imageServer +
+		'/temple/3.gif" class="tip-static" data-tipped="Pray to Lindarsil" ' +
+		'style="cursor: pointer"></td></tr></tbody></table></span></li>',
+
 	goldUpgradeMsg:
 		'<li class="notification"><a href="index.php?cmd=points&type=1"><span' +
 		' class="notification-icon"></span><p class="notification-content">Up' +
-		'grade stamina with gold.</p></a></li>'
+		'grade stamina with gold</p></a></li>',
+
+	composeMsg:
+		'<li class="notification"><a href="index.php?cmd=composing"><span' +
+		' class="notification-icon"></span><p class="notification-content">Co' +
+		'mposing to do</p></a></li>'
 
 };
 })();

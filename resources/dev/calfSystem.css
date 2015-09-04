@@ -17,6 +17,9 @@
 .HelperTableRow2:hover {background-color:white}
 
 .reportLink {cursor:pointer; text-decoration:underline; color:blue;}
+.fshLink {cursor:pointer; text-decoration:underline;}
+.fshRed {color:red;}
+.fshBlue {color:blue}
 .fshNoWrap {white-space: nowrap;}
 .helperQC {cursor: pointer;}
 
