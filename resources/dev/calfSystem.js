@@ -443,7 +443,22 @@ window.System = {
 				return sParameterName[1] === undefined ? true : sParameterName[1];
 			}
 		}
-	}
+	},
+
+	formatLastActivity: function(last_login) {
+		var d, h, m, s;
+		//~ s = Math.floor(ms / 1000);
+		s = Math.abs(Math.floor(Date.now() / 1000 - last_login));
+		m = Math.floor(s / 60);
+		s = s % 60;
+		h = Math.floor(m / 60);
+		m = m % 60;
+		d = Math.floor(h / 24);
+		h = h % 24;
+		//~ return { d: d, h: h, m: m, s: s };
+		return 'Last Activity: ' + d + ' days, ' + h + ' hours, ' + m +
+			' minutes, ' + s + ' secs';
+	},
 };
 System.init();
 
@@ -983,6 +998,7 @@ window.Data = {
 		showQuickSendLinks: false,
 		needToCompose: false,
 		lastComposeCheck: 0,
+		lastOnlineCheck: 0,
 
 /* jshint -W110 */ // Mixed double and single quotes. (W110)
 
@@ -1380,16 +1396,6 @@ window.Layout = {
 			'", "fsQuickBuff", 618, 1000, ",scrollbars")';
 	},
 
-	ahHref: function(itemName) {
-		return 'index.php?cmd=auctionhouse&type=-1&order_by=1&search_text=' +
-			encodeURI(itemName);
-	},
-
-	guideHref: function(itemId) {
-		return 'http://guide.fallensword.com/index.php?cmd=items&subcmd=view' +
-			'&item_id=' + itemId;
-	},
-
 	advisorColumns: [
 		{title: 'Member'},
 		{title: 'Lvl', class: 'dt-center'},
@@ -1419,12 +1425,12 @@ window.Layout = {
 		'<th class="qbTH">Extend</span></th>' +
 		'<th class="qbTH">Reinforce</span></th>' +
 		'</tr></thead><tbody><tr>' +
-		'<td id="fshSus" class="qbTD"></td>' +
-		'<td id="fshFur" class="qbTD"></td>' +
-		'<td id="fshGB"  class="qbTD"></td>' +
-		'<td id="fshBM"  class="qbTD"></td>' +
-		'<td id="fshExt" class="qbTD"></td>' +
-		'<td id="fshRI"  class="qbTD"></td>' +
+		'<td id="fshSus" class="qbTD">&nbsp;</td>' +
+		'<td id="fshFur" class="qbTD">&nbsp;</td>' +
+		'<td id="fshGB"  class="qbTD">&nbsp;</td>' +
+		'<td id="fshBM"  class="qbTD">&nbsp;</td>' +
+		'<td id="fshExt" class="qbTD">&nbsp;</td>' +
+		'<td id="fshRI"  class="qbTD">&nbsp;</td>' +
 		'</tr></tbody></table>' +
 		'</div>',
 
