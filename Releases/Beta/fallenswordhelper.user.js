@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1507b3
+// @version        1508b1
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -8771,28 +8771,6 @@ var Helper = {
 		return result;
 	},
 
-	saveImgLoc: function() {
-		try {
-			var imgLocText = System.findNode('//input[@name="local_dir"]');
-			if (imgLocText && imgLocText.value.trim().length > 0) {
-				System.setValue('lastImgLoc', imgLocText.value.trim());
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	},
-
-	setImgLoc: function() {
-		try {
-			var imgLocText = System.findNode('//input[@name="local_dir"]');
-			if (imgLocText) {
-				imgLocText.value = System.getValue('lastImgLoc');
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	},
-
 	toggleTickAllBuffs: function(){
 		var allItems=System.findNodes('//input[@type="checkbox" and @name="blockedSkillList\[\]"]');
 		var tckTxt =document.getElementById('Helper:tickAllBuffs');
@@ -8818,25 +8796,11 @@ var Helper = {
 	},
 
 	injectSettings: function() {
-		try {
-			var exNode = System.findNode('//font[contains(.,"Example:")]');
-			var saveButton = System.findNode('//input[contains(@value, "Save Settings")]');
-			saveButton.addEventListener('click', Helper.saveImgLoc, true);
-			if (System.getValue('lastImgLoc')) {
-				exNode.innerHTML = 'Last Location Set:<br><a href="#" id="Helper.lastImgLocLink">' + System.getValue('lastImgLoc') + '</a>';
-				document.getElementById('Helper.lastImgLocLink').addEventListener('click', Helper.setImgLoc, true);
-			}
+		var tickNode = System.findNode('//td[@height="10" and contains(.,"Tick which skills you do not want cast on you")]');
+		tickNode.innerHTML+='<br><span style="cursor:pointer; text-decoration:underline;" id="Helper:tickAllBuffs">' +
+		'Tick all buffs</span>';
+		document.getElementById('Helper:tickAllBuffs').addEventListener('click', Helper.toggleTickAllBuffs, true);
 
-			var tickNode = System.findNode('//td[@height="10" and contains(.,"Tick which skills you do not want cast on you")]');
-			//alert(tickNode.innerHTML);
-			tickNode.innerHTML+='<br><span style="cursor:pointer; text-decoration:underline;" id="Helper:tickAllBuffs">' +
-			'Tick all buffs</span>';
-			document.getElementById('Helper:tickAllBuffs').addEventListener('click', Helper.toggleTickAllBuffs, true);
-
-		} catch (err) {
-			console.log(err);
-		}
-		// var lastCheck=new Date(parseInt(System.getValue('lastVersionCheck'),10));
 		var buffs=System.getValue('huntingBuffs');
 		var buffsName=System.getValue('huntingBuffsName');
 		var buffs2=System.getValue('huntingBuffs2');
@@ -8852,6 +8816,9 @@ var Helper = {
 		var wantedNames = System.getValue('wantedNames');
 		var combatEvaluatorBias = System.getValue('combatEvaluatorBias');
 		var enabledHuntingMode = System.getValue('enabledHuntingMode');
+		var curVer;
+		if (typeof GM_info === 'undefined') {curVer = 'unknown';
+		} else {curVer = GM_info.script.version;}
 		var storage = (JSON.stringify(localStorage).length /
 			(5 * 1024 * 1024) * 100).toFixed(2);
 		var configData=
@@ -8860,7 +8827,7 @@ var Helper = {
 				'Settings</b></th></tr>' +
 			'<tr><td colspan="2" align=center>' +
 				'<span style="font-size:xx-small">(Current version: ' +
-				(GM_info ? GM_info.script.version : 'unknown') + ')&nbsp;' +
+				curVer + ')&nbsp;' +
 				'(Storage Used: ' + storage + '% Remaining: ' +
 				(100 - storage) + '%)</span>' +
 			'</td></tr>' +
@@ -12177,9 +12144,9 @@ displayDisconnectedFromGodsMessage: function() {
 
 (function loadScripts () {
 	var o = {
-		css: ['https://fallenswordhelper.github.io/fallenswordhelper/resources/1507/calfSystem.css'],
+		css: ['https://fallenswordhelper.github.io/fallenswordhelper/resources/1508/calfSystem.css'],
 		js:  ['https://cdn.jsdelivr.net/localforage/1.2.10/localforage.min.js',
-			  'https://fallenswordhelper.github.io/fallenswordhelper/resources/1507/calfSystem.js'],
+			  'https://fallenswordhelper.github.io/fallenswordhelper/resources/1508/calfSystem.js'],
 		callback: Helper.onPageLoad
 	};
 	if (typeof window.jQuery === 'undefined') {
