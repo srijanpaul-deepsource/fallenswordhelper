@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1508b2
+// @version        1508b3
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -6476,6 +6476,8 @@ var Helper = {
 	},
 
 	getOnlinePlayers: function(data) {
+		$('div#fshOutput', Helper.context).append(' ' +
+			(Helper.onlinePages + 1)); // context
 		var doc = System.createDocument(data);
 		var input = $('div#pCC input.custominput', doc).first();
 		var thePage = input.attr('value');
@@ -6494,18 +6496,17 @@ var Helper = {
 				index
 			];
 		});
-		input = input.parent().text();
-		var pages = parseInt(input.match(/(\d+)/g)[0], 10);
 		Helper.onlinePages += 1;
-		$('div#fshOutput', Helper.context).append(' ' + Helper.onlinePages); // context
-		if (Helper.onlinePages === pages) {
-			localforage.setItem('fsh_OnlinePlayers', Helper.onlinePlayers);
-			Helper.gotOnlinePlayers();
-		} else if (Helper.onlinePages === 1) {
-			for (var i = 2; i <= pages; i += 1) {
+		if (Helper.onlinePages === 1) {
+			input = input.parent().text();
+			Helper.lastPage = parseInt(input.match(/(\d+)/g)[0], 10);
+			for (var i = 2; i <= Helper.lastPage; i += 1) {
 				$.get('index.php?cmd=onlineplayers&page=' + i,
 					Helper.getOnlinePlayers);
 			}
+		} else if (Helper.onlinePages === Helper.lastPage) {
+			localforage.setItem('fsh_OnlinePlayers', Helper.onlinePlayers);
+			Helper.gotOnlinePlayers();
 		}
 	},
 
@@ -7241,28 +7242,25 @@ var Helper = {
 	},
 
 	addBuffLevels: function() {
-		$('span.fshSelf').remove();
-		var self = $(this);
-		Helper.addStatsQuickBuff(self);
-		var buffs = self.data('buffs').split(',');
-		var hash = {};
-		self.next().find('span').each(function(i, e) {
-			hash[buffs[i]] = $(e).text().replace(/\[|\]/g, '');
-		});
-		Object.keys(hash).forEach(function(value) {
-			var buffLvl = parseInt(hash[value], 10);
-			var label = $('label[for="skill-' + value + '"]');
+		$('span.fshPlayer').remove();
+		var player = $(this);
+		Helper.addStatsQuickBuff(player);
+		var data = player.data('buffs');
+		var buffs = typeof data === 'string' ? data.split(',') : [data];
+		player.next().find('span').each(function(i, e) {
+			var buffLvl = parseInt($(e).text().replace(/\[|\]/g, ''), 10);
+			var label = $('label[for="skill-' + buffs[i] + '"]');
 			if (label.length === 0) {return;}
 			var span = $('span > span', label);
 			var myLvl = parseInt(span.text().replace(/\[|\]/g, ''), 10);
-			span.after('<span class="fshSelf"' + (myLvl > buffLvl ?
+			span.after('<span class="fshPlayer"' + (myLvl > buffLvl ?
 				' style="color:red;"' : ' style="color:green;"') + '> [' +
 				buffLvl + ']</span>');
 		});
 	},
 
-	addStatsQuickBuff: function(self) {
-		self.parent().find('span.fshLastActivity').remove();
+	addStatsQuickBuff: function(player) {
+		player.parent().find('span.fshLastActivity').remove();
 		$.ajax({
 			cache: false,
 			dataType: 'json',
@@ -7270,11 +7268,11 @@ var Helper = {
 			data: {
 				cmd:             'export',
 				subcmd:          'profile',
-				player_username: self.text()
+				player_username: player.text()
 			},
 			success: function(data) {
 				//console.log('7344 data', data);
-				self.after('<span class="fshLastActivity">' +
+				player.after('<span class="fshLastActivity">' +
 					System.formatLastActivity(data.last_login) +
 					'<br>Stamina: ' + data.current_stamina + ' / ' +
 					data.stamina + ' ( ' + Math.floor(data.current_stamina /
