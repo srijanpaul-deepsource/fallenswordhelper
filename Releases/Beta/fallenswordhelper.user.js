@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1509b1
+// @version        1509b2
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -4975,21 +4975,30 @@ var Helper = {
 	},
 
 	moveItemsToFolder: function() { // jquery
+		var batchSize = 200;
 		var invList = [];
-		$('input[name="removeIndex[]"]:checked').each(function() {
-			invList.push($(this).val());
+		$('input[name="removeIndex[]"]:checked').each(function(i) {
+			batchNo = Math.floor(i / batchSize);
+			invList[batchNo] = invList[batchNo] || [];
+			invList[batchNo].push($(this).val());
 		});
-		$.ajax({
-			dataType: 'json',
-			url: 'index.php',
-			data: {
-				'cmd': 'profile',
-				'subcmd': 'sendtofolder',
-				'inv_list': JSON.stringify(invList),
-				'folder_id': $('#selectFolderId option:selected').val(),
-				'ajax': 1
-			},
-			success: function(data) {location.reload();}
+		Helper.moveItemsCallback = invList.length;
+		invList.forEach(function(val) {
+			$.ajax({
+				dataType: 'json',
+				url: 'index.php',
+				data: {
+					'cmd': 'profile',
+					'subcmd': 'sendtofolder',
+					'inv_list': JSON.stringify(val),
+					'folder_id': $('#selectFolderId option:selected').val(),
+					'ajax': 1
+				},
+				success: function(data) {
+					Helper.moveItemsCallback -= 1;
+					if (Helper.moveItemsCallback === 0) {location.reload();}
+				}
+			});
 		});
 	},
 
