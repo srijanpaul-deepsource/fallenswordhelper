@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1509b3
+// @version        1509b4
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -79,446 +79,41 @@ var Helper = {
 			Helper.prepareEnv();
 		}
 
-		var pageId, subPageId, subPage2Id, subsequentPageId, typePageId;
+		var pageId;
+		var subPageId;
+		var subPage2Id;
+		var typePageId;
+		var funcName;
+		var fn;
 
 		if (document.location.search !== '') {
-			var re=/cmd=([a-z]+)/;
-			var pageIdRE = re.exec(document.location.search);
-			pageId='-';
-			if (pageIdRE) {pageId=pageIdRE[1];}
-
-			re=/subcmd=([a-z]+)/;
-			var subPageIdRE = re.exec(document.location.search);
-			subPageId='-';
-			if (subPageIdRE){subPageId=subPageIdRE[1];}
-			re=/subcmd2=([a-z]+)/;
-			var subPage2IdRE = re.exec(document.location.search);
-			subPage2Id='-';
-			if (subPage2IdRE) {subPage2Id=subPage2IdRE[1];}
-
-			re=/page=([0-9]+)/;
-			var subsequentPageIdRE = re.exec(document.location.search);
-			subsequentPageId='-';
-			if (subsequentPageIdRE) {subsequentPageId=subsequentPageIdRE[1];}
-
-			re=/type=([0-9]+)/;
-			var typePageIdRE = re.exec(document.location.search);
-			typePageId='-';
-			if (typePageIdRE) {typePageId=typePageIdRE[1];}
+			pageId = System.getUrlParameter('cmd') || '-';
+			subPageId = System.getUrlParameter('subcmd') || '-';
+			subPage2Id = System.getUrlParameter('subcmd2') || '-';
+			typePageId = System.getUrlParameter('type') || '-';
 		} else {
-			pageId=System.findNode('//input[@type="hidden" and @name="cmd"]');
-			pageId = pageId?pageId.getAttribute('value'):'-';
-
-			subPageId=System.findNode('//input[@type="hidden" and @name="subcmd"]');
-			subPageId=subPageId?subPageId.getAttribute('value'):'-';
-			if (subPageId==='dochat') {pageId='-'; subPageId='-';}
-
-			subPage2Id=System.findNode('//input[@type="hidden" and @name="subcmd2"]');
-			subPage2Id=subPage2Id?subPage2Id.getAttribute('value'):'-';
-
-			subsequentPageId=System.findNode('//input[@type="hidden" and @name="page"]');
-			subsequentPageId=subsequentPageId?subsequentPageId.getAttribute('value'):'-';
+			pageId = $('input[name="cmd"]').val() || '-';
+			subPageId = $('input[name="subcmd"]').val() || '-';
+			if (subPageId==='dochat') {
+				pageId='-';
+				subPageId='-';
+			}
+			subPage2Id = $('input[name="subcmd2"]').val() || '-';
+			typePageId = '-';
 		}
 
-		Helper.page = pageId + '/' + subPageId + '/' + subPage2Id + '(' + subsequentPageId + ')';
+		Helper.page = pageId + '/' + subPageId + '/' + subPage2Id + '(' + typePageId + ')';
 
-		switch (pageId) {
-		case 'settings':
-			Helper.injectSettings();
-			break;
-		case 'world':
-			switch (subPageId) {
-			case 'viewcreature':
-				Helper.injectCreature();
-				break;
-			case 'map':
-				Helper.injectWorldMap();
-				break;
-			default:
-				Helper.injectWorld();
-				break;
-			}
-			break;
-		case 'news':
-			switch (subPageId) {
-			case 'fsbox':
-				Helper.injectShoutboxWidgets('fsbox_input', 100);
-				break;
-			case 'shoutbox':
-				Helper.injectShoutboxWidgets('shoutbox_input', 150);
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'blacksmith':
-			switch (subPageId) {
-			case 'repairall':
-				Helper.injectWorld();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'arena':
-			switch (subPageId) {
-			case '-':
-				// Helper.injectArena();
-				break;
-			case 'completed':
-				Helper.storeCompletedArenas();
-				break;
-			case 'pickmove':
-				Helper.storeArenaMoves();
-				break;
-			case 'results':
-				// Helper.injectTournament();
-				break;
-			case 'dojoin':
-				// Helper.injectTournament();
-				break;
-			case 'setup':
-				Helper.injectArenaSetupMove();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'questbook':
-			switch (subPageId) {
-			case 'viewquest':
-				Helper.injectQuestTracker();
-				break;
-			case 'atoz':
-				Helper.injectQuestBookFull();
-				break;
-			case '-':
-				Helper.injectQuestBookFull();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'profile':
-			switch (subPageId) {
-			case 'dropitems':
-				Helper.injectDropItems();
-				Helper.injectMoveItems();
-				break;
-			case 'changebio':
-				Helper.injectBioWidgets();
-				break;
-			case '-':
-				Helper.injectProfile();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'auctionhouse':
-			Helper.injectAuctionHouse();
-			break;
-		case 'guild':
-			switch (subPageId) {
-			case 'inventory':
-				switch (subPage2Id) {
-					case 'report':
-						Helper.injectReportPaint();
-						break;
-					case 'addtags':
-						Helper.injectGuildAddTagsWidgets();
-						break;
-					case 'removetags':
-						Helper.injectGuildAddTagsWidgets();
-						break;
-					case 'storeitems':
-						Helper.injectDropItems();
-						break;
-					default:
-						break;
-				}
-				break;
-			case 'chat':
-				Helper.addChatTextArea();
-				Helper.addLogColoring('Chat', 0);
-				break;
-			case 'log':
-				Helper.addLogColoring('GuildLog', 1);
-				Helper.addGuildLogWidgets();
-				break;
-			case 'groups':
-				switch (subPage2Id) {
-					case 'viewstats':
-						Helper.injectGroupStats();
-						break;
-					default:
-						Helper.injectGroups();
-						break;
-				}
-				break;
-			case 'manage':
-				Helper.injectGuild();
-				break;
-			case 'advisor':
-				Helper.injectAdvisor();
-				break;
-			case 'history':
-				Helper.addHistoryWidgets();
-				break;
-			case 'view':
-				Helper.injectViewGuild();
-				break;
-			case 'scouttower':
-				Helper.injectScouttower();
-				break;
-			case 'mailbox':
-				Helper.injectMailbox();
-				break;
-			case 'ranks':
-				Helper.injectGuildRanks();
-				break;
-			case 'conflicts':
-				switch (subPage2Id) {
-					case 'rpupgrades':
-						Helper.injectRPUpgrades();
-						break;
-					default:
-						break;
-				}
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'bank':
-			Helper.injectBank();
-			break;
-		case 'log':
-			switch (subPageId) {
-			case 'outbox':
-				Helper.addLogColoring('OutBox', 1);
-				break;
-			case '-':
-				Helper.addLogColoring('PlayerLog', 1);
-				Helper.addLogWidgets();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'potionbazaar':
-			Helper.injectBazaar();
-			break;
-		case 'marketplace':
-			switch (subPageId) {
-			case 'createreq':
-				Helper.addMarketplaceWidgets();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'quickbuff':
-			Helper.injectQuickBuff();
-			break;
-		case 'notepad':
-			switch (subPageId) {
-			case 'showlogs':
-				Helper.injectNotepadShowLogs();
-				break;
-			case 'invmanager':
-				Helper.injectInventoryManager();
-				break;
-			case 'guildinvmanager':
-				Helper.injectInventoryManager();
-				break;
-			case 'recipemanager':
-				Helper.injectRecipeManager();
-				break;
-			case 'auctionsearch':
-				Helper.injectAuctionSearch();
-				break;
-			case 'onlineplayers':
-				Helper.injectOnlinePlayers();
-				break;
-			case 'quicklinkmanager':
-				Helper.injectQuickLinkManager();
-				break;
-			case 'monsterlog':
-				Helper.injectMonsterLog();
-				break;
-			case 'quickextract':
-				Helper.insertQuickExtract();
-				break;
-			case 'quickwear':
-				Helper.insertQuickWear();
-				break;
-			case 'fsboxcontent':
-				Helper.injectFsBoxContent();
-				break;
-			case 'bufflogcontent':
-				Helper.injectBuffLog();
-				break;
-			case 'newguildlog':
-				Helper.injectNewGuildLog();
-				break;
-			case 'findbuffs':
-				Helper.injectFindBuffs();
-				break;
-			case 'findother':
-				Helper.injectFindOther();
-				break;
-			case 'createmap':
-				break;
-			case 'savesettings':
-				Helper.injectSaveSettings();
-				break;
-			default:
-				Helper.injectNotepad();
-				break;
-			}
-			break;
-		case 'points':
-			switch (subPageId) {
-			case '-': // Ignore guild upgrades
-				switch (typePageId) {
-				case '-':
-					Helper.storePlayerUpgrades();
-					break;
-				case '0':
-					Helper.storePlayerUpgrades();
-					break;
-				case '1':
-					Helper.parseGoldUpgrades();
-					break;
-				default:
-					break;
-				}
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'trade':
-			Helper.retrieveTradeConfirm();
-			switch (subPageId) {
-			case 'createsecure':
-				Helper.injectTrade();
-				break;
-			case '-':
-				Helper.injectTrade();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'titan':
-			Helper.injectTitan();
-			break;
-		case 'toprated':
-			switch (subPageId) {
-			case 'xp':
-				Helper.injectTopRated();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'inventing':
-			switch (subPageId) {
-			case 'viewrecipe':
-				Helper.injectViewRecipe();
-				Helper.injectInvent();
-				break;
-			default:
-				break;
-			}
-			// Helper.injectInvent();
-			break;
-		case 'tempinv':
-			Helper.injectMailbox();
-			break;
-		case 'attackplayer':
-			Helper.injectAttackPlayer();
-			break;
-		case 'findplayer':
-			Helper.injectFindPlayer();
-			break;
-		case 'relic':
-			Helper.injectRelic();
-			break;
-		case 'creatures':
-			switch (subPageId) {
-			case 'view':
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'quests':
-			switch (subPageId) {
-			case 'view':
-				Helper.showAllQuestSteps();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'scavenging':
-			switch (subPageId) {
-			case 'process':
-				Helper.injectScavenging();
-				break;
-			default:
-				break;
-			}
-			break;
-		case 'temple':
-			Helper.parseTemplePage();
-			break;
-		case '-':
-			var isRelicPage = System.findNode('//td[contains(.,"Below is the current status for the relic")]/b');
-			if (isRelicPage) {
-				Helper.injectRelic();
-			}
-			var isBuffResult = System.findNode('//td[contains(.,"Back to Quick Buff Menu")]');
-			if (isBuffResult) {
-				Helper.updateBuffLog();
-			}
-			var isShopPage =  $('#shop-info').length > 0;//System.findNode('//td[contains(.,"then click to purchase for the price listed below the item.")]');
-			if (isShopPage) {
-				Helper.injectShop();
-			}
-			var isQuestBookPage = System.findNode('//td[.="Quest Name"]');
-			if (isQuestBookPage) {
-				Helper.injectQuestBookFull();
-			}
-			var isAdvisorPageClue1 = System.findNode('//font[@size=2 and .="Advisor"]');
-			var clue2 = '//a[@href="index.php?cmd=guild&amp;subcmd=manage" and .="Back to Guild Management"]';
-			var isAdvisorPageClue2 = System.findNode(clue2);
-			if (isAdvisorPageClue1 && isAdvisorPageClue2) {
-				Helper.injectAdvisor(subPage2Id);
-			}
-			// var isArenaTournamentPage = System.findNode('//b[contains(.,"Tournament #")]');
-			// if (isArenaTournamentPage) {
-				// Helper.injectTournament();
-			// }
-			if (System.findNode('//a[.="Back to Scavenging"]')) {
-				Helper.injectScavenging();
-			}
-			if ($('img[title="Inventing"]').length > 0) {
-				Helper.injectInvent();
-			}
-			break;
-		case 'skills':
-			//Helper.injectSkillsPage();
-			break;
-		case 'composing':
-			Helper.injectComposing();
-			break;
-		default:
-			break;
+		if (Data.pageSwitcher[pageId] &&
+			Data.pageSwitcher[pageId][subPageId] &&
+			Data.pageSwitcher[pageId][subPageId][subPage2Id] &&
+			Data.pageSwitcher[pageId][subPageId][subPage2Id][typePageId]) {
+			funcName = Data.pageSwitcher[pageId][subPageId][subPage2Id]
+				[typePageId];
+			fn = Helper[funcName];
+			fn();
 		}
+
 		if (System.getValue('playNewMessageSound')) {
 			var soundLocation = System.getValue('defaultMessageSound');
 			//new UI
@@ -535,6 +130,82 @@ var Helper = {
 		// This must be at the end in order not to screw up other System.findNode calls (Issue 351)
 		if (System.getValue('huntingMode') === false) {
 			Helper.injectQuickLinks();
+		}
+	},
+
+	newsFsbox: function() {
+		Helper.injectShoutboxWidgets('fsbox_input', 100);
+	},
+
+	newsShoutbox: function() {
+		Helper.injectShoutboxWidgets('shoutbox_input', 150);
+	},
+
+	injectProfileDropItems: function() {
+		Helper.injectDropItems();
+		Helper.injectMoveItems();
+	},
+
+	guildChat: function() {
+		Helper.addChatTextArea();
+		Helper.addLogColoring('Chat', 0);
+	},
+
+	guildLog: function() {
+		Helper.addLogColoring('GuildLog', 1);
+		Helper.addGuildLogWidgets();
+	},
+
+	outbox: function() {
+		Helper.addLogColoring('OutBox', 1);
+	},
+
+	playerLog: function() {
+		Helper.addLogColoring('PlayerLog', 1);
+		Helper.addLogWidgets();
+	},
+
+	inventing: function() {
+		Helper.injectViewRecipe();
+		Helper.injectInvent();
+	},
+
+	unknownPage: function() {
+		console.log('*** unknownPage ***');
+		//var isRelicPage = $('div#pCC td:contains("Below is the current status for the relic")');
+		//var isRelicPage = System.findNode('//td[contains(.,"Below is the current status for the relic")]/b');
+		if ($('div#pCC td:contains("Below is the current status for ' +
+			'the relic")').length > 0) {
+			Helper.injectRelic();
+		}
+		var isBuffResult = System.findNode('//td[contains(.,"Back to Quick Buff Menu")]');
+		if (isBuffResult) {
+			Helper.updateBuffLog();
+		}
+		//System.findNode('//td[contains(.,"then click to purchase for the price listed below the item.")]');
+		//var isShopPage =  $('#shop-info').length > 0;
+		if ($('#shop-info').length > 0) {
+			Helper.injectShop();
+		}
+		var isQuestBookPage = System.findNode('//td[.="Quest Name"]');
+		if (isQuestBookPage) {
+			Helper.injectQuestBookFull();
+		}
+		var isAdvisorPageClue1 = System.findNode('//font[@size=2 and .="Advisor"]');
+		var clue2 = '//a[@href="index.php?cmd=guild&amp;subcmd=manage" and .="Back to Guild Management"]';
+		var isAdvisorPageClue2 = System.findNode(clue2);
+		if (isAdvisorPageClue1 && isAdvisorPageClue2) {
+			Helper.injectAdvisor();
+		}
+		// var isArenaTournamentPage = System.findNode('//b[contains(.,"Tournament #")]');
+		// if (isArenaTournamentPage) {
+			// Helper.injectTournament();
+		// }
+		if (System.findNode('//a[.="Back to Scavenging"]')) {
+			Helper.injectScavenging();
+		}
+		if ($('div#pCC img[title="Inventing"]').length > 0) {
+			Helper.injectInvent();
 		}
 	},
 
@@ -2912,12 +2583,12 @@ var Helper = {
 		Helper.showMap(true);
 	},
 
-	retrieveTradeConfirm: function() {
-		var xcNumber;
-		xcNumber=System.findNode('//input[@type="hidden" and @name="xc"]');
-		xcNumber=xcNumber?xcNumber.getAttribute('value'):'-';
-		System.setValue('goldConfirm', xcNumber);
-	},
+	//retrieveTradeConfirm: function() {
+		//var xcNumber = $('input[name="xc"]').val() || '-';
+		//xcNumber=System.findNode('//input[@type="hidden" and @name="xc"]');
+		//xcNumber=xcNumber?xcNumber.getAttribute('value'):'-';
+		//System.setValue('goldConfirm', xcNumber);
+	//},
 
 	sendGoldToPlayer: function(){
 //		var injectHere = System.findNode('//div[table[@class="centered" and @style="width: 270px;"]]');
@@ -7246,8 +6917,7 @@ var Helper = {
 		$('span.fshPlayer').remove();
 		var player = $(this);
 		Helper.addStatsQuickBuff(player);
-		var data = player.data('buffs');
-		var buffs = typeof data === 'string' ? data.split(',') : [data];
+		var buffs = String.prototype.split.call(player.data('buffs'), ',');
 		player.next().find('span').each(function(i, e) {
 			var buffLvl = parseInt($(e).text().replace(/\[|\]/g, ''), 10);
 			var label = $('label[for="skill-' + buffs[i] + '"]');
@@ -9936,7 +9606,7 @@ var Helper = {
 	},
 
 	retrieveBountyInfo: function(enableActiveBountyList, enableWantedList) {
-		var bountyList = System.getValueJSON('bountylist');
+		var bountyList = System.getValueJSON('bountyList');
 		var wantedList = System.getValueJSON('wantedList');
 		var bountyListRefreshTime = System.getValue('bountyListRefreshTime');
 		var bwNeedsRefresh = System.getValue('bwNeedsRefresh');
@@ -9989,135 +9659,167 @@ var Helper = {
 
 	parseBountyPageForWorld: function(details, callback) {
 		var doc = System.createDocument(details);
-		var page = System.findNode('//input[@name="page"]', doc, $('body'));
-		var curPage = parseInt(page.value,10);
-		var maxPage = page.parentNode.innerHTML.match(/of&nbsp;(\d*)/)[1];
-
 		var enableActiveBountyList = System.getValue('enableActiveBountyList');
 		var enableWantedList = System.getValue('enableWantedList');
-		var activeTable;
-		var i;
-		var bounty;
 		System.setValue('bwNeedsRefresh', false);
 		if (enableWantedList) {
-
-			activeTable = System.findNode('//table[@width = "630" and contains(.,"Target")]', doc);
-			var wantedNames = System.getValue('wantedNames');
-			var wantedArray = wantedNames.split(',');
-			var wantedList = callback.wantedList;
-			if (activeTable) {
-				for (i = 1; i < activeTable.rows.length - 2; i+=2) {
-					for (var j = 0; j < wantedArray.length; j += 1) {
-						var target = activeTable.rows[i].cells[0].firstChild.firstChild.firstChild.textContent;
-
-						if (target === wantedArray[j].trim()) {
-							wantedList.wantedBounties = true;
-							bounty = {};
-							bounty.target = target;
-							bounty.link = activeTable.rows[i].cells[0].firstChild.firstChild.getAttribute('href');
-							bounty.lvl = activeTable.rows[i].cells[0].firstChild.firstChild.nextSibling.textContent.replace(/\[/, '').replace(/\]/, '');
-
-							bounty.offerer = activeTable.rows[i].cells[1].firstChild.firstChild.firstChild.textContent;
-
-							bounty.reward = activeTable.rows[i].cells[2].textContent;
-							bounty.rewardType = activeTable.rows[i].cells[2].firstChild.firstChild.firstChild.firstChild.nextSibling.firstChild.title;
-
-							//bounty.rKills = activeTable.rows[i].cells[3].textContent;
-
-							bounty.xpLoss = activeTable.rows[i].cells[3].textContent;
-
-							bounty.posted = activeTable.rows[i].cells[4].textContent;
-
-							bounty.tickets = activeTable.rows[i].cells[5].textContent;
-
-							if (activeTable.rows[i].cells[6].textContent.trim() === '[active]') {
-								bounty.active = true;
-								bounty.accept = '';
-							}
-							else {
-								bounty.active = false;
-								bounty.accept = activeTable.rows[i].cells[6].firstChild.firstChild.getAttribute('onclick');
-							}
-							wantedList.bounty.push(bounty);
-						}
-					}
-				}
-			}
-			if (curPage < maxPage) {
-				System.xmlhttp('index.php?cmd=bounty&page=' + (curPage + 1), Helper.parseBountyPageForWorld, {wantedList:wantedList});
-			} else {
-				Helper.injectWantedList(wantedList);
-			}
+			Helper.getWantedBountyList(doc, callback);
 		}
 		if (enableActiveBountyList && !Helper.activeBountyListPosted) {
-			activeTable = System.findNode('//table[@width = 620]', doc);
-			var bountyList = {};
-			bountyList.bounty = [];
-			bountyList.isRefreshed = true;
-			bountyList.lastUpdate = new Date();
-
-			if (activeTable) {
-				if (!/No bounties active/.test(activeTable.rows[1].cells[0].innerHTML)) {
-					bountyList.activeBounties = true;
-					for (i = 1; i < activeTable.rows.length - 2; i+=2) {
-						bounty = {};
-						bounty.target = activeTable.rows[i].cells[0].firstChild.firstChild.firstChild.textContent;
-						bounty.link = activeTable.rows[i].cells[0].firstChild.firstChild.getAttribute('href');
-						bounty.lvl = activeTable.rows[i].cells[0].firstChild.firstChild.nextSibling.textContent.replace(/\[/, '').replace(/\]/, '');
-						bounty.reward = activeTable.rows[i].cells[2].textContent;
-						bounty.rewardType = activeTable.rows[i].cells[2].firstChild.firstChild.firstChild.firstChild.nextSibling.firstChild.title;
-						bounty.posted = activeTable.rows[i].cells[3].textContent;
-						bounty.xpLoss = activeTable.rows[i].cells[4].textContent;
-						bounty.progress = activeTable.rows[i].cells[5].textContent;
-
-						bountyList.bounty.push(bounty);
-					}
-				}
-				else {
-					bountyList.activeBounties = false;
-				}
-			}
-			Helper.injectBountyList(bountyList);
-			Helper.activeBountyListPosted = true;
+			Helper.getActiveBountyList(doc);
 		}
 	},
 
+	getWantedBountyList: function(doc, callback) {
+		var page = System.findNode('//input[@name="page"]', doc, $('body'));
+		var curPage = parseInt(page.value,10);
+		var maxPage = page.parentNode.innerHTML.match(/of&nbsp;(\d*)/)[1];
+		var activeTable = System.findNode('//table[@width = "630" and ' +
+			'contains(.,"Target")]', doc);
+		var wantedNames = System.getValue('wantedNames');
+		var wantedArray = wantedNames.split(',');
+		var wantedList = callback.wantedList;
+		if (activeTable) {
+			for (var i = 1; i < activeTable.rows.length - 2; i+=2) {
+				var target = activeTable.rows[i].cells[0].firstChild
+					.firstChild.firstChild.textContent;
+if (target === '[ No bounties available. ]') {break;}
+				for (var j = 0; j < wantedArray.length; j += 1) {
+					if (target === wantedArray[j].trim()) {
+						wantedList.wantedBounties = true;
+						var bounty = {};
+						bounty.target = target;
+						bounty.link = activeTable.rows[i].cells[0]
+							.firstChild.firstChild.getAttribute('href');
+						bounty.lvl = activeTable.rows[i].cells[0]
+							.firstChild.firstChild.nextSibling.textContent
+								.replace(/\[/, '').replace(/\]/, '');
+						bounty.offerer = activeTable.rows[i].cells[1]
+							.firstChild.firstChild.firstChild.textContent;
+						bounty.reward = activeTable.rows[i].cells[2]
+							.textContent;
+						bounty.rewardType = activeTable.rows[i].cells[2]
+							.firstChild.firstChild.firstChild.firstChild
+							.nextSibling.firstChild.title;
+						//bounty.rKills = activeTable.rows[i].cells[3].textContent;
+						bounty.xpLoss = activeTable.rows[i].cells[3]
+							.textContent;
+						bounty.posted = activeTable.rows[i].cells[4]
+							.textContent;
+						bounty.tickets = activeTable.rows[i].cells[5]
+							.textContent;
+						if (activeTable.rows[i].cells[6].textContent
+							.trim() === '[active]') {
+							bounty.active = true;
+							bounty.accept = '';
+						}
+						else if (activeTable.rows[i].cells[6].textContent
+							.trim() !== '[n/a]') { // TODO
+							bounty.active = false;
+							bounty.accept = activeTable.rows[i].cells[6]
+								.firstChild.firstChild
+								.getAttribute('onclick');
+						}
+						wantedList.bounty.push(bounty);
+					}
+				}
+			}
+		}
+		if (curPage < maxPage) {
+			System.xmlhttp('index.php?cmd=bounty&page=' + (curPage + 1),
+				Helper.parseBountyPageForWorld, {wantedList:wantedList});
+		} else {
+			Helper.injectWantedList(wantedList);
+		}
+	},
+
+	getActiveBountyList: function(doc) {
+		var activeTable = System.findNode('//table[@width = 620]', doc);
+		var bountyList = {};
+		bountyList.bounty = [];
+		bountyList.isRefreshed = true;
+		bountyList.lastUpdate = new Date();
+
+		if (activeTable) {
+			if (!/No bounties active/.test(activeTable.rows[1].cells[0]
+				.innerHTML)) {
+				bountyList.activeBounties = true;
+				for (var i = 1; i < activeTable.rows.length - 2; i+=2) {
+					var bounty = {};
+					bounty.target = activeTable.rows[i].cells[0].firstChild
+						.firstChild.firstChild.textContent;
+					bounty.link = activeTable.rows[i].cells[0].firstChild
+						.firstChild.getAttribute('href');
+					bounty.lvl = activeTable.rows[i].cells[0].firstChild
+						.firstChild.nextSibling.textContent
+						.replace(/\[/, '').replace(/\]/, '');
+					bounty.reward = activeTable.rows[i].cells[2]
+						.textContent;
+					bounty.rewardType = activeTable.rows[i].cells[2]
+						.firstChild.firstChild.firstChild.firstChild
+						.nextSibling.firstChild.title;
+					bounty.posted = activeTable.rows[i].cells[3]
+						.textContent;
+					bounty.xpLoss = activeTable.rows[i].cells[4]
+						.textContent;
+					bounty.progress = activeTable.rows[i].cells[5]
+						.textContent;
+
+					bountyList.bounty.push(bounty);
+				}
+			}
+			else {
+				bountyList.activeBounties = false;
+			}
+		}
+		Helper.injectBountyList(bountyList);
+		Helper.activeBountyListPosted = true;
+	},
+
 	injectBountyList: function(bountyList) {
-		System.setValueJSON('bountylist', bountyList);
-		var injectHere = document.getElementById('Helper:BountyListPlaceholder');
+		System.setValueJSON('bountyList', bountyList);
+		var injectHere = document
+			.getElementById('Helper:BountyListPlaceholder');
 		var displayList = document.createElement('TABLE');
 		//displayList.style.border = '1px solid #c5ad73';
 		//displayList.style.backgroundColor = (bountyList.isRefreshed)?'#6a5938':'#4a3918';
 		displayList.cellPadding = 1;
 		displayList.width = 125;
 
-		var aRow=displayList.insertRow(0); //bountyList.rows.length
-		var aCell=aRow.insertCell(0);
-		var output = '<h3>Active Bounties</h3><ol style="color:#FFF380;font-size:10px;list-style-type:decimal;margin-left:1px;margin-top:1px;margin-bottom:1px;padding-left:20px;">'+
-			'<nobr><span id="Helper:resetBountyList" style=" font-size:8px; cursor:pointer; text-decoration:underline;">Reset</span><nobr><br>';
+		var aRow = displayList.insertRow(0); //bountyList.rows.length
+		var aCell = aRow.insertCell(0);
+		var output = '<h3>Active Bounties</h3><ol style="color:#FFF380;font-' +
+			'size:10px;list-style-type:decimal;margin-left:1px;margin-top:' +
+			'1px;margin-bottom:1px;padding-left:20px;"><nobr><span id="' +
+			'Helper:resetBountyList" style=" font-size:8px; cursor:pointer; ' +
+			'text-decoration:underline;">Reset</span><nobr><br>';
 
 		if (bountyList.activeBounties === false) {
-			output += '</ol> \f <ol style="color:orange;font-size:10px;list-style-type:decimal;margin-left:1px;margin-top:1px;margin-bottom:1px;padding-left:10px;">' +
-				'[No Active bounties]</ol>';
+			output += '</ol> \f <ol style="color:orange;font-size:10px;list-' +
+				'style-type:decimal;margin-left:1px;margin-top:1px;margin-' +
+				'bottom:1px;padding-left:10px;">[No Active bounties]</ol>';
 		}
 		else {
 			for (var i = 0; i < bountyList.bounty.length; i += 1) {
-				var mouseOverText = '';
-				mouseOverText += '<div>Level:  ' + bountyList.bounty[i].lvl +
-				'<br/>Reward: ' + bountyList.bounty[i].reward + ' ' +bountyList.bounty[i].rewardType +
-				'<br/>XP Loss Remaining: ' + bountyList.bounty[i].xpLoss +
-				'<br/>Progress:  ' + bountyList.bounty[i].progress;
-				mouseOverText += '</div>';
+				var mouseOverText = '<div>Level:  ' + bountyList.bounty[i].lvl +
+					'<br/>Reward: ' + bountyList.bounty[i].reward + ' ' +
+					bountyList.bounty[i].rewardType +
+					'<br/>XP Loss Remaining: ' + bountyList.bounty[i].xpLoss +
+					'<br/>Progress:  ' + bountyList.bounty[i].progress +
+					'</div>';
 
 //				output += ' href="' + bountyList.bounty[i].link + '">' + bountyList.bounty[i].target +'</a></li>';
-				output += '<li style="padding-bottom:0px;">';
-				output += '<a style="color:red;font-size:10px;"';
-				output += 'href="' + System.server + 'index.php?cmd=attackplayer&target_username=' + bountyList.bounty[i].target + '">[a]</a>&nbsp;';
-
-				output += '<a style="color:#A0CFEC;font-size:10px;"';
-				output += 'href="' + System.server + 'index.php?cmd=message&target_player=' + bountyList.bounty[i].target + '">[m]';
-				output += '</a> &nbsp;';
-				output += '<a href="'+bountyList.bounty[i].link+'" class="tipped" data-tipped="'+mouseOverText+'" style="color:#FFF380;font-size:10px;">' + bountyList.bounty[i].target +'</a></li>';
+				output += '<li style="padding-bottom:0px;"><a style="color:' +
+					'red;font-size:10px;"href="' + System.server +
+					'index.php?cmd=attackplayer&target_username=' +
+					bountyList.bounty[i].target + '">[a]</a>&nbsp;<a style="' +
+					'color:#A0CFEC;font-size:10px;"href="' + System.server +
+					'index.php?cmd=message&target_player=' +
+					bountyList.bounty[i].target + '">[m]</a> &nbsp;<a href="' +
+					bountyList.bounty[i].link + '" class="tip-static" ' +
+					'data-tipped="' + mouseOverText + '" style="color:' +
+					'#FFF380;font-size:10px;">' + bountyList.bounty[i].target +
+					'</a></li>';
 			}
 		}
 
@@ -10125,62 +9827,74 @@ var Helper = {
 		var breaker=document.createElement('BR');
 		injectHere.parentNode.insertBefore(breaker, injectHere.nextSibling);
 		injectHere.parentNode.insertBefore(displayList, injectHere.nextSibling);
-		document.getElementById('Helper:resetBountyList').addEventListener('click', Helper.resetBountyList, true);
+		document.getElementById('Helper:resetBountyList')
+			.addEventListener('click', Helper.resetBountyList, true);
 	},
 
 	resetBountyList: function() {
-		System.setValueJSON('bountylist', null);
+		System.setValueJSON('bountyList', null);
 		location.reload();
 	},
 
 	injectWantedList: function(wantedList) {
 		System.setValueJSON('wantedList', wantedList);
-		var injectHere = document.getElementById('Helper:WantedListPlaceholder');
+		var injectHere = document
+			.getElementById('Helper:WantedListPlaceholder');
 		var displayList = document.createElement('TABLE');
 		//displayList.style.border = '1px solid #c5ad73';
 		//displayList.style.backgroundColor = (wantedList.isRefreshed)?'#6a5938':'#4a3918';
 		displayList.cellPadding = 3;
 		displayList.width = 125;
 
-		var aRow=displayList.insertRow(0);
-		var aCell=aRow.insertCell(0);
-		var output = '<h3>Wanted Bounties</h3><ol style="color:#FFF380;font-size:10px;list-style-type:decimal;margin-left:1px;margin-top:1px;margin-bottom:1px;padding-left:12px;">'+
-			'<nobr> <span id="Helper:resetWantedList" font-size:8px; cursor:pointer; text-decoration:underline;">Reset</span></nobr><br>';
+		var aRow = displayList.insertRow(0);
+		var aCell = aRow.insertCell(0);
+		var output = '<h3>Wanted Bounties</h3><ol style="color:#FFF380;font-' +
+			'size:10px;list-style-type:decimal;margin-left:1px;margin-top:' +
+			'1px;margin-bottom:1px;padding-left:12px;"><nobr> <span id="' +
+			'Helper:resetWantedList" font-size:8px; cursor:pointer; text-' +
+			'decoration:underline;">Reset</span></nobr><br>';
 
 		if (wantedList.wantedBounties === false) {
-			output += '</ol> \f <ol style="color:orange;font-size:10px;list-style-type:decimal;margin-left:1px;margin-top:1px;margin-bottom:1px;padding-left:7px;">' +
-				'[No wanted bounties]</ol>';
+			output += '</ol> \f <ol style="color:orange;font-size:10px;list-' +
+				'style-type:decimal;margin-left:1px;margin-top:1px;margin-' +
+				'bottom:1px;padding-left:7px;">[No wanted bounties]</ol>';
 		}
 		else {
 			for (var i = 0; i < wantedList.bounty.length; i += 1) {
-				var mouseOverText = '\'<div style=\\\'text-align:center;width:205px;\\\'>Target Level:  ' + wantedList.bounty[i].lvl +
-					'<br/>Offerer: '+ wantedList.bounty[i].offerer +
-					'<br/>Reward: ' + wantedList.bounty[i].reward + ' ' +wantedList.bounty[i].rewardType +
-					'<br/>Req. Kills: ' + wantedList.bounty[i].rKills +
+				var mouseOverText = '"<div style=\'text-align:center;width:' +
+					'205px;\'>Target Level:  ' + wantedList.bounty[i].lvl +
+					'<br/>Offerer: ' + wantedList.bounty[i].offerer +
+					'<br/>Reward: ' + wantedList.bounty[i].reward + ' ' +
+					wantedList.bounty[i].rewardType +
+					//'<br/>Req. Kills: ' + wantedList.bounty[i].rKills +
 					'<br/>XP Loss Remaining: ' + wantedList.bounty[i].xpLoss +
 					'<br/>Posted: ' + wantedList.bounty[i].posted +
 					'<br/>Tickets Req.:  ' + wantedList.bounty[i].tickets;
-				mouseOverText += '</div>\' ';
+				mouseOverText += '</div>" ';
 
 				output += '<li style="padding-bottom:0px;margin-left:5px;">';
 				output += '<a style= "font-size:10px;';
 				if (wantedList.bounty[i].accept) {
 					output += 'color:rgb(0,255,0); cursor:pointer; ' +
 						'text-decoration:underline blink;" title = "Accept ' +
-						'Bounty" "onclick=\'' + wantedList.bounty[i].accept +
-						'\'">[a]</a>&nbsp;';
+						'Bounty" onclick="' + wantedList.bounty[i].accept +
+						'">[a]</a>&nbsp;';
 				} else {
 					output += 'color:red;" href="' + System.server +
 						'index.php?cmd=attackplayer&target_username=' +
 						wantedList.bounty[i].target + '">[a]</a>&nbsp;';
 				}
-				output += '<a style="color:#A0CFEC;font-size:10px;"';
-				output += 'href="' + System.server + 'index.php?cmd=message&target_player=' + wantedList.bounty[i].target + '">[m]';
-				output += '</a> &nbsp;<a class=tipped data-tipped=' + mouseOverText;
-				output += 'style="color:';
-				output += '#FFF380';
-				output += ';font-size:10px;"';
-				output += ' href="' + wantedList.bounty[i].link + '">' + wantedList.bounty[i].target +'</a></li>';
+				output += '<a style="color:#A0CFEC;font-size:10px;"href="j' +
+
+'avascript:openQuickMsgDialog(\'' + wantedList.bounty[i].target + '\');' +
+
+					//System.server + 'index.php?cmd=message&target_player=' +
+					//wantedList.bounty[i].target +
+					'">[m]</a> &nbsp;<a class="tip-static" data-tipped=' +
+					mouseOverText +
+					'style="color:#FFF380;font-size:10px;" href="' +
+					wantedList.bounty[i].link + '">' +
+					wantedList.bounty[i].target +'</a></li>';
 			}
 		}
 
@@ -10188,7 +9902,8 @@ var Helper = {
 		var breaker=document.createElement('BR');
 		injectHere.parentNode.insertBefore(breaker, injectHere.nextSibling);
 		injectHere.parentNode.insertBefore(displayList, injectHere.nextSibling);
-		document.getElementById('Helper:resetWantedList').addEventListener('click', Helper.resetWantedList, true);
+		document.getElementById('Helper:resetWantedList')
+			.addEventListener('click', Helper.resetWantedList, true);
 	},
 
 	resetWantedList: function() {
