@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1509b4
+// @version        1509b5
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -1613,7 +1613,7 @@ var Helper = {
 		var currentBuffs = System.findNodes('//a[contains(@href,"index.php?' +
 			'cmd=profile&subcmd=removeskill&skill_id=")]');
 		var buffHash={};
-		if (!currentBuffs) {return;}
+		if (!currentBuffs) {return buffHash;}
 		for (var i=0;i<currentBuffs.length;i += 1) {
 			var currentBuff = currentBuffs[i];
 			var buffHref = currentBuff.getAttribute('href');
@@ -1652,15 +1652,14 @@ var Helper = {
 		var counterAttackLevel;
 		var doublerLevel;
 
-		var buffHash = Helper.oldRemoveBuffs;
+		var buffHash = Helper.oldRemoveBuffs();
 
 		//extra world screen text
 		var replacementText = '<td background="' + System.imageServer +
-			'/skin/realm_right_bg.jpg">';
-		replacementText += '<table align="right" cellpadding="1" style="' +
-			'width:270px;margin-left:38px;margin-right:38px;font-size:medium' +
-			'; border-spacing: 1px; border-collapse: collapse;">';
-		replacementText += '<tr><td colspan="2" height="10"></td></tr><tr>';
+			'/skin/realm_right_bg.jpg"><table align="right" cellpadding="1" ' +
+			'style="width:270px;margin-left:38px;margin-right:38px;font-size' +
+			':medium; border-spacing: 1px; border-collapse: collapse;"><tr><' +
+			'td colspan="2" height="10"></td></tr><tr>';
 		var hasShieldImp = System
 			.findNode('//img[contains(@src,"/55_sm.gif")]');
 		var hasDeathDealer = System
@@ -1694,46 +1693,7 @@ var Helper = {
 				'blue;cursor:pointer;text-decoration:underline;font-size:' +
 				'xx-small;">Recast</span>':'') + '</td></tr>';
 			if (hasDeathDealer) {
-				if (System.getValue('lastDeathDealerPercentage') === undefined) {
-					System.setValue('lastDeathDealerPercentage', 0);}
-				if (System.getValue('lastKillStreak') === undefined) {
-					System.setValue('lastKillStreak', 0);}
-				var lastDeathDealerPercentage =
-					System.getValue('lastDeathDealerPercentage');
-				var lastKillStreak = System.getValue('lastKillStreak');
-				if (impsRemaining > 0 && lastDeathDealerPercentage === 20) {
-					replacementText += '<tr><td style="font-size:small; ' +
-						'color:black">Kill Streak: <span findme="killstreak">' +
-						'&gt;' + System.addCommas(lastKillStreak) + '</span> ' +
-						'Damage bonus: <span findme="damagebonus">20</span>%' +
-						'</td></tr>';
-				} else {
-					if (!System.getValue('trackKillStreak')) {
-						replacementText += '<tr><td style="font-size:small; ' +
-							'color:navy" nowrap>KillStreak tracker disabled. ' +
-							'<span style="font-size:xx-small">Track: <span ' +
-							'id=Helper:toggleKStracker style="color:navy;' +
-							'cursor:pointer;text-decoration:underline;" ' +
-							'title="Click to toggle">' +
-							(System.getValue('trackKillStreak') ? 'ON' : 'off') +
-							'</span></span></td></tr>';
-					} else {
-						replacementText += '<tr><td style="font-size:small;' +
-							' color:navy" nowrap>KillStreak: <span findme="' +
-							'killstreak">' + System.addCommas(lastKillStreak) +
-							'</span> Damage bonus: <span findme="damagebonus' +
-							'">' + Math.round(lastDeathDealerPercentage *
-							100) / 100 + '</span>%&nbsp;' + '<span style="' +
-							'font-size:xx-small">Track: <span id=Helper:' +
-							'toggleKStracker style="color:navy;cursor:' +
-							'pointer;text-decoration:underline;" title="' +
-							'Click to toggle">'+
-							(System.getValue('trackKillStreak') ? 'ON' : 'off') +
-							'</span></span></td></tr>';
-						System.xmlhttp('index.php?cmd=profile',
-							Helper.getKillStreak);
-					}
-				}
+				replacementText += Helper.doDeathDealer(impsRemaining);
 			}
 		}
 		var hasCounterAttack = System
@@ -1822,6 +1782,55 @@ var Helper = {
 		}
 
 		Helper.toggleKsTracker();
+	},
+
+	doDeathDealer: function(impsRemaining) {
+		var replacementText = '';
+
+		var lastDeathDealerPercentage =
+			System.getValue('lastDeathDealerPercentage');
+		if (lastDeathDealerPercentage === undefined) {
+			System.setValue('lastDeathDealerPercentage', 0);
+			lastDeathDealerPercentage = 0;
+		}
+
+		var lastKillStreak = System.getValue('lastKillStreak');
+		if (lastKillStreak === undefined) {
+			System.setValue('lastKillStreak', 0);
+			lastKillStreak = 0;
+		}
+
+		var trackKillStreak = System.getValue('trackKillStreak');
+
+		if (impsRemaining > 0 && lastDeathDealerPercentage === 20) {
+			replacementText += '<tr><td style="font-size:small; color:black"' +
+				'>Kill Streak: <span findme="killstreak">&gt;' +
+				System.addCommas(lastKillStreak) + '</span> Damage bonus: <' +
+				'span findme="damagebonus">20</span>%</td></tr>';
+		} else {
+			if (!trackKillStreak) {
+				replacementText += '<tr><td style="font-size:small; color:' +
+					'navy" nowrap>KillStreak tracker disabled. <span style="' +
+					'font-size:xx-small">Track: <span id=Helper:toggleKS' +
+					'tracker style="color:navy;cursor:pointer;text-' +
+					'decoration:underline;" title="Click to toggle">' +
+					(trackKillStreak ? 'ON' : 'off') +
+					'</span></span></td></tr>';
+			} else {
+				replacementText += '<tr><td style="font-size:small; color:' +
+					'navy" nowrap>KillStreak: <span findme="killstreak">' +
+					System.addCommas(lastKillStreak) + '</span> Damage bonus' +
+					': <span findme="damagebonus">' +
+					Math.round(lastDeathDealerPercentage * 100) / 100 +
+					'</span>%&nbsp;<span style="font-size:xx-small">Track: ' +
+					'<span id=Helper:toggleKStracker style="color:navy;' +
+					'cursor:pointer;text-decoration:underline;" title="Click' +
+					' to toggle">' + (trackKillStreak ? 'ON' : 'off') +
+					'</span></span></td></tr>';
+				System.xmlhttp('index.php?cmd=profile', Helper.getKillStreak);
+			}
+		}
+		return replacementText;
 	},
 
 	toggleKsTracker: function() {
@@ -2582,13 +2591,6 @@ var Helper = {
 		}
 		Helper.showMap(true);
 	},
-
-	//retrieveTradeConfirm: function() {
-		//var xcNumber = $('input[name="xc"]').val() || '-';
-		//xcNumber=System.findNode('//input[@type="hidden" and @name="xc"]');
-		//xcNumber=xcNumber?xcNumber.getAttribute('value'):'-';
-		//System.setValue('goldConfirm', xcNumber);
-	//},
 
 	sendGoldToPlayer: function(){
 //		var injectHere = System.findNode('//div[table[@class="centered" and @style="width: 270px;"]]');
@@ -4807,8 +4809,13 @@ var Helper = {
 	},
 
 	injectProfile: function() {
+		var qb = $('div#profileRightColumn a:contains("Quick Buff")');
+		if (qb.length !== 0) {
+			qb.attr('href', qb.attr('href').replace(/500/g,'1000'));
+		}
 
-		var charStats = $('#profileLeftColumn table').first().attr('id', 'characterStats');
+		var charStats = $('#profileLeftColumn table').first()
+			.attr('id', 'characterStats');
 		var tblCells = $('td', charStats).has('table').has('font');
 		tblCells.each(function(i, e) {
 			var tde = $('td', e);
@@ -5726,30 +5733,16 @@ var Helper = {
 		document.getElementById('SelectNoFilters').addEventListener('click', Helper.InventorySelectFilters, true);
 	},
 
-	generateInventoryTable: function() {
-		var targetId;
-		var targetInventory;
-		var inventoryShell;
-		var reportType=$('input[id="reportType"]').attr('value');
-		var wh = '<th align="left" sortkey="player_name" sortType="string">Where</th>';
-		if (reportType === 'guild') {
-			targetId = 'Helper:GuildInventoryManagerOutput';
-			targetInventory = Helper.guildinventory;
-			inventoryShell = 'guildinventory';
-		} else {
-			targetId = 'Helper:InventoryManagerOutput';
-			targetInventory = Helper.inventory;
-			inventoryShell = 'inventory';
-			wh='<th align="left" sortkey="folder_id" sortType="number">Where</th>';
-		}
-		if (!targetInventory) {return;}
-		//targetInventory.items = targetInventory.items.filter(function(e) {return (e.name);});
-		var output=document.getElementById(targetId);
-
-		var result='<table id="Helper:InventoryTable"><tr>' +
-			'<th width="180" align="left" sortkey="item_name" sortType="string" colspan="2">Name</th>' +
+	inventoryTableHeader: function(reportType) {
+		return '<table id="Helper:InventoryTable"><tr>' +
+			'<th width="180" align="left" sortkey="item_name" sortType=' +
+				'"string" colspan="2">Name</th>' +
 			'<th sortkey="stats.min_level" sortType="number">Level</th>' +
-			wh +
+			'<th align="left" sortkey="' +
+			(reportType === 'guild' ?
+			'player_name" sortType="string' :
+			'folder_id" sortType="number') +
+			'">Where</th>' +
 			'<th align="left" sortkey="type" sortType="number">Type</th>' +
 			'<th sortkey="stats.attack" sortType="number">Att</th>' +
 			'<th sortkey="stats.defense" sortType="number">Def</th>' +
@@ -5758,97 +5751,126 @@ var Helper = {
 			'<th sortkey="stats.hp" sortType="number">HP</th>' +
 			'<th colspan="2" sortkey="forge" sortType="number">Forge</th>' +
 			'<th align="left" sortkey="craft" sortType="string">Craft</th>' +
-			'<th align="right" sortkey="durabilityPer" sortType="number">Dur%</th>' +
+			'<th align="right" sortkey="durabilityPer" sortType="number">' +
+				'Dur%</th>' +
 			//dropLink +
 			'<th width="10"></th>';
-		var item, color;
+	},
+
+	generateInventoryTable: function() {
+		var targetId;
+		var targetInventory;
+		var inventoryShell;
+
+		var reportType = $('input[id="reportType"]').attr('value');
+		if (reportType === 'guild') {
+			targetId = 'Helper:GuildInventoryManagerOutput';
+			targetInventory = Helper.guildinventory;
+			inventoryShell = 'guildinventory';
+		} else {
+			targetId = 'Helper:InventoryManagerOutput';
+			targetInventory = Helper.inventory;
+			inventoryShell = 'inventory';
+		}
+		if (!targetInventory) {return;}
+
+		var result = Helper.inventoryTableHeader(reportType);
+
+		Helper.disableItemColoring = System.getValue('disableItemColoring');
 
 		var allItems = targetInventory.items;
-		var xcNum;
-		if (reportType === 'guild') {
-			xcNum = System.getValue('goldConfirm');
-		} else {
-			xcNum = Helper.inventory.xc;
-			System.setValue('goldConfirm', xcNum);
-		}
-
-		var minLvl = parseInt($('input[id="Helper.inventoryMinLvl"]').attr('value'), 10);
-		var maxLvl = parseInt($('input[id="Helper.inventoryMaxLvl"]').attr('value'), 10);
+		var minLvl = parseInt($('input[id="Helper.inventoryMinLvl"]')
+			.attr('value'), 10);
+		var maxLvl = parseInt($('input[id="Helper.inventoryMaxLvl"]')
+			.attr('value'), 10);
 		var setsOnly = $('input[id="Helper:SetFilter"]').is(':checked');
-		var t;
-		for (var i=0; i<allItems.length;i += 1) {
-			item=allItems[i];
-			if(item.equipped) {item.folder_id=99999999; } //for sorting purposes.
-			//continue; if item is filtered.
-			item.player_name='';
-			if(item.type > 8){continue;}//not a wearable item
-			if(!$('input[id="'+Helper.itemFilters[item.type].id+'"]').is(':checked')){continue;}
-			if(minLvl > item.stats.min_level || maxLvl < item.stats.min_level){continue;}
-			if(setsOnly && !item.stats.set_name) {continue;}
+		for (var i = 0; i < allItems.length;i += 1) {
+			var item = allItems[i];
 
-			var whereTitle='';
-			var whereText='';
-			var p=0;
+			//continue; if item is filtered.
+			if (item.type > 8 ||
+				!$('input[id="' + Helper.itemFilters[item.type].id + '"]')
+					.is(':checked') ||
+				minLvl > item.stats.min_level ||
+				maxLvl < item.stats.min_level || 
+				setsOnly && !item.stats.set_name) {continue;}
+
+			if (item.equipped) {item.folder_id = 99999999; } //for sorting purposes.
+			item.player_name = '';
+			var color;
+			var whereTitle = '';
+			var whereText = '';
+			var p = 0;
+			var t = 0;
 			if (reportType === 'guild') {
 				if (item.player_id === -1) { //guild store
 					item.player_name = 'GS';
-					color = 'navy';   whereText = 'GS';   whereTitle = 'Guild Store';
-				} else {
-					item.player_name = targetInventory.members[item.player_id];
-					color = 'maroon'; whereText = item.player_name;  whereTitle='Guild Report';
-				}
-				if (item.player_id===-1) {
+					color = 'navy';
+					whereText = 'GS';
+					whereTitle = 'Guild Store';
 					p = targetInventory.guild_id;
 					t = 4;
 				} else {
+					item.player_name = targetInventory.members[item.player_id];
+					color = 'maroon';
+					whereText = item.player_name;
+					whereTitle='Guild Report';
 					p = item.player_id;
 					t = 1;
 				}
 				p = p + '&currentPlayerId=' + targetInventory.current_player_id;
-			}else{
-				if(item.equipped){
-					color = 'green';  whereText = 'Worn'; whereTitle = 'Wearing it';
-				}else{
-					color = 'blue';   whereText = Helper.inventory.folders[item.folder_id];   whereTitle = 'In Backpack';
+			} else {
+				if (item.equipped) {
+					color = 'green';
+					whereText = 'Worn';
+					whereTitle = 'Wearing it';
+				} else {
+					color = 'blue';
+					whereText = Helper.inventory.folders[item.folder_id];
+					whereTitle = 'In Backpack';
 				}
 				p = targetInventory.player_id;
 				t = 1;
 			}
 
-			var rarity = Data.rarity[item.rarity].colour;
+			item.rarityColor = Helper.disableItemColoring ? '' : ' color:' +
+				Data.rarity[item.rarity].colour;
 
-			var nm = item.item_name;
-			if (item.equipped) { nm = '<b>' + nm + '</b>';}
-			result += '<tr style="color:' + color + '">' +
-				'<td>' + //'<img src="' + System.imageServerHTTP + '/temple/1.gif" onmouseover="' + item.onmouseover + '">' +
-				'</td><td><a style="cursor:help; color:' + rarity +
-				'" id="Helper:item' + i +
-				'" arrayID="' + i + '" class="tip-dynamic" ' +
-				'data-tipped="fetchitem.php?item_id=' + item.item_id +
-				'&inv_id=' + item.inv_id + '&t=' + t + '&p=' + p + '">' + nm +
+			item.displayName = item.item_name;
+			if (item.equipped) {
+				item.displayName = '<b>' + item.displayName + '</b>';
+			}
+			result += '<tr style="color:' + color + '"><td></td><td><a ' +
+				'style="cursor:help;' + item.rarityColor + '" id="Helper:item' +
+				i + '" arrayID="' + i + '" class="tip-dynamic" data-tipped="' +
+				'fetchitem.php?item_id=' + item.item_id + '&inv_id=' +
+				item.inv_id + '&t=' + t + '&p=' + p + '">' + item.displayName +
 				'</a>';
 
+			var itemRE = new RegExp('amulet|armor|armored|axe|boots|fist|' +
+				'gauntlets|gloves|hammer|helm|helmet|mace|necklace|of|plate|' +
+				'ring|rune|shield|sword|the|weapon', 'gi');
+
 			if (item.stats.set_name && reportType === 'guild') {
-				result+=' (<a href="/index.php?cmd=guild&subcmd=inventory&subcmd2=report&set=' +
-					item.item_name.replace(/(amulet)|(armor)|(armored)|(axe)|(boots)|(fist)|(gauntlets)|(gloves)|(hammer)|(helm)|(helmet)|(mace)|(necklace)|(of)|(plate)|(ring)|(rune)|(shield)|(sword)|(the)|(weapon)|/gi,'').trim().replace(/  /g,' ').replace(/  /g,' ').replace(/ /g,'|') + '">set</a>)';
+				result += ' (<a href="/index.php?cmd=guild&subcmd=inventory&' +
+					'subcmd2=report&set=' +
+					item.item_name.replace(itemRE,'').trim().replace(/  /g,' ')
+						.replace(/  /g,' ').replace(/ /g,'|') + '">set</a>)';
 			}
 
-			var craftColor = Data.craft[item.craft] ?
+			item.craftColor = Data.craft[item.craft] ?
 				Data.craft[item.craft].colour : '';
 
-			var durabilityPercent = '';
-			var durabilityColor;
 			if (item.durability) {
-				durabilityPercent = parseInt(100*item.durability/item.max_durability,10);
-				item.durabilityPer=durabilityPercent;
-				durabilityColor = durabilityPercent < 20 ?'red':'gray';
+				item.durabilityPer = Math.floor(100 * item.durability /
+					item.max_durability);
+				item.durabilityColor = item.durabilityPer < 20 ? 'red' : 'gray';
 			}
 
-// TODO
-
-			result+='</td>' +
+			result += '</td>' +
 				'<td align="right">' + item.stats.min_level + '</td>' +
-				'<td align="left" title="' + whereTitle + '">' + whereText + '</td>' +
+				'<td align="left" title="' + whereTitle + '">' + whereText +
+					'</td>' +
 				'<td align="left">' + Data.itemType[item.type] + '</td>' +
 				'<td align="right">' + item.stats.attack + '</td>' +
 				'<td align="right">' + item.stats.defense + '</td>' +
@@ -5856,37 +5878,27 @@ var Helper = {
 				'<td align="right">' + item.stats.damage + '</td>' +
 				'<td align="right">' + item.stats.hp + '</td>' +
 				'<td align="right">' + item.forge + '</td>' +
-				'<td>' + (item.forge > 0 ? '<img src="' + System.imageServer + '/hellforge/forgelevel.gif">':'') + '</td>' +
-				'<td align="left">' + '<span style="color:' + craftColor + ';">' + item.craft + '</span>' + '</td>' +
-				'<td align="right">' + '<span style="color:' + durabilityColor + ';">' + durabilityPercent + '</span>' + '</td>';
-/*				if (showQuickDropLinks && inventoryShell === 'inventory') {
-					result+='<td><span  title="INSTANTLY DROP '+item.item_name+'. NO REFUNDS OR DO-OVERS! Use at own risk." id="FSHQuickDrop' +
-							item.item_id +
-							'" itemInvId=' + item.inv_id +
-							' itemIndexId=' + item.index + ' itemPageId=' + item.page +
-							' findme="QuickDrop" style="color:red; cursor:pointer; text-decoration:underline;">[Drop]</span> </td>';
-				}
-*/				result+='<td></td>' +
-				'</tr>';
+				'<td>' + (item.forge > 0 ? '<img src="' + System.imageServer +
+					'/hellforge/forgelevel.gif">':'') + '</td>' +
+				'<td align="left">' + '<span style="color:' + item.craftColor +
+					';">' + item.craft + '</span>' + '</td>' +
+				'<td align="right">' + '<span style="color:' +
+					item.durabilityColor + ';">' + item.durabilityPer +
+					'</span></td>' +
+				'<td></td></tr>';
 		}
-		result+='</table>';
-		result+='<input type="hidden" id="xcnum" value="' + xcNum + '" />';
-		output.innerHTML=result;
-		/*if (showQuickDropLinks && inventoryShell === 'inventory') {
-			$('span[id*="FSHQuickDrop"]').each(function(){
-				this.addEventListener('click', Helper.quickDropItem, true);
-				this.addEventListener('click', Helper.removeInventoryItem, true);
-			});
-		}*/
-		targetInventory.lastUpdate = new Date();
-		// Sets but never gets inventory!
-		// System.setValueJSON(inventoryShell, targetInventory);
+
+		result += '</table><input type="hidden" id="xcnum" value="' +
+			window.ajaxXC + '" />';
+
+		var output = document.getElementById(targetId);
+		output.innerHTML = result;
 
 		var inventoryTable=document.getElementById('Helper:InventoryTable');
-		for (i=0; i<inventoryTable.rows[0].cells.length; i += 1) {
-			var cell=inventoryTable.rows[0].cells[i];
-			cell.style.textDecoration='underline';
-			cell.style.cursor='pointer';
+		for (i = 0; i < inventoryTable.rows[0].cells.length; i += 1) {
+			var cell = inventoryTable.rows[0].cells[i];
+			cell.style.textDecoration = 'underline';
+			cell.style.cursor = 'pointer';
 			cell.addEventListener('click', Helper.sortInventoryTable, true);
 		}
 
@@ -6289,23 +6301,6 @@ var Helper = {
 		);
 	},
 
-//*************************** Note *********************
-/* The following fuction is only used in the quick drop method in the inventory manager currently commented out, if that is deleted
-	this function can be removed as well */
-	removeInventoryItem: function(evt){
-		var itemIndexId = evt.target.getAttribute('itemIndexId');
-		var itemPageId = evt.target.getAttribute('itemPageId');
-		var itemArrayId=-1;
-		for (var i=0; i<Helper.inventory.items.length;i += 1) { //find item
-			if(Helper.inventory.items[i].index===itemIndexId && Helper.inventory.items[i].page===itemPageId){
-				itemArrayId=i;
-				break;
-			}
-		}
-		//~ var remItem = Helper.inventory.items.splice(itemArrayId,1); //remove from array
-		System.setValueJSON('inventory', Helper.inventory); //update var so it does not display again
-	},
-// ************************* /end note
 	sortInventoryTable: function(evt) {
 		var targetInventory;
 		var reportType=$('input[id="reportType"]').attr('value');
@@ -9393,40 +9388,47 @@ var Helper = {
 		}
 	},
 
-	injectPoints: function() {
-		Helper.currentFSP = System.intValue($('dt#statbar-fsp').text().replace(/,/g, ''));
-
-		var stamForFSPElement = System.findNode('//td[@width="60%" and contains(.,"+25 Current Stamina")]/../td[4]');
-		var stamForFSPInjectHere = System.findNode('//td[@width="60%" and contains(.,"+25 Current Stamina")]');
-		var stamFSPTextField = System.findNode('table/tbody/tr/td/input[@name="quantity"]', stamForFSPElement);
-		stamFSPTextField.type='current';
-		stamFSPTextField.addEventListener('keyup', Helper.updateStamCount, true);
-		stamForFSPInjectHere.innerHTML += ' <span style="color:blue" id="totalStam" type="current"><span>';
-
-		stamForFSPElement = System.findNode('//td[@width="60%" and contains(.,"+10 Maximum Stamina")]/../td[4]');
-		stamForFSPInjectHere = System.findNode('//td[@width="60%" and contains(.,"+10 Maximum Stamina")]');
-		stamFSPTextField = System.findNode('table/tbody/tr/td/input[@name="quantity"]', stamForFSPElement);
-		stamFSPTextField.type='maximum';
-		stamFSPTextField.addEventListener('keyup', Helper.updateStamCount, true);
-		stamForFSPInjectHere.innerHTML += ' <span style="color:blue" id="totalStam" type="maximum"><span>';
-
-		var goldForFSPElement = System.findNode('//td[@width="60%" and contains(.,"+50,000")]/../td[4]');
-		goldForFSPElement.innerHTML = '<a href="' + System.server + '?cmd=marketplace">Sell at Marketplace</a>';
+	injectPoints: function() { // jquery
+		Helper.currentFSP = System.intValue($('dt#statbar-fsp').text());
+		Helper.injectUpgradeHelper(0, 'Current');
+		Helper.injectUpgradeHelper(1, 'Maximum');
+		$('#pCC td')
+			.has('input[name="upgrade_id"][value="3"]')
+			.html('<a href="' + System.server +
+				'?cmd=marketplace">Sell at Marketplace</a>');
 	},
 
-	updateStamCount: function(evt) {
-		var FSPvalue = evt.target.value*1;
-		var type = evt.target.getAttribute('type');
-		var injectHere = System.findNode('//span[@id="totalStam" and @type="'+type+'"]');
+	injectUpgradeHelper: function(value, type) {
+		var theCells = $('#pCC tr')
+			.has('input[name="upgrade_id"][value="' + value + '"]')
+			.find('td');
+		var cell = theCells.first();
+		cell.append(' <span style="color:blue" ' +
+			'id="totalStam" type="' + type + '"></span>');
+		var amountRE = new RegExp('\\+(\\d+) ' + type + ' Stamina');
+		var amount = cell.text().match(amountRE)[1];
+		$('input[name="quantity"]', theCells)
+			.attr('stamtype', type)
+			.attr('amount', amount)
+			.attr('cost', theCells.eq(1).text())
+			.keyup(Helper.updateStamCount);
+	},
+
+	updateStamCount: function(evt) { // jquery
+		var target = $(evt.target);
+		var amount = target.attr('amount');
+		var cost = target.attr('cost');
+		var quantity = target.val();
 		//cap the value if the user goes over his current FSP
 		var color = 'red';
-		var extraStam = Helper.currentFSP*(type==='current'?25:10);
-		if (FSPvalue <= Helper.currentFSP) {
-			extraStam = FSPvalue*(type==='current'?25:10);
+		var extraStam = Math.floor(Helper.currentFSP / cost) * amount;
+		if (quantity * cost <= Helper.currentFSP) {
+			extraStam = quantity * amount;
 			color = 'blue';
 		}
-		injectHere.style.color = color;
-		injectHere.innerHTML = '(+' + extraStam + ' stamina)';
+		$('#pCC span[id="totalStam"][type="' + target.attr('stamtype') + '"]')
+			.css('color', color)
+			.html('(+' + extraStam + ' stamina)');
 	},
 
 	injectTitan: function() {
