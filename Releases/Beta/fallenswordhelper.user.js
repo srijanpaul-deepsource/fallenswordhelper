@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1510b2
+// @version        1510b3
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -23,7 +23,33 @@ var fshMain = function() {
 
 window.FSH = window.FSH || {};
 
-window.FSH.Helper = {
+FSH.Helper = {
+	getEnvVars: function() {
+		FSH.Helper.enableAllyOnlineList =
+			FSH.System.getValue('enableAllyOnlineList');
+		FSH.Helper.enableEnemyOnlineList =
+			FSH.System.getValue('enableEnemyOnlineList');
+		FSH.Helper.enableGuildInfoWidgets =
+			FSH.System.getValue('enableGuildInfoWidgets');
+		FSH.Helper.enableOnlineAlliesWidgets =
+			FSH.System.getValue('enableOnlineAlliesWidgets');
+		FSH.Helper.hideGuildInfoTrade =
+			FSH.System.getValue('hideGuildInfoTrade');
+		FSH.Helper.hideGuildInfoSecureTrade =
+			FSH.System.getValue('hideGuildInfoSecureTrade');
+		FSH.Helper.hideGuildInfoBuff =
+			FSH.System.getValue('hideGuildInfoBuff');
+		FSH.Helper.hideGuildInfoMessage =
+			FSH.System.getValue('hideGuildInfoMessage');
+		FSH.Helper.hideBuffSelected = FSH.System.getValue('hideBuffSelected');
+		FSH.Helper.enableTempleAlert =
+			FSH.System.getValue('enableTempleAlert');
+		FSH.Helper.enableUpgradeAlert =
+			FSH.System.getValue('enableUpgradeAlert');
+		FSH.Helper.enableComposingAlert =
+			FSH.System.getValue('enableComposingAlert');
+	},
+
 	prepareEnv: function() {
 		if (FSH.System.getValue('gameHelpLink')) {
 			var gameHelpNode = $('div.minibox h3:contains("Game Help")');
@@ -34,7 +60,9 @@ window.FSH.Helper = {
 			});
 		}
 
-		if (FSH.System.getValue('huntingMode')) {
+		FSH.Helper.huntingMode = FSH.System.getValue('huntingMode');
+
+		if (FSH.Helper.huntingMode) {
 			FSH.Helper.replaceKeyHandler();
 			// FSH.Helper.fixOnlineGuildBuffLinks();
 		} else {
@@ -49,7 +77,12 @@ window.FSH.Helper = {
 				FSH.Layout.moveRHSBoxToLHS('minibox-fsbox');
 			}
 
-			FSH.Helper.prepareAllyEnemyList();
+			FSH.Helper.getEnvVars();
+
+			if (FSH.Helper.enableAllyOnlineList ||
+				FSH.Helper.enableEnemyOnlineList) {
+				FSH.Helper.prepareAllyEnemyList();
+			}
 			FSH.Helper.prepareBountyData();
 			FSH.Helper.injectStaminaCalculator();
 			FSH.Helper.injectLevelupCalculator();
@@ -57,21 +90,27 @@ window.FSH.Helper = {
 			FSH.Helper.replaceKeyHandler();
 			FSH.Helper.injectFSBoxLog();
 			FSH.Helper.fixOnlineGuildBuffLinks();
-			FSH.Helper.addGuildInfoWidgets();
-			FSH.Helper.addOnlineAlliesWidgets();
+			if (FSH.Helper.enableGuildInfoWidgets) {
+				FSH.Helper.addGuildInfoWidgets();
+			}
+			if (FSH.Helper.enableOnlineAlliesWidgets) {
+				FSH.Helper.addOnlineAlliesWidgets();
+			}
 			FSH.Helper.injectJoinAllLink();
 			FSH.Helper.changeGuildLogHREF();
 			FSH.Helper.injectHomePageTwoLink();
-			if (FSH.System.getValue('enableTempleAlert')) {
+			if (FSH.Helper.enableTempleAlert) {
 				FSH.Helper.injectTempleAlert();}
-			if (FSH.System.getValue('enableUpgradeAlert')) {
+			if (FSH.Helper.enableUpgradeAlert) {
 				FSH.Helper.injectUpgradeAlert();}
-			if (FSH.System.getValue('enableComposingAlert')) {
+			if (FSH.Helper.enableComposingAlert) {
 				FSH.Helper.injectComposeAlert();}
 			FSH.Helper.injectQuickMsgDialogJQ();
 		}
 
-		FSH.Helper.injectHelperMenu();
+		if (!FSH.System.getValue('hideHelperMenu')) {
+			FSH.Helper.injectHelperMenu();
+		}
 	},
 
 	// main event dispatcher
@@ -81,58 +120,75 @@ window.FSH.Helper = {
 			FSH.Helper.prepareEnv();
 		}
 
-		var pageId;
-		var subPageId;
-		var subPage2Id;
-		var typePageId;
+		var cmd;
+		var subcmd;
+		var subcmd2;
+		var type;
+		var fromWorld;
 		var funcName;
 		var fn;
 
 		if (document.location.search !== '') {
-			pageId = FSH.System.getUrlParameter('cmd') || '-';
-			subPageId = FSH.System.getUrlParameter('subcmd') || '-';
-			subPage2Id = FSH.System.getUrlParameter('subcmd2') || '-';
-			typePageId = FSH.System.getUrlParameter('type') || '-';
+			cmd = FSH.System.getUrlParameter('cmd') || '-';
+			subcmd = FSH.System.getUrlParameter('subcmd') || '-';
+			subcmd2 = FSH.System.getUrlParameter('subcmd2') || '-';
+			type = FSH.System.getUrlParameter('type') || '-';
+			fromWorld = FSH.System.getUrlParameter('fromworld') || '-';
 		} else {
-			pageId = $('input[name="cmd"]').val() || '-';
-			subPageId = $('input[name="subcmd"]').val() || '-';
-			if (subPageId==='dochat') {
-				pageId='-';
-				subPageId='-';
+			cmd = $('input[name="cmd"]').val() || '-';
+			subcmd = $('input[name="subcmd"]').val() || '-';
+			if (subcmd==='dochat') {
+				console.log('Investigate this...');
+				cmd='-';
+				subcmd='-';
 			}
-			subPage2Id = $('input[name="subcmd2"]').val() || '-';
-			typePageId = '-';
+			subcmd2 = $('input[name="subcmd2"]').val() || '-';
+			type = '-';
+			fromWorld = '-';
 		}
 
-		FSH.Helper.page = pageId + '/' + subPageId + '/' + subPage2Id + '(' + typePageId + ')';
+		FSH.cmd = cmd;
+		FSH.subcmd = subcmd;
+		FSH.subcmd2 = subcmd2;
+		FSH.type = type;
+		FSH.fromWorld = fromWorld;
 
-		if (FSH.Data.pageSwitcher[pageId] &&
-			FSH.Data.pageSwitcher[pageId][subPageId] &&
-			FSH.Data.pageSwitcher[pageId][subPageId][subPage2Id] &&
-			FSH.Data.pageSwitcher[pageId][subPageId][subPage2Id][typePageId]) {
-			funcName = FSH.Data.pageSwitcher[pageId][subPageId][subPage2Id]
-				[typePageId];
+		FSH.Helper.page = cmd + '/' + subcmd + '/' + subcmd2 + '(' + type + ')';
+		console.log('FSH.Helper.page', FSH.Helper.page);
+
+		var pageSwitcher = FSH.Data.pageSwitcher;
+
+		if (pageSwitcher[cmd] &&
+			pageSwitcher[cmd][subcmd] &&
+			pageSwitcher[cmd][subcmd][subcmd2] &&
+			pageSwitcher[cmd][subcmd][subcmd2][type] &&
+			pageSwitcher[cmd][subcmd][subcmd2][type][fromWorld]) {
+			funcName = pageSwitcher[cmd][subcmd][subcmd2][type][fromWorld];
+			console.log('pageSwitcher2 funcName', funcName);
 			fn = FSH.Helper[funcName];
 			fn();
 		}
 
 		if (FSH.System.getValue('playNewMessageSound')) {
-			var soundLocation = FSH.System.getValue('defaultMessageSound');
-			//new UI
-			$('a:contains("New log messages"):first').each(function(){
-				$(this).after('<audio src="' + soundLocation +
-				'" autoplay=true />');
-			});
-			$('a:contains("New Guild chat message"):first').each(function(){
-				$(this).after('<audio src="' + soundLocation +
-				'" autoplay=true />');
-			});
+			FSH.Helper.doMsgSound();
 		}
 
 		// This must be at the end in order not to screw up other FSH.System.findNode calls (Issue 351)
-		if (FSH.System.getValue('huntingMode') === false) {
+		if (!FSH.Helper.huntingMode) {
 			FSH.Helper.injectQuickLinks();
 		}
+	},
+
+	doMsgSound: function() {
+		var soundLocation = FSH.System.getValue('defaultMessageSound');
+		$('a:contains("New log messages"):first').each(function(){
+			$(this).after('<audio src="' + soundLocation +
+			'" autoplay=true />');
+		});
+		$('a:contains("New Guild chat message"):first').each(function(){
+			$(this).after('<audio src="' + soundLocation +
+			'" autoplay=true />');
+		});
 	},
 
 	newsFsbox: function() {
@@ -495,7 +551,7 @@ window.FSH.Helper = {
 				var lastActivityDays = parseInt(lastActivity[1],10);
 				var lastActivityHours = parseInt(lastActivity[2],10) + lastActivityDays * 24;
 				var lastActivityMinutes = parseInt(lastActivity[3],10) + lastActivityHours * 60;
-				var lastActivityIMG = FSH.Helper.onlineDot(lastActivityMinutes);
+				var lastActivityIMG = FSH.Layout.onlineDot(lastActivityMinutes);
 				aRow.cells[0].innerHTML = lastActivityIMG;
 			}
 		}
@@ -604,8 +660,8 @@ window.FSH.Helper = {
 	},
 
 	injectShop: function() {
-		var injectHere=$('#shop-info');
-		var itemNodes=$('td center a img[src*="/items/"]');
+		var injectHere = $('#shop-info');
+		var itemNodes = $('td center a img[src*="/items/"]');
 
 		var selector = '<span style="font-size:xx-small">Select an item to ' +
 			'quick-buy:<br>Select how many to quick-buy <input style="font-' +
@@ -1728,7 +1784,7 @@ window.FSH.Helper = {
 					'red">Doubler ' + doublerLevel + ' active</td></tr>';
 			}
 		}
-		var huntingMode = FSH.System.getValue('huntingMode');
+		var huntingMode = FSH.Helper.huntingMode;
 		replacementText += huntingMode === true ? '<tr><td style="font-size:' +
 			'small; color:red">Hunting mode enabled</td></tr>':'';
 		replacementText += '<tr><td colspan="2" height="10"></td></tr>';
@@ -2062,19 +2118,20 @@ window.FSH.Helper = {
 					FSH.System.setValue('playNewMessageSound',!FSH.System.getValue('playNewMessageSound'));
 				},true);
 			}
-			var huntingMode = FSH.System.getValue('huntingMode');
+			var huntingMode = FSH.Helper.huntingMode;
 			img = huntingMode === true ? FSH.Data.huntingOnImage : FSH.Data.huntingOffImage;
 			worldName.append(' <a href=# id="HelperToggleHuntingMode">' + img + '</a>');
 			
 			document.getElementById('HelperToggleHuntingMode').addEventListener('click',
 				function() {
 				//alert($('a#HelperToggleHuntingMode').html());
-					if(FSH.System.getValue('huntingMode') === false){
+					if (!FSH.Helper.huntingMode) {
 						$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOnImage);
-					}else{
+					} else {
 						$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOffImage);
 					}
-					FSH.System.setValue('huntingMode',!FSH.System.getValue('huntingMode'));
+					FSH.Helper.huntingMode = !FSH.Helper.huntingMode;
+					FSH.System.setValue('huntingMode', FSH.Helper.huntingMode);
 				},true);
 		}
 	},
@@ -2098,241 +2155,263 @@ window.FSH.Helper = {
 		//17 = login
 		//18 = username not found
 		if ($('#worldPage').length > 0) { // new map
-			// subscribe to view creature events on the new map.
-			//current send total
-			//send to
-			//send amount
-			//deposit?
-			if(FSH.System.getValue('sendGoldonWorld')){
-				$('#statbar-gold-tooltip-general').append(
-					'<dt class="stat-gold-sendTo">Send To:</dt><dd id="' +
-					'HelperSendTo">' + FSH.System.getValue('goldRecipient') +
-					'</dd>' + 
-					'<dt class="stat-gold-sendAmt">Amount:</dt><dd id="' +
-					'HelperSendAmt">' + FSH.System.getValue('goldAmount')
-						.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') + '</dd>' +
-					'<dt class="stat-gold-sendTo">Send?</dt><dd><input id="' +
-					'HelperSendGold" value="Send!" class="custombutton" ' +
-					'type="submit"><input type="hidden" id="xc" value="' +
-					FSH.System.getValue('goldConfirm') + '"</dd>' + 
-					'<dt class="stat-gold-sendTotal">Total Sent:</dt><dd ' +
-					'id="HelperSendTotal">' +
-					FSH.System.getValue('currentGoldSentTotal').toString()
-						.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') + '</dd>');
-				$('input#HelperSendGold').click(function(){
-					var sendTo = $('#HelperSendTo').html();
-					var sendAmt = $('#HelperSendAmt').html()
-						.replace(/[^\d]/g,'');
-					var xcNum = $('#xc').val();
-					var sendHref = FSH.System.server + 'index.php?cmd=trade&' +
-						'subcmd=sendgold&xc=' + xcNum + '&target_username=' +
-						sendTo +'&gold_amount='+ sendAmt;
-					$.ajax({
-						url: sendHref,
-						success: function( data ) {
-							//alert($(data).find();
-							var info = FSH.Layout.infoBox(data);
-							if (info === 'You successfully sent gold!' ||
-								info === '') {
-								//currentGoldSentTotal += FSH.System.intValue(callback.amount);
-								//info = 'You successfully sent ' + callback.amount + ' gold to ' + callback.recipient + '! Current total sent is '+currentGoldSentTotal+' gold.';
-								FSH.System.setValue('currentGoldSentTotal',
-									parseInt(
-										FSH.System.getValue('currentGoldSentTotal'),
-										10) +
-									parseInt(
-										FSH.System.getValue('goldAmount'), 10));
-								unsafeWindow.GameData.fetch(387);
-							}
-						}
-					});
-					
-				});
-			}
-			//Subscribes:
-			FSH.Helper.doNotKillList = FSH.System.getValue('doNotKillList');
-			$.subscribe('ready.view-creature', function() {
-				$('div#creatureEvaluator').html('');
-				$('div#creatureEvaluatorGroup').html('');
-				FSH.System.xmlhttp('index.php?cmd=profile',
-					FSH.Helper.getCreaturePlayerData,
-					{	'groupExists': false,
-						'groupAttackValue': 0,
-						'groupDefenseValue': 0,
-						'groupArmorValue': 0,
-						'groupDamageValue': 0,
-						'groupHPValue': 0,
-						'groupEvaluation': false
-					}
-				);
-				FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups',
-					FSH.Helper.checkIfGroupExists);
-				
-				$('div#addRemoveCreatureToDoNotKillList').html('');
-//console.log($('#dialog-viewcreature').find('h2.name').text());
-				if ($('div#addRemoveCreatureToDoNotKillList').length === 0) {
-					var doNotKillElement = '<div id="addRemoveCreatureToDo' +
-						'NotKillList"" class="description" style="cursor:' +
-						'pointer;text-decoration:underline;color:blue;"></div>';
-					$(doNotKillElement).insertAfter($('#dialog-viewcreature')
-						.find('p.description'));
-				}
-				var creatureName = $('#dialog-viewcreature').find('h2.name')
-					.text();
-				$('div#addRemoveCreatureToDoNotKillList')
-					.attr('creatureName',creatureName);
-				var extraText = 'Add to the do not kill list';
-				if (FSH.Helper.doNotKillList.indexOf(creatureName) !== -1) {
-					extraText = 'Remove from do not kill list';}
-				$('div#addRemoveCreatureToDoNotKillList').html(extraText);
-				document.getElementById('addRemoveCreatureToDoNotKillList')
-					.addEventListener('click',
-						FSH.Helper.addRemoveCreatureToDoNotKillList, true);
-			});
-
-			// add do-not-kill list functionality
-			$.subscribe('after-update.actionlist', function() {
-				// color the critters in the do no kill list blue
-				$('ul#actionList div.header').each(function() {
-					if (FSH.Helper.doNotKillList.indexOf($(this).find('a.icon')
-						.data('name')) !== -1) {
-						$(this).css('color','blue');
-					}
-				});
-				// then intercept the action call 
-				var gameData = unsafeWindow.GameData;
-				var hcs = unsafeWindow.HCS;
-				var oldDoAction = gameData.doAction;
-				gameData.doAction = function(actionCode, fetchFlags, data) {
-					if (actionCode === hcs.DEFINES.ACTION.CREATURE_COMBAT) {
-						// Do custom stuff e.g. do not kill list
-						var creatureIcon = $('ul#actionList div.header')
-							.eq(data.passback).find('a.icon');
-						if (FSH.Helper.doNotKillList.indexOf(
-								creatureIcon.data('name')) !== -1) {
-							creatureIcon.removeClass('loading');
-							return;
-						}
-					}
-					// Call standard action
-					oldDoAction(actionCode, fetchFlags, data);
-				}; 
-			});
-
-			$.subscribe(unsafeWindow.DATA_EVENTS.PLAYER_BUFFS.ANY,
-				function(e, data) {
-				// check shield imp is still active
-				var shieldImpVal = 0;
-				var ddVal=0;
-				var l = data.b.length;
-				for(var i=0; i<l; i += 1)
-				{
-					var buff = data.b[i];
-					if (buff.id === 55)
-					{
-						shieldImpVal = buff.stack;
-					} else if(buff.id === 50)
-					{
-						ddVal = buff.level;
-					}
-					if (ddVal > 0 && shieldImpVal > 0) {
-						break;
-					}
-
-				}
-				//~ if(ddVal>0){
-					var imp = $('#actionlist-shield-imp');
-					if(shieldImpVal === 0){
-						imp.css('background-color','red');
-					}else if(shieldImpVal===2){
-						imp.css('background-color','yellow');
-					}else if(shieldImpVal===1){
-						imp.css('background-color','orange');
-					}else{
-						imp.css('background-color','inherit');
-					}
-				//~ }
-				
-
-			});
-			$.subscribe('keydown.controls', function(e, key){
-				switch(key)
-				{
-					case 'ACT_REPAIR': unsafeWindow.GameData.fetch(387); break;
-				}
-			});
-			FSH.Helper.keepLogs = FSH.System.getValue('keepLogs');
-			$.subscribe('2-success.action-response', function(e, data){
-				var l;
-				var i;
-				// If bad response do nothing.
-				if (!FSH.Helper.keepLogs || data.response.response !== 0) {return;}
-				var combatData = {};
-				combatData.combat = $.extend(true, {}, data.response.data); //make a deep copy
-				//delete some values that are not needed to trim down size of log.
-				delete combatData.combat.attacker.img_url;
-				delete combatData.combat.defender.img_url;
-				delete combatData.combat.is_conflict;
-				delete combatData.combat.is_bounty;
-				delete combatData.combat.pvp_rating_change;
-				delete combatData.combat.pvp_prestige_gain;
-				if (combatData.combat.inventory_id) {
-					combatData.combat.drop = combatData.combat.item.id;
-				}
-				delete combatData.combat.inventory_id;
-				delete combatData.combat.item;
-
-				combatData.player={};
-				combatData.player.buffs={};
-				combatData.player.enhancements={};
-				l = data.player.buffs.length;
-				for(i=0; i<l; i += 1) //loop through buffs, only need to keep CA and Doubler
-				{//54 = ca, 26 = doubler
-					var buff = data.player.buffs[i];
-					if(buff.id === 54 || buff.id === 26)
-					{
-						combatData.player.buffs[buff.id] = parseInt(buff.level, 10);
-					}
-				}
-				var notSave = '|Breaker|Protection|Master Thief|Protect Gold|Disarm|Duelist|Thievery|Master Blacksmith|Master Crafter|Fury Caster|Master Inventor|Sustain|';//Taking the Not Save in case they add new enhancements.
-				if (data.player.enhancements)
-				{
-					l = data.player.enhancements.length;
-					for(i=0; i<l; i += 1) //loop through enhancements
-					{//54 = ca, 26 = doubler
-						var enh = data.player.enhancements[i];
-						if (notSave.indexOf('|'+enh.name+'|')===-1){
-							combatData.player.enhancements[enh.name]=enh.value;
-						}
-					}
-				}
-				//combatData.player.enhancements = data.player.enhancements;
-				//combatData.player.buffs = data.player.buffs;
-				var now = new Date();
-				combatData.time = FSH.System.formatDateTime(now);
-				FSH.Helper.appendSavedLog(',' + JSON.stringify(combatData));
-			});
-			//on world
-
-			if(unsafeWindow.initialGameData){//HCS initial data
-				setTimeout(function(){FSH.Helper.injectWorldNewMap(unsafeWindow.initialGameData);},400);
-			}
-			$.subscribe('-1-success.action-response 5-success.action-response', function(e, data){ //change of information
-				setTimeout(function(){FSH.Helper.injectWorldNewMap(data);},400);
-			});
-
-			//somewhere near here will be multi buy on shop
-			//$.subscribe('prompt.worldDialogShop', function(e, data){
-				//self._createShop(self.shop.items);
-			//	$('span[class="price"]').after('<span class="numTake">test</span>');
-			//});
-
-			//document.getElementById('Helper:SendGold').addEventListener('click', FSH.Helper.sendGoldToPlayer, true);
-
-		}else{
+			FSH.Helper.newMapSubscribes();
+		} else {
 			//not new map.
 			FSH.Helper.injectOldMap();
 		}
+	},
+
+	injectSendGoldOnWorld: function() {
+		$('#statbar-gold-tooltip-general').append(
+			'<dt class="stat-gold-sendTo">Send To:</dt><dd id="' +
+			'HelperSendTo">' + FSH.System.getValue('goldRecipient') +
+			'</dd>' + 
+			'<dt class="stat-gold-sendAmt">Amount:</dt><dd id="' +
+			'HelperSendAmt">' + FSH.System.getValue('goldAmount')
+				.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') + '</dd>' +
+			'<dt class="stat-gold-sendTo">Send?</dt><dd><input id="' +
+			'HelperSendGold" value="Send!" class="custombutton" ' +
+			'type="submit"><input type="hidden" id="xc" value="' +
+			FSH.System.getValue('goldConfirm') + '"</dd>' + 
+			'<dt class="stat-gold-sendTotal">Total Sent:</dt><dd ' +
+			'id="HelperSendTotal">' +
+			FSH.System.getValue('currentGoldSentTotal').toString()
+				.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') + '</dd>');
+		$('input#HelperSendGold').click(FSH.Helper.doSendGold);
+	},
+
+	doSendGold: function() {
+		var sendTo = $('#HelperSendTo').html();
+		var sendAmt = $('#HelperSendAmt').html()
+			.replace(/[^\d]/g,'');
+		var xcNum = $('#xc').val();
+		var sendHref = FSH.System.server + 'index.php?cmd=trade&' +
+			'subcmd=sendgold&xc=' + xcNum + '&target_username=' +
+			sendTo +'&gold_amount='+ sendAmt;
+		$.ajax({
+			url: sendHref,
+			success: function( data ) {
+				//alert($(data).find();
+				var info = FSH.Layout.infoBox(data);
+				if (info === 'You successfully sent gold!' ||
+					info === '') {
+					//currentGoldSentTotal += FSH.System.intValue(callback.amount);
+					//info = 'You successfully sent ' + callback.amount + ' gold to ' + callback.recipient + '! Current total sent is '+currentGoldSentTotal+' gold.';
+					FSH.System.setValue('currentGoldSentTotal',
+						parseInt(
+							FSH.System.getValue('currentGoldSentTotal'), 10) +
+						parseInt(FSH.System.getValue('goldAmount'), 10));
+					window.GameData.fetch(387);
+				}
+			}
+		});
+	},
+
+	readyViewCreature: function() {
+		$('div#creatureEvaluator').html('');
+		$('div#creatureEvaluatorGroup').html('');
+
+		FSH.System.xmlhttp('index.php?cmd=profile',
+			FSH.Helper.getCreaturePlayerData,
+			{	'groupExists': false,
+				'groupAttackValue': 0,
+				'groupDefenseValue': 0,
+				'groupArmorValue': 0,
+				'groupDamageValue': 0,
+				'groupHPValue': 0,
+				'groupEvaluation': false
+			}
+		);
+		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups',
+			FSH.Helper.checkIfGroupExists);
+
+		$('div#addRemoveCreatureToDoNotKillList').html('');
+//console.log($('#dialog-viewcreature').find('h2.name').text());
+		if ($('div#addRemoveCreatureToDoNotKillList').length === 0) {
+			var doNotKillElement = '<div id="addRemoveCreatureToDo' +
+				'NotKillList"" class="description" style="cursor:' +
+				'pointer;text-decoration:underline;color:blue;"></div>';
+			$(doNotKillElement).insertAfter($('#dialog-viewcreature')
+				.find('p.description'));
+		}
+		var creatureName = $('#dialog-viewcreature').find('h2.name')
+			.text();
+		$('div#addRemoveCreatureToDoNotKillList')
+			.attr('creatureName',creatureName);
+		var extraText = 'Add to the do not kill list';
+		if (FSH.Helper.doNotKillList.indexOf(creatureName) !== -1) {
+			extraText = 'Remove from do not kill list';}
+		$('div#addRemoveCreatureToDoNotKillList').html(extraText);
+		document.getElementById('addRemoveCreatureToDoNotKillList')
+			.addEventListener('click',
+				FSH.Helper.addRemoveCreatureToDoNotKillList, true);
+	},
+
+	afterUpdateActionList: function() {
+		// color the critters in the do no kill list blue
+		$('ul#actionList div.header').each(function() {
+			if (FSH.Helper.doNotKillList.indexOf($(this).find('a.icon')
+				.data('name')) !== -1) {
+				$(this).css('color','blue');
+			}
+		});
+		// then intercept the action call 
+		var gameData = window.GameData;
+		var hcs = window.HCS;
+		var oldDoAction = gameData.doAction;
+		gameData.doAction = function(actionCode, fetchFlags, data) {
+			if (actionCode === hcs.DEFINES.ACTION.CREATURE_COMBAT) {
+				// Do custom stuff e.g. do not kill list
+				var creatureIcon = $('ul#actionList div.header')
+					.eq(data.passback).find('a.icon');
+				if (FSH.Helper.doNotKillList.indexOf(
+						creatureIcon.data('name')) !== -1) {
+					creatureIcon.removeClass('loading');
+					return;
+				}
+			}
+			// Call standard action
+			oldDoAction(actionCode, fetchFlags, data);
+		}; 
+	},
+
+	dataEventsPlayerBuffs: function(e, data) {
+		// check shield imp is still active
+		// TODO So Bad!
+		var shieldImpVal = 0;
+		var ddVal=0;
+		var l = data.b.length;
+		for(var i = 0; i < l; i += 1) {
+			var buff = data.b[i];
+			if (buff.id === 55) {
+				shieldImpVal = buff.stack;
+			} else if (buff.id === 50) {
+				ddVal = buff.level;
+			}
+			if (ddVal > 0 && shieldImpVal > 0) {break;}
+		}
+
+		//~ if(ddVal>0){
+			var imp = $('#actionlist-shield-imp');
+			if(shieldImpVal === 0){
+				imp.css('background-color','red');
+			}else if(shieldImpVal===2){
+				imp.css('background-color','yellow');
+			}else if(shieldImpVal===1){
+				imp.css('background-color','orange');
+			}else{
+				imp.css('background-color','inherit');
+			}
+		//~ }
+	},
+
+	combatResponse: function(e, data) {
+		// TODO this is too slow
+		// send the response to localforage
+		// and deal with it later
+		var l;
+		var i;
+		// If bad response do nothing.
+		if (!FSH.Helper.keepLogs || data.response.response !== 0) {return;}
+		var combatData = {};
+		combatData.combat = $.extend(true, {}, data.response.data); //make a deep copy
+		//delete some values that are not needed to trim down size of log.
+		delete combatData.combat.attacker.img_url;
+		delete combatData.combat.defender.img_url;
+		delete combatData.combat.is_conflict;
+		delete combatData.combat.is_bounty;
+		delete combatData.combat.pvp_rating_change;
+		delete combatData.combat.pvp_prestige_gain;
+		if (combatData.combat.inventory_id) {
+			combatData.combat.drop = combatData.combat.item.id;
+		}
+		delete combatData.combat.inventory_id;
+		delete combatData.combat.item;
+
+		combatData.player={};
+		combatData.player.buffs={};
+		combatData.player.enhancements={};
+		l = data.player.buffs.length;
+		for(i=0; i<l; i += 1) //loop through buffs, only need to keep CA and Doubler
+		{//54 = ca, 26 = doubler
+			var buff = data.player.buffs[i];
+			if(buff.id === 54 || buff.id === 26)
+			{
+				combatData.player.buffs[buff.id] = parseInt(buff.level, 10);
+			}
+		}
+		var notSave = '|Breaker|Protection|Master Thief|Protect Gold|Disarm|Duelist|Thievery|Master Blacksmith|Master Crafter|Fury Caster|Master Inventor|Sustain|';//Taking the Not Save in case they add new enhancements.
+		if (data.player.enhancements)
+		{
+			l = data.player.enhancements.length;
+			for(i=0; i<l; i += 1) //loop through enhancements
+			{//54 = ca, 26 = doubler
+				var enh = data.player.enhancements[i];
+				if (notSave.indexOf('|'+enh.name+'|')===-1){
+					combatData.player.enhancements[enh.name]=enh.value;
+				}
+			}
+		}
+		//combatData.player.enhancements = data.player.enhancements;
+		//combatData.player.buffs = data.player.buffs;
+		var now = new Date();
+		combatData.time = FSH.System.formatDateTime(now);
+		FSH.Helper.appendSavedLog(',' + JSON.stringify(combatData));
+	},
+
+	newMapSubscribes: function() {
+		// subscribe to view creature events on the new map.
+		//current send total
+		//send to
+		//send amount
+		//deposit?
+		if (FSH.System.getValue('sendGoldonWorld')) {
+			FSH.Helper.injectSendGoldOnWorld();
+		}
+		//Subscribes:
+		FSH.Helper.doNotKillList = FSH.System.getValue('doNotKillList');
+		$.subscribe('ready.view-creature', FSH.Helper.readyViewCreature);
+
+		// add do-not-kill list functionality
+		$.subscribe('after-update.actionlist',
+			FSH.Helper.afterUpdateActionList);
+
+		$.subscribe(window.DATA_EVENTS.PLAYER_BUFFS.ANY,
+			FSH.Helper.dataEventsPlayerBuffs);
+
+		$.subscribe('keydown.controls', function(e, key){
+			switch(key)
+			{
+				case 'ACT_REPAIR': window.GameData.fetch(387);
+				break;
+			}
+		});
+
+		FSH.Helper.keepLogs = FSH.System.getValue('keepLogs');
+		$.subscribe('2-success.action-response', FSH.Helper.combatResponse);
+		//on world
+
+		if (window.initialGameData) {//HCS initial data
+			setTimeout(function(){
+				FSH.Helper.injectWorldNewMap(window.initialGameData);
+			}, 400);
+		}
+		$.subscribe('-1-success.action-response 5-success.action-response',
+			function(e, data) { //change of information
+				setTimeout(function() {
+					FSH.Helper.injectWorldNewMap(data);
+				}, 400);
+			}
+		);
+
+		//somewhere near here will be multi buy on shop
+		//$.subscribe('prompt.worldDialogShop', function(e, data){
+			//self._createShop(self.shop.items);
+		//	$('span[class="price"]').after('<span class="numTake">test</span>');
+		//});
+
+		//document.getElementById('Helper:SendGold').addEventListener('click', FSH.Helper.sendGoldToPlayer, true);
 	},
 
 	injectOldMap: function() {
@@ -2463,7 +2542,7 @@ window.FSH.Helper = {
 			mapName.innerHTML += ' <a href="http://wiki.fallensword.com/index.php/Special:Search?search=' + mapNameText + '&go=Go" target="_blank">' +
 				'<img border=0 title="Search map in Wiki" width=10 height=10 src="/favicon.ico"/></a>';
 
-			var huntingMode = FSH.System.getValue('huntingMode');
+			var huntingMode = FSH.Helper.huntingMode;
 			imgSource = huntingMode === true ? FSH.Data.huntingOnImage : FSH.Data.huntingOffImage;
 			mapName.innerHTML += ' <a href=# id="Helper:ToggleHuntingMode">' + imgSource + '</a>';
 
@@ -2492,7 +2571,7 @@ window.FSH.Helper = {
 			document.getElementById('Helper:ToggleHuntingMode').addEventListener('click',
 				function() {
 					FSH.System.setValue('huntingMode',
-						!FSH.System.getValue('huntingMode'));
+						!FSH.Helper.huntingMode);
 					location.reload();
 				},true);
 
@@ -2528,25 +2607,32 @@ window.FSH.Helper = {
 			var self = $(this);
 			self.attr('href', self.attr('href').replace(/500/g,'1000'));
 		});
+		$('a#online-allies-action-quickbuff').each(function() {
+			var self = $(this);
+			self.attr('href', self.attr('href').replace(/, 500/g,', 1000'));
+		});
 	},
 
 	addGuildInfoWidgets: function() { //jquery
-		if (!FSH.System.getValue('enableGuildInfoWidgets')) {return;}
 		var guildMembrList = $('ul#minibox-guild-members-list');
 		if (guildMembrList.length === 0) {return;} // list exists
-		var hideGuildInfoTrade = FSH.System.getValue('hideGuildInfoTrade');
-		var hideGuildInfoSecureTrade =
-			FSH.System.getValue('hideGuildInfoSecureTrade');
-		var hideGuildInfoBuff = FSH.System.getValue('hideGuildInfoBuff');
-		var hideGuildInfoMessage = FSH.System.getValue('hideGuildInfoMessage');
 		//hide guild info links
-		if (hideGuildInfoTrade) {$('a#guild-minibox-action-trade').hide();}
-		if (hideGuildInfoSecureTrade) {
-			$('a#guild-minibox-action-secure-trade').hide();}
-		if (hideGuildInfoBuff) {
-			$('a#guild-minibox-action-quickbuff').hide();}
-		if (hideGuildInfoMessage) {
-			$('a#guild-minibox-action-send-message').hide();}
+		if (FSH.Helper.hideGuildInfoTrade) {
+			$('a#guild-minibox-action-trade').hide();
+		}
+		if (FSH.Helper.hideGuildInfoSecureTrade) {
+			$('a#guild-minibox-action-secure-trade').hide();
+		}
+		if (FSH.Helper.hideGuildInfoBuff) {
+			$('a#guild-minibox-action-quickbuff').hide();
+		}
+		if (FSH.Helper.hideGuildInfoMessage) {
+			$('a#guild-minibox-action-send-message').hide();
+		}
+		if (FSH.Helper.hideBuffSelected) {
+			$('a.guild-buff-check-on').hide();
+			$('ul#guild-quick-buff').hide();
+		}
 		//add coloring for offline time
 		$('a.player-name', guildMembrList).each(function() {
 			var playerA = $(this);
@@ -2566,23 +2652,37 @@ window.FSH.Helper = {
 	},
 
 	addOnlineAlliesWidgets: function() {
-		if (!FSH.System.getValue('enableOnlineAlliesWidgets')) {return;}
 		var onlineAlliesList = $('ul#minibox-allies-list');
-		if (onlineAlliesList.length > 0) { // list exists
-			//add coloring for offline time
-			$(onlineAlliesList).find('li.player').each(function() {
-				var playerA = $(this).find('a[class*="player-name"]');
-				var onMouseOver = playerA.data('tipped');
-				var lastActivityMinutes = /Last Activity:<\/td><td>(\d+) mins/.exec(onMouseOver)[1];
-				if (lastActivityMinutes < 2) {
-					playerA.css('color','DodgerBlue');
-				} else if (lastActivityMinutes < 5) {
-					playerA.css('color','LightSkyBlue');
-				} else {
-					playerA.css('color','PowderBlue');
-				}
-			});
+		if (onlineAlliesList.length === 0) {return;}
+		if (FSH.Helper.hideGuildInfoTrade) {
+			$('a#online-allies-action-trade').hide();
 		}
+		if (FSH.Helper.hideGuildInfoSecureTrade) {
+			$('a#online-allies-action-secure-trade').hide();
+		}
+		if (FSH.Helper.hideGuildInfoBuff) {
+			$('a#online-allies-action-quickbuff').hide();
+		}
+		if (FSH.Helper.hideGuildInfoMessage) {
+			$('a#online-allies-action-send-message').hide();
+		}
+		if (FSH.Helper.hideBuffSelected) {
+			$('a.ally-buff-check-on').hide();
+			$('ul#ally-quick-buff').hide();
+		}
+		//add coloring for offline time
+		$(onlineAlliesList).find('li.player').each(function() {
+			var playerA = $(this).find('a[class*="player-name"]');
+			var onMouseOver = playerA.data('tipped');
+			var lastActivityMinutes = /Last Activity:<\/td><td>(\d+) mins/.exec(onMouseOver)[1];
+			if (lastActivityMinutes < 2) {
+				playerA.css('color','DodgerBlue');
+			} else if (lastActivityMinutes < 5) {
+				playerA.css('color','LightSkyBlue');
+			} else {
+				playerA.css('color','PowderBlue');
+			}
+		});
 	},
 
 	injectWorldMap: function() {
@@ -3447,10 +3547,10 @@ window.FSH.Helper = {
 				$(document).controls('option').keys[index] = [];
 			});
 		}
-		unsafeWindow.document.onkeypress = null;
-		unsafeWindow.document.combatKeyHandler = null;
-		unsafeWindow.document.realmKeyHandler = null;
-		unsafeWindow.document.onkeypress = FSH.Helper.keyPress;
+		window.document.onkeypress = null;
+		window.document.combatKeyHandler = null;
+		window.document.realmKeyHandler = null;
+		window.document.onkeypress = FSH.Helper.keyPress;
 	},
 
 	moveMe: function(dx, dy) {
@@ -3564,7 +3664,8 @@ window.FSH.Helper = {
 			FSH.Helper.killMonsterAt(r-48);
 			break;
 		case 98: // backpack [b]
-			location.href = 'index.php?cmd=profile&subcmd=dropitems&fromworld=1';
+			//~ location.href = 'index.php?cmd=profile&subcmd=dropitems&fromworld=1';
+			location.href = 'index.php?cmd=profile&subcmd=dropitems';
 			break;
 		case 115: // use stairs [s]
 			FSH.Helper.useStairs(); // this is suspect, is it old map only?
@@ -4275,7 +4376,7 @@ window.FSH.Helper = {
 
 	reportHeader: function(membrList, tr) {
 		var b = $('b', tr);
-		b.html(FSH.Helper.onlineDot(Math.floor((Math.floor(Date.now() /
+		b.html(FSH.Layout.onlineDot(Math.floor((Math.floor(Date.now() /
 			1000) - membrList[b.text()].last_login) / 60)) +
 			'<a href="' + FSH.System.server +
 			'index.php?cmd=profile&player_id=' +
@@ -4286,22 +4387,22 @@ window.FSH.Helper = {
 		);
 	},
 
-	onlineDot: function(min) {
-		var img = '';
-		if (FSH.System.getValue('enhanceOnlineDots')) {
-			img = FSH.Data.offlineDot;
-			if (min < 2) {
-				img = FSH.Data.greenDiamond;
-			} else if (min < 5) {
-				img = FSH.Data.yellowDiamond;
-			} else if (min < 30) {
-				img = FSH.Data.orangeDiamond;
-			} else if (min > 10080) {
-				img = FSH.Data.sevenDayDot;
-			}
-		}
-		return img;
-	},
+	//~ onlineDot: function(min) {
+		//~ var img = '';
+		//~ if (FSH.System.getValue('enhanceOnlineDots')) {
+			//~ img = FSH.Data.offlineDot;
+			//~ if (min < 2) {
+				//~ img = FSH.Data.greenDiamond;
+			//~ } else if (min < 5) {
+				//~ img = FSH.Data.yellowDiamond;
+			//~ } else if (min < 30) {
+				//~ img = FSH.Data.orangeDiamond;
+			//~ } else if (min > 10080) {
+				//~ img = FSH.Data.sevenDayDot;
+			//~ }
+		//~ }
+		//~ return img;
+	//~ },
 
 	doReportPaint: function(membrList) {
 		var rows = $('#pCC table table tr');
@@ -4810,12 +4911,14 @@ window.FSH.Helper = {
 		textNode.style.color=color;
 	},
 
-	injectProfile: function() {
+	updateQuickBuff: function() {
 		var qb = $('div#profileRightColumn a:contains("Quick Buff")');
 		if (qb.length !== 0) {
-			qb.attr('href', qb.attr('href').replace(/500/g,'1000'));
+			qb.attr('href', qb.attr('href').replace(/, 500/g,', 1000'));
 		}
+	},
 
+	updateStatistics: function() {
 		var charStats = $('#profileLeftColumn table').first()
 			.attr('id', 'characterStats');
 		var tblCells = $('td', charStats).has('table').has('font');
@@ -4826,7 +4929,11 @@ window.FSH.Helper = {
 				'<div class="profile-stat-bonus">' +
 				tde.last().text() + '</div>');
 		});
+	},
 
+	injectProfile: function() {
+		FSH.Helper.updateQuickBuff();
+		FSH.Helper.updateStatistics();
 		var playerid;
 		var player = FSH.System.findNode('//textarea[@id="holdtext"]');
 		var avyImg;
@@ -4908,7 +5015,7 @@ window.FSH.Helper = {
 		for (var i=0;i<profileAlliesEnemies.length ;i+= 1 ) {
 			var contactLink = profileAlliesEnemies[i];
 			var lastActivity = re.exec($(contactLink).data('tipped'));
-			var lastActivityIMG = FSH.Helper.onlineDot(
+			var lastActivityIMG = FSH.Layout.onlineDot(
 				parseInt(lastActivity[3], 10) +
 				(parseInt(lastActivity[2], 10) +
 				parseInt(lastActivity[1], 10) * 24) * 60);
@@ -6669,7 +6776,7 @@ window.FSH.Helper = {
 		var td = $('td', e).first();
 		var inject = '';
 		if (m[creator]) {
-			inject += FSH.Helper.onlineDot(Math.floor((Math.floor(Date.now() /
+			inject += FSH.Layout.onlineDot(Math.floor((Math.floor(Date.now() /
 				1000) - m[creator].last_login) / 60)) + '&nbsp;<a href="' +
 				FSH.System.server + 'index.php?cmd=profile&player_id=' +
 				m[creator].id + '">' + td.html() + '</a>' + ' [' +
@@ -6940,7 +7047,7 @@ window.FSH.Helper = {
 			},
 			success: function(data) {
 				//console.log('7344 data', data);
-				player.after('<span class="fshLastActivity">' +
+				player.after('<span class="fshLastActivity">Last Activity: ' +
 					FSH.System.formatLastActivity(data.last_login) +
 					'<br>Stamina: ' + data.current_stamina + ' / ' +
 					data.stamina + ' ( ' + Math.floor(data.current_stamina /
@@ -7039,9 +7146,6 @@ window.FSH.Helper = {
 		var deathDealerPercentageElement = FSH.System.findNode('//span[@findme="damagebonus"]');
 		deathDealerPercentageElement.innerHTML = deathDealerPercentage;
 		FSH.System.setValue('lastDeathDealerPercentage', deathDealerPercentage);
-
-		//refresh ally/enemy list while you are here.
-		//FSH.Helper.parseProfileForWorld(doc.innerHTML, true); // Why are we doing it twice?
 	},
 
 	injectCreature: function() {
@@ -7094,7 +7198,7 @@ window.FSH.Helper = {
 		FSH.System.setValue('doNotKillList',newDoNotKillList);
 		FSH.Helper.doNotKillList = newDoNotKillList;
 		//refresh the action list
-		unsafeWindow.GameData.doAction(-1);
+		window.GameData.doAction(-1);
 	},
 
 	checkIfGroupExists: function(responseText) {
@@ -8518,7 +8622,7 @@ window.FSH.Helper = {
 				':</td><td>Allies<input name="enableAllyOnlineList" type="checkbox" value="on"' + (FSH.System.getValue('enableAllyOnlineList')?' checked':'') +
 				'> Enemies<input name="enableEnemyOnlineList" type="checkbox" value="on"' + (FSH.System.getValue('enableEnemyOnlineList')?' checked':'') +
 				'> <input name="allyEnemyOnlineRefreshTime" size="3" value="'+ FSH.System.getValue('allyEnemyOnlineRefreshTime') + '" /> seconds refresh</td></tr>' +
-			'<tr><td align="right">Enable Online Allies Widgets' + FSH.Helper.helpLink('Enable Online Allies Widgets', 'Enabling this option will enable the Guild Info Widgets (coloring on the Guild Info panel)') +
+			'<tr><td align="right">Enable Online Allies Widgets' + FSH.Helper.helpLink('Enable Online Allies Widgets', 'Enabling this option will enable the Allies List Widgets (coloring on the Allies List panel)') +
 				':</td><td><input name="enableOnlineAlliesWidgets" type="checkbox" value="on"' + (FSH.System.getValue('enableOnlineAlliesWidgets')?' checked':'') + '></td></tr>' +
 			'<tr><td align="right">Move FS box' + FSH.Helper.helpLink('Move FallenSword Box', 'This will move the FS box to the left, under the menu, for better visibility (unless it is already hidden.)') +
 				':</td><td><input name="moveFSBox" type="checkbox" value="on"' + (FSH.System.getValue('moveFSBox')?' checked':'') + '></td></tr>' +
@@ -9916,241 +10020,108 @@ if (target === '[ No bounties available. ]') {break;}
 	},
 
 	prepareAllyEnemyList: function() {
-		if (FSH.System.getValue('enableAllyOnlineList') ||
-			FSH.System.getValue('enableEnemyOnlineList')) {
-			$('div#pCR').prepend('<div class="minibox"><span id="Helper:' +
-				'AllyEnemyListPlaceholder"></span></div>');
-			FSH.Helper.retrieveAllyEnemyData(false);
-		}
+		$('div#pCR').prepend('<div id="fshAllyEnemy" class="minibox"></div>');
+		FSH.Helper.retrieveAllyEnemyData();
 	},
 
-	retrieveAllyEnemyData: function(refreshAllyEnemyDataOnly) {
-		var contactList = FSH.System.getValueJSON('contactList');
-		var allyEnemyOnlineRefreshTime = FSH.System.getValue('allyEnemyOnlineRefreshTime');
-		allyEnemyOnlineRefreshTime *= 1000;
-		if (contactList && Date.now() -
-			contactList.lastUpdate.getTime() >
-			allyEnemyOnlineRefreshTime) {
-			contactList = null; // invalidate cache
+	retrieveAllyEnemyData: function() {
+		FSH.Helper.allyEnemyOnlineRefreshTime =
+			FSH.System.getValue('allyEnemyOnlineRefreshTime');
+		FSH.Helper.allyEnemyOnlineRefreshTime *= 1000;
+		FSH.ajax.myStats(FSH.Helper.injectAllyEnemyList, false);
+	},
+
+	injectAllyEnemyList: function() {
+
+		console.log(
+			FSH.Helper.profile[FSH.Helper.myUsername]
+		);
+
+		var allies = FSH.Helper.profile[FSH.Helper.myUsername]._allies || [];
+		var enemies = FSH.Helper.profile[FSH.Helper.myUsername]._enemies || [];
+		if (allies.length + enemies.length === 0 ||
+			!FSH.Helper.enableAllyOnlineList && enemies.length === 0 ||
+			!FSH.Helper.enableEnemyOnlineList && allies.length === 0) {
+			return;
+		}
+		var output = $(FSH.Layout.allyEnemyList);
+
+		if (FSH.Helper.enableAllyOnlineList) {
+			$('ul#fshContactList', output)
+				.append(FSH.Helper.addContact(allies, true));
+		}
+		if (FSH.Helper.enableEnemyOnlineList) {
+			$('ul#fshContactList', output)
+				.append(FSH.Helper.addContact(enemies, false));
+		}
+		if (FSH.Helper.hideGuildInfoTrade) {
+			$('a#enemy-trade', output).hide();
+		}
+		if (FSH.Helper.hideGuildInfoSecureTrade) {
+			$('a#enemy-secure-trade', output).hide();
+		}
+		if (FSH.Helper.hideGuildInfoBuff) {
+			$('a#enemy-quickbuff', output).hide();
+		}
+		if (FSH.Helper.hideGuildInfoMessage) {
+			$('a#enemy-send-message', output).hide();
+		}
+		if (FSH.Helper.hideBuffSelected) {
+			$('a.enemy-buff-check-on', output).hide();
+			$('ul#enemy-quick-buff', output).hide();
 		}
 
-		if (!contactList || refreshAllyEnemyDataOnly) {
-			FSH.System.xmlhttp('index.php?cmd=profile',
-				FSH.Helper.parseProfileForWorld, refreshAllyEnemyDataOnly);
+		$('div#pCR div#fshAllyEnemy').empty();
+		$('div#pCR div#fshAllyEnemy').append(output);
+
+		$('div#pCR ul#fshContactList').on('click',
+			'a[class^="enemy-buff-check-o"]', FSH.Helper.quickBuffToggle);
+
+		$('div#pCR ul#enemy-quick-buff').click(function(){
+			var sendstring = [];
+			$('ul#fshContactList a.enemy-buff-check-on').each(function(){
+				sendstring.push($(this).data('name'));
+			});
+			window.openWindow('index.php?cmd=quickbuff&t=' + sendstring.join(),
+				'fsQuickBuff', 618, 1000, ',scrollbars');
+		});
+
+		$('div#pCR span#fshResetEnemy').click(FSH.Helper.resetAllyEnemyList);
+
+	},
+
+	quickBuffToggle: function() {
+		var ball = $(this);
+		if (ball.hasClass('enemy-buff-check-on')) {
+			ball.addClass('enemy-buff-check-off');
+			ball.removeClass('enemy-buff-check-on');
 		} else {
-			// contactList = FSH.System.getValueJSON('contactList');
-			contactList.isRefreshed = false;
-			FSH.Helper.injectAllyEnemyList(contactList);
+			ball.addClass('enemy-buff-check-on');
+			ball.removeClass('enemy-buff-check-off');
 		}
 	},
 
-	profileContactsFilter: function(e) {return e.id === this;},
+	addContact: function(contactList, type) {
+		var now = Math.floor(Date.now() / 1000);
+		var contactColor;
+		var output = '';
+		contactList.forEach(function(val) {
+			if (now - val.last_login > 1800) {return;} // 30 mins
+			contactColor = FSH.System.contactColor(val.last_login, type);
 
-	parseProfileForWorld: function(details, refreshAllyEnemyDataOnly) {
-		var doc=FSH.System.createDocument(details);
-		var alliesTable = FSH.System.findNode('//div[strong[.="Allies"]]/following-sibling::div[1]/table[1]',doc);
-		var enemiesTable = FSH.System.findNode('//div[strong[.="Enemies"]]/following-sibling::div[1]/table[1]',doc);
-		var contactList = FSH.System.getValueJSON('contactList');
-		if (!contactList) {
-			contactList = {};
-			contactList.contacts = [];
-		}
-		contactList.contacts.forEach(function(e) {e.status='Deleted';});
-		var aTable;
-		var contactLink;
-		var contactId;
-		var contactName;
-		var contactStatus;
-		var lastActivity;
-		var lastActivityDays;
-		var lastActivityHours;
-		var lastActivityMinutes;
-		var aContact;
-		var findContacts;
-		var i;
-		if (alliesTable && enemiesTable) {
-			var alliesDetails=alliesTable.getElementsByTagName('TABLE');
-
-			for (i=0;i<alliesDetails.length;i += 1) {
-				aTable = alliesDetails[i];
-				contactLink   = aTable.rows[0].cells[1].firstChild;
-				contactId     = FSH.System.intValue(/[0-9]+$/.exec(contactLink.getAttribute('href'))[0]);
-				contactName   = contactLink.textContent;
-				contactStatus = aTable.rows[0].cells[0].firstChild.title;
-				lastActivity = /<td>Last Activity:<\/td><td>(\d+)d (\d+)h (\d+)m (\d+)s<\/td>/.exec($(contactLink).data('tipped'));
-				lastActivityDays = parseInt(lastActivity[1],10);
-				lastActivityHours = parseInt(lastActivity[2],10) + lastActivityDays*24;
-				lastActivityMinutes = parseInt(lastActivity[3],10) + lastActivityHours*60;
-
-				// find contact in contact list, to modify data instead of replacing it
-
-				findContacts = contactList.contacts.filter(FSH.Helper.profileContactsFilter, contactId);
-				if (findContacts.length>0) {
-					aContact = findContacts[0];
-				}
-				else { // contact was not found, must be new
-					aContact = {};
-					// You can still modify an object, even if you have added it to something else
-					contactList.contacts.push(aContact);
-					aContact.firstSeen = new Date();
-					aContact.status = 'Offline'; // new players are supposed to be offline
-				}
-
-				if (aContact.status === 'Offline' && contactStatus==='Online') {
-					aContact.loggedInAt = new Date();
-				}
-
-				if (!aContact.loggedInAt) {
-					aContact.loggedInAt = new Date();
-				}
-
-				aContact.status = contactStatus;
-				aContact.id     = contactId;
-				aContact.name   = contactName;
-				aContact.type   = 'Ally';
-				aContact.lastActivityMinutes = lastActivityMinutes;
-			}
-			var enemiesDetails=enemiesTable.getElementsByTagName('TABLE');
-
-			for (i=0;i<enemiesDetails.length;i += 1) {
-				aTable = enemiesDetails[i];
-				contactLink   = aTable.rows[0].cells[1].firstChild;
-				contactId     = FSH.System.intValue(/[0-9]+$/.exec(contactLink.getAttribute('href'))[0]);
-				contactName   = contactLink.textContent;
-				contactStatus = aTable.rows[0].cells[0].firstChild.title;
-				lastActivity = /<td>Last Activity:<\/td><td>(\d+)d (\d+)h (\d+)m (\d+)s<\/td>/.exec($(contactLink).data('tipped'));
-				lastActivityDays = parseInt(lastActivity[1],10);
-				lastActivityHours = parseInt(lastActivity[2],10) + lastActivityDays*24;
-				lastActivityMinutes = parseInt(lastActivity[3],10) + lastActivityHours*60;
-
-				// find contact in contact list, to modify data instead of replacing it
-
-				findContacts = contactList.contacts.filter(FSH.Helper.profileContactsFilter, contactId);
-				if (findContacts.length>0) {
-					aContact = findContacts[0];
-				}
-				else { // contact was not found, must be new
-					aContact = {};
-					// You can still modify an object, even if you have added it to something else
-					contactList.contacts.push(aContact);
-					aContact.firstSeen = new Date();
-					aContact.status = 'Offline'; // new players are supposed to be offline
-				}
-
-				if (aContact.status === 'Offline' && contactStatus==='Online') {
-					aContact.loggedInAt = new Date();
-				}
-
-				if (!aContact.loggedInAt) {
-					aContact.loggedInAt = new Date();
-				}
-
-				aContact.status = contactStatus;
-				aContact.id     = contactId;
-				aContact.name   = contactName;
-				aContact.type   = 'Enemy';
-				aContact.lastActivityMinutes = lastActivityMinutes;
-			}
-			// remove not existing players
-			contactList.contacts = contactList.contacts.filter(function(e) {return e.status!=='Deleted';});
-			// damn, I love javascript array functions :)
-
-			contactList.lastUpdate = new Date();
-			contactList.isRefreshed = true;
-			FSH.System.setValueJSON('contactList', contactList);
-			if (!refreshAllyEnemyDataOnly) {
-				FSH.Helper.injectAllyEnemyList(contactList);
-			}
-		}
-	},
-
-	injectAllyEnemyList: function(contactList) {
-		var enableAllyOnlineList = FSH.System.getValue('enableAllyOnlineList');
-		var enableEnemyOnlineList = FSH.System.getValue('enableEnemyOnlineList');
-		if (!enableAllyOnlineList && !enableEnemyOnlineList) {return;}
-		var onlineAlliesEnemies = contactList.contacts.filter(function(e) {return e.status==='Online';});
-		if (!enableAllyOnlineList) {
-			onlineAlliesEnemies = onlineAlliesEnemies.filter(function(e) {return e.type!=='Ally';});
-		}
-		if (!enableEnemyOnlineList) {
-			onlineAlliesEnemies = onlineAlliesEnemies.filter(function(e) {return e.type!=='Enemy';});
-		}
-		if (onlineAlliesEnemies.length === 0) {return;}
-		// var playerId = FSH.Layout.playerId();
-		var injectHere = document.getElementById('Helper:AllyEnemyListPlaceholder');
-		var displayList = document.createElement('TABLE');
-		//displayList.style.border = '1px solid #c5ad73';
-		//displayList.style.backgroundColor = (contactList.isRefreshed)?'#6a5938':'#4a3918';
-		displayList.cellPadding = 3;
-		displayList.width = 125;
-
-		var aRow=displayList.insertRow(displayList.rows.length);
-		var aCell=aRow.insertCell(0);
-		var output = '<h3>Allies/Enemies</h3><center><font color="white" size=1><i><b>Online Contacts</b> <span id="Helper:resetAllyEnemyList" style="font-size:8px; cursor:pointer; text-decoration:underline;">Reset</span></i></font></center>'+
-		'<table width="110" cellpadding="0" cellspacing="0"><tbody>'+
-			'<tr><td colspan="2" height="5"></td></tr>';
-
-		var hideBuffSelected = FSH.System.getValue('hideBuffSelected');
-		for (var i=0;i<onlineAlliesEnemies.length;i += 1) {
-			var contact=onlineAlliesEnemies[i];
-			var contactColor = '';
-			if (new Date() - contact.loggedInAt < 30000) { // just logged in
-				contactColor = 'orange';
-			}
-			else if (contact.type === 'Ally') {
-				if (contact.lastActivityMinutes < 2) {
-					contactColor = 'DodgerBlue';
-				} else if (contact.lastActivityMinutes < 5) {
-					contactColor = 'LightSkyBlue';
-				} else {contactColor = 'PowderBlue';}
-			}
-			else if (contact.type === 'Enemy') {
-				contactColor = 'red';
-				if (contact.lastActivityMinutes < 2) {
-					contactColor = 'red';
-				} else if (contact.lastActivityMinutes < 5) {
-					contactColor = 'PaleVioletRed';
-				} else {contactColor = 'Pink';}
-			}
-			else {
-				contactColor = 'white';
-			}
-			output +=
-				'<tr>'+
-					'<td align="left">'+
-						'<span style="color:' + contactColor + '; font-size:x-small; visibility:hidden;">' + (hideBuffSelected?'':'+') + '</span>'+
-						'<a style="color:' + contactColor + '; font-size:x-small;" href="index.php?cmd=profile&player_id=' + contact.id + '">' + contact.name + '</a>'+
-					'</td>'+
-					'<td align="right"><span style="color:#FFFF00; font-size:x-small;">'+
-						'<a href="index.php?cmd=message&target_player=' + contact.name + '" class="tip-static" data-tipped="Send Message">' +
-						'<font color="#FFFF00">M</font></a>'+
-						'&nbsp;<a href="javascript:openWindow(\'index.php?cmd=quickbuff&t=' + contact.name + 
-						'\', \'fsQuickBuff\', 618, 1000, \',scrollbars\');" class="tip-static" data-tipped="Quick Buff">' +
-						'<font color="#FFFF00">B</font></a>'+
-						'&nbsp;<a href="index.php?cmd=trade&subcmd=createsecure&target_username=' + contact.name + 
-						'" class="tip-static" data-tipped="Secure Trade"><font color="#FFFF00">S</font></a>'+
-						'&nbsp;<a href="index.php?cmd=trade&target_player=' + contact.name + 
-						'" class="tip-static" data-tipped="Send to Player">' +
-						'<font color="#FFFF00">T</font></a>'+
-					'</span></td>'+
-				'</tr>';
-		}
-		output += '</tbody></table>';
-
-
-		aCell.innerHTML = output;
-		injectHere.parentNode.align = 'center';
-		injectHere.parentNode.width = '120';
-
-		var breaker=document.createElement('BR');
-		injectHere.parentNode.insertBefore(breaker, injectHere.nextSibling);
-		injectHere.parentNode.insertBefore(displayList, injectHere.nextSibling);
-		document.getElementById('Helper:resetAllyEnemyList').addEventListener('click', FSH.Helper.resetAllyEnemyList, true);
+			output += FSH.Layout.allyEnemyContact;
+			output = output.replace(/@@username@@/g, val.username);
+			output = output.replace(/@@contactColor@@/g, contactColor);
+			output = output.replace(/@@level@@/g, val.level);
+			output = output.replace(/@@last_login@@/g,
+				FSH.System.formatLastActivity(val.last_login));
+			output = output.replace(/@@id@@/g, val.id);
+		});
+		return output;
 	},
 
 	resetAllyEnemyList: function() {
-		FSH.System.setValue('contactList','');
-		location.reload();
+		FSH.ajax.myStats(FSH.Helper.injectAllyEnemyList, true);
 	},
 
 	toggleCheckAllPlants: function(evt) {
@@ -11042,7 +11013,7 @@ if (target === '[ No bounties available. ]') {break;}
 
 	parseTemplePage: function(responseText) { //native
 		var checkNeedToPray, doc;
-		if (!FSH.System.getValue('enableTempleAlert')) {return;}
+		if (!FSH.Helper.enableTempleAlert) {return;}
 		if (FSH.System.getUrlParameter('cmd') !== 'temple') {
 			doc = FSH.System.createDocument(responseText);
 		} else {
@@ -11081,7 +11052,7 @@ displayDisconnectedFromGodsMessage: function() {
 	},
 
 	parseGoldUpgrades: function(data) { //jquery
-		if (!FSH.System.getValue('enableUpgradeAlert')) {return;}
+		if (!FSH.Helper.enableUpgradeAlert) {return;}
 		var doc;
 		if (location.search.search('cmd=points&type=1') === -1) {
 			doc = data;
@@ -11481,7 +11452,7 @@ displayDisconnectedFromGodsMessage: function() {
 		var lastActivityElement = $(doc).find('div#pCC p:first');
 		var lastActivity = /(\d+) mins, (\d+) secs/.exec(lastActivityElement.text());
 		var lastActivityMinutes = parseInt(lastActivity[1],10);
-		var lastActivityIMG = FSH.Helper.onlineDot(lastActivityMinutes);
+		var lastActivityIMG = FSH.Layout.onlineDot(lastActivityMinutes);
 		//buffs
 		var bioDiv = $(doc).find('div.innerColumnHeader:contains("Biography"):last');
 		var bioCell = bioDiv.next();
@@ -11603,7 +11574,6 @@ displayDisconnectedFromGodsMessage: function() {
 
 	injectHelperMenu: function() { //jquery
 		// don't put all the menu code here (but call if clicked) to minimize lag
-		if (FSH.System.getValue('hideHelperMenu')) {return;}
 		var node = $('#statbar-container');
 		if (node.length === 0) {return;}
 		node.before('<div align="center" style="position:absolute; top:0px; ' +
@@ -11750,7 +11720,7 @@ displayDisconnectedFromGodsMessage: function() {
 
 	injectComposing: function() { //jquery
 
-		if (FSH.System.getValue('enableComposingAlert')) {
+		if (FSH.Helper.enableComposingAlert) {
 			FSH.Helper.parseComposing();}
 
 		var disableComposingPrompts =
@@ -11820,7 +11790,7 @@ displayDisconnectedFromGodsMessage: function() {
 				}
 				if ($('select[id^="composing-template-"]').length === 0 &&
 					$('div#helperQCError').length === 0) {
-					location.href = 'index.php?cmd=composing&m=0';
+					location.href = 'index.php?cmd=composing';
 				}
 			}
 		});

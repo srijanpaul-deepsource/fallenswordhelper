@@ -12,20 +12,20 @@ window.FSH = window.FSH || {};
 	var gvar = {};
 	var GMSTORAGE_PATH = 'GM_';
 	// You can change it to avoid conflict with others scripts
-	if (typeof unsafeWindow === 'undefined'){
-		window.unsafeWindow = window;
-	}
+	//~ if (typeof unsafeWindow === 'undefined'){
+		//~ window.unsafeWindow = window;
+	//~ }
 	var needApiUpgrade = false;
 	if (window.navigator.appName.match(/^opera/i) && 
 			typeof window.opera !== 'undefined'){
 		needApiUpgrade = true;
 		gvar.isOpera = true;
-		unsafeWindow.GM_log = window.opera.postError;
+		window.GM_log = window.opera.postError;
 	}
 	if (typeof GM_setValue !== 'undefined'){
 		var gsv;
 		try {
-			gsv=unsafeWindow.GM_setValue.toString();
+			gsv=window.GM_setValue.toString();
 		} catch(e) {
 			gsv='staticArgs';
 		}
@@ -46,11 +46,11 @@ window.FSH = window.FSH || {};
 		var uid = new Date().toString();
 		var result;
 		try{
-			unsafeWindow.localStorage.setItem(uid, uid);
-			result = unsafeWindow.localStorage.getItem(uid) === uid;
-			unsafeWindow.localStorage.removeItem(uid);
+			window.localStorage.setItem(uid, uid);
+			result = window.localStorage.getItem(uid) === uid;
+			window.localStorage.removeItem(uid);
 			if (result) {
-				ws = typeof unsafeWindow.localStorage;
+				ws = typeof window.localStorage;
 			} else {
 				console.log('There is a problem with your local storage. ' +
 					'FSH cannot persist your settings.');
@@ -61,8 +61,8 @@ window.FSH = window.FSH || {};
 		}
 		// Catch Security error
 		if (ws === 'object'){
-			unsafeWindow.GM_getValue = function(name, defValue){
-				var value = unsafeWindow.localStorage.getItem(GMSTORAGE_PATH +
+			window.GM_getValue = function(name, defValue){
+				var value = window.localStorage.getItem(GMSTORAGE_PATH +
 					name);
 				if (value === null || value === undefined){
 					return defValue;
@@ -78,27 +78,27 @@ window.FSH = window.FSH || {};
 				}
 				return value;
 			};
-			unsafeWindow.GM_setValue = function(name, value){
+			window.GM_setValue = function(name, value){
 				switch (typeof value){
 				case 'string':
-					unsafeWindow.localStorage.setItem(GMSTORAGE_PATH +
+					window.localStorage.setItem(GMSTORAGE_PATH +
 						name, 'S]' + value);
 					break;
 				case 'number':
 					if (value.toString().indexOf('.') < 0){
-						unsafeWindow.localStorage.setItem(GMSTORAGE_PATH +
+						window.localStorage.setItem(GMSTORAGE_PATH +
 							name, 'N]' + value);
 					}
 					break;
 				case 'boolean':
-					unsafeWindow.localStorage.setItem(GMSTORAGE_PATH +
+					window.localStorage.setItem(GMSTORAGE_PATH +
 						name, 'B]' + value);
 					break;
 				}
 			};
 		} else if (!gvar.isOpera || typeof GM_setValue === 'undefined'){
 			gvar.temporarilyStorage = [];
-			unsafeWindow.GM_getValue = function(name, defValue){
+			window.GM_getValue = function(name, defValue){
 				if (typeof gvar.temporarilyStorage[GMSTORAGE_PATH + name] ===
 					'undefined'){
 					return defValue;
@@ -106,7 +106,7 @@ window.FSH = window.FSH || {};
 					return gvar.temporarilyStorage[GMSTORAGE_PATH + name];
 				}
 			};
-			unsafeWindow.GM_setValue = function(name, value){
+			window.GM_setValue = function(name, value){
 				switch (typeof value){
 				case 'string':
 				case 'boolean':
@@ -116,11 +116,11 @@ window.FSH = window.FSH || {};
 			};
 		}
 
-		unsafeWindow.GM_listValues = function(){
+		window.GM_listValues = function(){
 			var list = [];
 			var reKey = new RegExp('^' + GMSTORAGE_PATH);
-			for (var i = 0, il = unsafeWindow.localStorage.length; i < il; i += 1) {
-				var key = unsafeWindow.localStorage.key(i);
+			for (var i = 0, il = window.localStorage.length; i < il; i += 1) {
+				var key = window.localStorage.key(i);
 				if (key.match(reKey)) {
 					list.push(key.replace(GMSTORAGE_PATH, ''));
 				}
@@ -132,18 +132,18 @@ window.FSH = window.FSH || {};
 //window.FSH.GM_ApiBrowserCheck();
 
 // jquery GM_get/set wrapper
-(function GM_JQ_wrapper() {
-	if (typeof GM_setValue !== 'undefined') {
-		var oldGM_setValue = GM_setValue;
-		GM_setValue = function(name, value){
-			setTimeout(function() {oldGM_setValue(name, value);}, 0);
-		};
-	}
-})();
+//~ (function GM_JQ_wrapper() {
+	//~ if (typeof GM_setValue !== 'undefined') {
+		//~ var oldGM_setValue = GM_setValue;
+		//~ GM_setValue = function(name, value){
+			//~ setTimeout(function() {oldGM_setValue(name, value);}, 0);
+		//~ };
+	//~ }
+//~ })();
 //window.FSH.GM_JQ_wrapper();
 
 // FSH.System.functions
-window.FSH.System = {
+FSH.System = {
 	init: function() {
 		FSH.System.server = document.location.protocol + '//' + document.location.host + '/';
 		var imgurls = FSH.System.findNode('//img[contains(@src, "/skin/")]');
@@ -409,7 +409,7 @@ window.FSH.System = {
 	},
 
 	openInTab: function(url){
-		setTimeout(function() {unsafeWindow.open(url, '');}, 0);
+		setTimeout(function() {window.open(url, '');}, 0);
 	},
 
 	escapeHtml: function(unsafe) {
@@ -438,7 +438,6 @@ window.FSH.System = {
 
 	formatLastActivity: function(last_login) {
 		var d, h, m, s;
-		//~ s = Math.floor(ms / 1000);
 		s = Math.abs(Math.floor(Date.now() / 1000 - last_login));
 		m = Math.floor(s / 60);
 		s = s % 60;
@@ -446,14 +445,26 @@ window.FSH.System = {
 		m = m % 60;
 		d = Math.floor(h / 24);
 		h = h % 24;
-		//~ return { d: d, h: h, m: m, s: s };
-		return 'Last Activity: ' + d + ' days, ' + h + ' hours, ' + m +
-			' minutes, ' + s + ' secs';
+		return (d === 0 ? '' : d + ' days, ') +
+			(h === 0 ? '' : h + ' hours, ') +
+			(m === 0 ? '' : m + ' mins, ') +
+			s + ' secs';
 	},
+
+	contactColor: function(last_login, type) {
+		var out = 'white';
+		var now = Math.floor(Date.now() / 1000);
+		if (now - last_login < 120) { // 2 mins
+			out = type ? 'DodgerBlue' : 'red';
+		} else if (now - last_login < 300) { // 5 mins
+			out = type ? 'LightSkyBlue' : 'PaleVioletRed';
+		} else {out = type ? 'PowderBlue' : 'Pink';}
+		return out;
+	}
 };
 FSH.System.init();
 
-window.FSH.Data = {
+FSH.Data = {
 
 	plantFromComponent: function(aComponent) {
 		switch(aComponent) {
@@ -1200,112 +1211,134 @@ window.FSH.Data = {
 	],
 
 	pageSwitcher: {
-		settings: {'-': {'-': {'-': 'injectSettings'}}},
+		settings: {'-': {'-': {'-': {'-': 'injectSettings'}}}},
 		world: {
-			'-': {'-': {'-': 'injectWorld'}},
-			'viewcreature': {'-': {'-': 'injectCreature'}},
-			'map': {'-': {'-': 'injectWorldMap'}}},
+			'-': {'-': {'-': {'-': 'injectWorld'}}},
+			'viewcreature': {'-': {'-': {'-': 'injectCreature'}}},
+			'map': {'-': {'-': {'-': 'injectWorldMap'}}}},
 		news: {
-			'fsbox': {'-': {'-': 'newsFsbox'}},
-			'shoutbox': {'-': {'-': 'newsShoutbox'}}},
-		blacksmith: {'repairall': {'-': {'-': 'injectWorld'}}},
+			'fsbox': {'-': {'-': {'-': 'newsFsbox'}}},
+			'shoutbox': {'-': {'-': {'-': 'newsShoutbox'}}}},
+		blacksmith: {
+			'-': {'-': {'-': {'-': 'injectBlacksmith'}}},
+			'repairall': {'-': {'-': {'-': 'injectBlacksmith',
+				'1': 'injectWorld'}}}},
 		arena: {
-			//'-': {'-': {'-': 'injectArena'}},
-			'completed': {'-': {'-': 'storeCompletedArenas'}},
-			'pickmove': {'-': {'-': 'storeArenaMoves'}},
-			//'results': {'-': {'-': 'injectTournament'}},
-			//'dojoin': {'-': {'-': 'injectTournament'}},
-			'setup': {'-': {'-': 'injectArenaSetupMove'}}},
+			//'-': {'-': {'-': {'-': 'injectArena'}}},
+			'completed': {'-': {'-': {'-': 'storeCompletedArenas'}}},
+			'pickmove': {'-': {'-': {'-': 'storeArenaMoves'}}},
+			//'results': {'-': {'-': {'-': 'injectTournament'}}},
+			//'dojoin': {'-': {'-': {'-': 'injectTournament'}}},
+			'setup': {'-': {'-': {'-': 'injectArenaSetupMove'}}}},
 		questbook: {
 			'-': {'-': {
-				'-': 'injectQuestBookFull',
-				'0': 'injectQuestBookFull', // Normal
-				'1': 'injectQuestBookFull'}}, // Seasonal
-			'atoz': {'-': {'-': 'injectQuestBookFull'}},
-			'viewquest': {'-': {'-':'injectQuestTracker'}}},
+				'-': {'-': 'injectQuestBookFull'},
+				'0': {'-': 'injectQuestBookFull'}, // Normal
+				'1': {'-': 'injectQuestBookFull'}}}, // Seasonal
+			'atoz': {'-': {'-': {'-': 'injectQuestBookFull'}}},
+			'viewquest': {'-': {'-': {'-': 'injectQuestTracker'}}}},
 		profile: {
-			'-': {'-': {'-': 'injectProfile'}},
-			'changebio': {'-': {'-': 'injectBioWidgets'}},
-			'dropitems': {'-': {'-': 'injectProfileDropItems'}}},
-		auctionhouse: {'-': {'-': {'-': 'injectAuctionHouse'}}},
+			'-': {'-': {'-': {'-': 'injectProfile'}}},
+			'report': {'-': {'-': {'-': 'injectProfile'}}},
+			'changebio': {'-': {'-': {'-': 'injectBioWidgets'}}},
+			'dropitems': {'-': {'-': {'-': 'injectProfileDropItems',
+				'1': 'injectProfileDropItems'}}}},
+		auctionhouse: {'-': {'-': {'-': {'-': 'injectAuctionHouse'}}}},
 		guild: {
 			'inventory': {
-				'report': {'-': 'injectReportPaint'},
-				'addtags': {'-': 'injectGuildAddTagsWidgets'},
-				'removetags': {'-': 'injectGuildAddTagsWidgets'},
-				'storeitems': {'-': 'injectDropItems'}},
-			'chat': {'-': {'-': 'guildChat'}},
-			'log': {'-': {'-': 'guildLog'}},
+				'report': {'-': {'-': 'injectReportPaint'}},
+				'addtags': {'-': {'-': 'injectGuildAddTagsWidgets'}},
+				'removetags': {'-': {'-': 'injectGuildAddTagsWidgets'}},
+				'storeitems': {'-': {'-': 'injectDropItems'}}},
+			'chat': {'-': {'-': {'-': 'guildChat'}}},
+			'log': {'-': {'-': {'-': 'guildLog'}}},
 			'groups': {
-				'viewstats': {'-': 'injectGroupStats'},
-				'-': {'-': 'injectGroups'}},
-			'manage': {'-': {'-': 'injectGuild'}},
-			'advisor': {'-': {'-': 'injectAdvisor'}},
-			'history': {'-': {'-': 'addHistoryWidgets'}},
-			'view': {'-': {'-': 'injectViewGuild'}},
-			'scouttower': {'-': {'-': 'injectScouttower'}},
-			'mailbox': {'-': {'-': 'injectMailbox'}},
-			'ranks': {'-': {'-': 'injectGuildRanks'}},
-			'conflicts': {'rpupgrades': {'-': 'injectRPUpgrades'}}},
-		bank: {'-': {'-': {'-': 'injectBank'}}},
+				'viewstats': {'-': {'-': 'injectGroupStats'}},
+				'-': {'-': {'-': 'injectGroups'}}},
+			'manage': {'-': {'-': {'-': 'injectGuild'}}},
+			'advisor': {'-': {'-': {'-': 'injectAdvisor'}}},
+			'history': {'-': {'-': {'-': 'addHistoryWidgets'}}},
+			'view': {'-': {'-': {'-': 'injectViewGuild'}}},
+			'scouttower': {'-': {'-': {'-': 'injectScouttower'}}},
+			'mailbox': {'-': {'-': {'-': 'injectMailbox'}}},
+			'ranks': {'-': {'-': {'-': 'injectGuildRanks'}}},
+			'conflicts': {'rpupgrades': {'-': {'-': 'injectRPUpgrades'}}}},
+		bank: {'-': {'-': {'-': {'-': 'injectBank'}}}},
 		log: {
 			'-': {'-': {
-				'-': 'playerLog',
-				'-1': 'playerLog',
-				'0': 'playerLog',
-				'1': 'playerLog',
-				'2': 'playerLog',
-				'3': 'playerLog'}},
-			'outbox': {'-': {'-': 'outbox'}}},
-		potionbazaar: {'-': {'-': {'-': 'injectBazaar'}}},
+				'-': {'-': 'playerLog'},
+				'-1': {'-': 'playerLog'},
+				'0': {'-': 'playerLog'},
+				'1': {'-': 'playerLog'},
+				'2': {'-': 'playerLog'},
+				'3': {'-': 'playerLog'}}},
+			'outbox': {'-': {'-': {'-': 'outbox'}}}},
+		potionbazaar: {'-': {'-': {'-': {'-': 'injectBazaar'}}}},
 		marketplace: {
-			'createreq': {'-': {'-': 'addMarketplaceWidgets'}}},
-		quickbuff: {'-': {'-': {'-': 'injectQuickBuff'}}},
+			'createreq': {'-': {'-': {'-': 'addMarketplaceWidgets'}}}},
+		quickbuff: {'-': {'-': {'-': {'-': 'injectQuickBuff'}}}},
 		notepad: {
-			'showlogs': {'-': {'-': 'injectNotepadShowLogs'}},
-			'invmanagernew': {'-': {'-': 'injectInventoryManagerNew'}},
-			'invmanager': {'-': {'-': 'injectInventoryManager'}},
-			'guildinvmgr': {'-': {'-': 'injectInventoryManagerNew'}},
-			'guildinvmanager': {'-': {'-': 'injectInventoryManager'}},
-			'recipemanager': {'-': {'-': 'injectRecipeManager'}},
-			'auctionsearch': {'-': {'-': 'injectAuctionSearch'}},
-			'onlineplayers': {'-': {'-': 'injectOnlinePlayers'}},
-			'quicklinkmanager': {'-': {'-': 'injectQuickLinkManager'}},
-			'monsterlog': {'-': {'-': 'injectMonsterLog'}},
-			'quickextract': {'-': {'-': 'insertQuickExtract'}},
-			'quickwear': {'-': {'-': 'insertQuickWear'}},
-			'fsboxcontent': {'-': {'-': 'injectFsBoxContent'}},
-			'bufflogcontent': {'-': {'-': 'injectBuffLog'}},
-			'newguildlog': {'-': {'-': 'injectNewGuildLog'}},
-			'findbuffs': {'-': {'-': 'injectFindBuffs'}},
-			'findother': {'-': {'-': 'injectFindOther'}},
-			'savesettings': {'-': {'-': 'injectSaveSettings'}},
-			'-': {'-': {'-': 'injectNotepad'}}},
+			'showlogs': {'-': {'-': {'-': 'injectNotepadShowLogs'}}},
+			'invmanagernew': {'-': {'-': {'-': 'injectInventoryManagerNew'}}},
+			'invmanager': {'-': {'-': {'-': 'injectInventoryManager'}}},
+			'guildinvmgr': {'-': {'-': {'-': 'injectInventoryManagerNew'}}},
+			'guildinvmanager': {'-': {'-': {'-': 'injectInventoryManager'}}},
+			'recipemanager': {'-': {'-': {'-': 'injectRecipeManager'}}},
+			'auctionsearch': {'-': {'-': {'-': 'injectAuctionSearch'}}},
+			'onlineplayers': {'-': {'-': {'-': 'injectOnlinePlayers'}}},
+			'quicklinkmanager': {'-': {'-': {'-': 'injectQuickLinkManager'}}},
+			'monsterlog': {'-': {'-': {'-': 'injectMonsterLog'}}},
+			'quickextract': {'-': {'-': {'-': 'insertQuickExtract'}}},
+			'quickwear': {'-': {'-': {'-': 'insertQuickWear'}}},
+			'fsboxcontent': {'-': {'-': {'-': 'injectFsBoxContent'}}},
+			'bufflogcontent': {'-': {'-': {'-': 'injectBuffLog'}}},
+			'newguildlog': {'-': {'-': {'-': 'injectNewGuildLog'}}},
+			'findbuffs': {'-': {'-': {'-': 'injectFindBuffs'}}},
+			'findother': {'-': {'-': {'-': 'injectFindOther'}}},
+			'savesettings': {'-': {'-': {'-': 'injectSaveSettings'}}},
+			'-': {'-': {'-': {'-': 'injectNotepad'}}}},
 		points: {'-': {'-': {
-			'-': 'storePlayerUpgrades',
-			'0': 'storePlayerUpgrades',
-			'1': 'parseGoldUpgrades'}}},
+			'-': {'-': 'storePlayerUpgrades'},
+			'0': {'-': 'storePlayerUpgrades'},
+			'1': {'-': 'parseGoldUpgrades'}}}},
 		trade: {
-			'-': {'-': {'-': 'injectTrade'}},
-			'createsecure': {'-': {'-': 'injectTrade'}}},
-		titan: {'-': {'-': {'-': 'injectTitan'}}},
-		toprated: {'xp': {'-': {'-': 'injectTopRated'}}},
-		inventing: {'viewrecipe': {'-': {'-': 'inventing'}}},
-		tempinv: {'-': {'-': {'-': 'injectMailbox'}}},
-		//attackplayer: {'-': {'-': {'-': 'injectAttackPlayer'}}},
-		findplayer: {'-': {'-': {'-': 'injectFindPlayer'}}},
-		//relic: {'-': {'-': {'-': 'injectRelic'}}},
-		quests: {'view': {'-': {'-': 'showAllQuestSteps'}}}, //UFSG
-		scavenging: {'process': {'-': {'-': 'injectScavenging'}}},
-		temple: {'-': {'-': {'-': 'parseTemplePage'}}},
-		skills: {'-': {'-': {'-': 'injectSkills'}}},
-		composing: {'-': {'-': {'-': 'injectComposing'}}},
-		'-': {'-': {'-': {'-': 'unknownPage'}}}
+			'-': {'-': {'-': {'-': 'injectTrade'}}},
+			'createsecure': {'-': {'-': {'-': 'injectTrade'}}}},
+		titan: {'-': {'-': {'-': {'-': 'injectTitan'}}}},
+		toprated: {'xp': {'-': {'-': {'-': 'injectTopRated'}}}},
+		inventing: {'viewrecipe': {'-': {'-': {'-': 'inventing'}}}},
+		tempinv: {'-': {'-': {'-': {'-': 'injectMailbox'}}}},
+		//attackplayer: {'-': {'-': {'-': {'-': 'injectAttackPlayer'}}}},
+		findplayer: {'-': {'-': {'-': {'-': 'injectFindPlayer'}}}},
+		//relic: {'-': {'-': {'-': {'-': 'injectRelic'}}}},
+		quests: {'view': {'-': {'-': {'-': 'showAllQuestSteps'}}}}, //UFSG
+		scavenging: {'process': {'-': {'-': {'-': 'injectScavenging'}}}},
+		temple: {'-': {'-': {'-': {'-': 'parseTemplePage'}}}},
+		skills: {'-': {'-': {'-': {'-': 'injectSkills'}}}},
+		composing: {'-': {'-': {'-': {'-': 'injectComposing'}}}},
+		'-': {'-': {'-': {'-': {'-': 'unknownPage'}}}}
 	}
 
 };
 
-window.FSH.Layout = {
+FSH.Layout = {
+
+	onlineDot: function(min) {
+		var img = '';
+		if (FSH.System.getValue('enhanceOnlineDots')) {
+			img = FSH.Data.offlineDot;
+			if (min < 2) {
+				img = FSH.Data.greenDiamond;
+			} else if (min < 5) {
+				img = FSH.Data.yellowDiamond;
+			} else if (min < 30) {
+				img = FSH.Data.orangeDiamond;
+			} else if (min > 10080) {
+				img = FSH.Data.sevenDayDot;
+			}
+		}
+		return img;
+	},
 
 	injectMenu: function() { //jquery
 		if (FSH.System.getValue('lastActiveQuestPage').length > 0) {
@@ -1393,15 +1426,15 @@ window.FSH.Layout = {
 		window.$('#nav').nav('calcHeights');
 	},
 
-	injectItemIntoMenuTable: function(tableElement, text, href, position) { //JQuery ready
-		if (position > tableElement.children().length) {
-			position = tableElement.children().length;
-		}
-		$(tableElement).find('tr:eq('+position+')').before('<tr><td><font ' +
-			'color="black">&nbsp;&nbsp;-&nbsp;<A href="' + href + '"><font ' +
-			'color="black">' + text + '</font></A></font></td></tr><tr><td ' +
-			'height="5"></td></tr>');
-	},
+	//~ injectItemIntoMenuTable: function(tableElement, text, href, position) { //JQuery ready
+		//~ if (position > tableElement.children().length) {
+			//~ position = tableElement.children().length;
+		//~ }
+		//~ $(tableElement).find('tr:eq('+position+')').before('<tr><td><font ' +
+			//~ 'color="black">&nbsp;&nbsp;-&nbsp;<A href="' + href + '"><font ' +
+			//~ 'color="black">' + text + '</font></A></font></td></tr><tr><td ' +
+			//~ 'height="5"></td></tr>');
+	//~ },
 
 	moveRHSBoxUpOnRHS: function(title) {
 		$('div#pCR').prepend($('div#' + title));
@@ -1415,7 +1448,7 @@ window.FSH.Layout = {
 	},
 
 	notebookContent: function() {
-		return FSH.System.findNode('//div[@id="pCC"]'); //new interface logic
+		return $('div#pCC')[0]; //new interface logic
 	},
 
 	playerId: function() {
@@ -1525,7 +1558,81 @@ window.FSH.Layout = {
 	composeMsg:
 		'<li class="notification"><a href="index.php?cmd=composing"><span' +
 		' class="notification-icon"></span><p class="notification-content">Co' +
-		'mposing to do</p></a></li>'
+		'mposing to do</p></a></li>',
+
+	allyEnemyList:
+		'<h3>Allies/Enemies</h3><div class="minibox-content"><h4>Online ' +
+		'Contacts <span id="fshResetEnemy">Reset</span></h4><div id="' +
+		'minibox-enemy"><ul id="fshContactList"></ul><ul id="' +
+		'enemy-quick-buff">Quick Buff Selected</ul></div></div>',
+
+	allyEnemyContact:
+		'<li class="player"><div class="player-row"><a class="' +
+		'enemy-buff-check-on" data-name="@@username@@" href="#"></a>' +
+		'<a class="player-name tip-static" style="color: @@contactColor@@" ' +
+		'data-tipped="<b>@@username@@</b><br><table><tbody><tr><td>Level:' +
+		'</td><td>@@level@@</td></tr><tr><td>Last Activity:</td><td>' +
+		'@@last_login@@</td></tr></tbody></table>" ' +
+		'href="index.php?cmd=profile&player_id=@@id@@">@@username@@</a></div>' +
+		'<div class="guild-minibox-actions"><a id="enemy-send-message" ' +
+		'class="guild-icon left guild-minibox-action tip-static" ' +
+		'href="javascript:openQuickMsgDialog(\'@@username@@\');" ' +
+		'data-tipped="Send Message""></a><a id="enemy-quickbuff" ' +
+		'class="guild-icon left guild-minibox-action tip-static" ' +
+		'href="javascript:openWindow(\'index.php?cmd=quickbuff&t=@@username@@' +
+		'\', \'fsQuickBuff\', 618, 1000, \',scrollbars\');" ' +
+		'data-tipped="Quick Buff"></a><a id="enemy-secure-trade" ' +
+		'class="guild-icon left guild-minibox-action tip-static" ' +
+		'href="index.php?cmd=trade&subcmd=createsecure&target_username=' +
+		'@@username@@" data-tipped="Secure Trade"></a><a id="enemy-trade" ' +
+		'class="guild-icon left guild-minibox-action tip-static" ' +
+		'href="index.php?cmd=trade&target_player=@@username@@" ' +
+		'data-tipped="Send Gold/Items/FSP"></a></div></li>'
 
 };
+
+FSH.ajax = {
+	myStats: function(fn, force) {
+		FSH.Helper.myUsername = $('dt#statbar-character').text();
+		var forage = 'fsh_selfProfile';
+		if (force) {
+			$.ajax({
+				dataType: 'json',
+				url: 'index.php',
+				data: {
+					cmd:             'export',
+					subcmd:          'profile',
+					player_username: FSH.Helper.myUsername
+				},
+				success: function(data) {
+					data.lastUpdate = Date.now();
+					localforage.setItem(forage, data,
+						function(err, data) {
+							if (err) {console.log('localforage error', err);}
+							FSH.Helper.profile = FSH.Helper.profile || {};
+							FSH.Helper.profile[FSH.Helper.myUsername] = data;
+console.log('myStats forage set success');
+							if (typeof fn === 'function') {fn();}
+						}
+					);
+				}
+			});
+			return;
+		}
+		localforage.getItem(forage, function(err, data) {
+			if (err) {console.log('localforage error', err);}
+			if (!data || data.lastUpdate < Date.now() -
+				FSH.Helper.allyEnemyOnlineRefreshTime) {
+				FSH.ajax.myStats(fn, true);
+				return;
+			}
+			FSH.Helper.profile = FSH.Helper.profile || {};
+			FSH.Helper.profile[FSH.Helper.myUsername] = data;
+console.log('getInv forage get success');
+			if (typeof fn === 'function') {fn();}
+		});
+	}
+
+};
+
 })();
