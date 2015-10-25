@@ -743,18 +743,18 @@ FSH.Data = {
 /* jshint +W101 */ // Line is too long. (W101)
 
 	//~ guildRelationshipMessages: function(){
-		//~ if(!Data.guildMessages){
-			//~ Data.guildMessages= {};
-				//~ Data.guildMessages.guildSelfMessage = {'color':'green',
+		//~ if(!FSH.Data.guildMessages){
+			//~ FSH.Data.guildMessages= {};
+				//~ FSH.Data.guildMessages.guildSelfMessage = {'color':'green',
 					//~ 'message':'Member of your own guild!'};
-				//~ Data.guildMessages.guildFrndMessage = {'color':'OliveDrab',
+				//~ FSH.Data.guildMessages.guildFrndMessage = {'color':'OliveDrab',
 					//~ 'message':'Do not attack - Guild is friendly!'};
-				//~ Data.guildMessages.guildPastMessage = {'color':'DarkCyan',
+				//~ FSH.Data.guildMessages.guildPastMessage = {'color':'DarkCyan',
 					//~ 'message':'Do not attack - You\'ve been in that guild once!'};
-				//~ Data.guildMessages.guildEnmyMessage = {'color':'red',
+				//~ FSH.Data.guildMessages.guildEnmyMessage = {'color':'red',
 					//~ 'message':'Enemy guild. Attack at will!'};
 		//~ }
-		//~ return Data.guildMessages;
+		//~ return FSH.Data.guildMessages;
 	//~ },
 
 	guildMessages: {
@@ -1252,9 +1252,13 @@ FSH.Data = {
 			'log': {'-': {'-': {'-': 'guildLog'}}},
 			'groups': {
 				'viewstats': {'-': {'-': 'injectGroupStats'}},
+				'joinall': {'-': {'-': 'injectGroups'}},
+				'joinallgroupsundersize': {'-': {'-': 'injectGroups'}},
 				'-': {'-': {'-': 'injectGroups'}}},
 			'manage': {'-': {'-': {'-': 'injectGuild'}}},
-			'advisor': {'-': {'-': {'-': 'injectAdvisor'}}},
+			'advisor': {
+				'-': {'-': {'-': 'injectAdvisor'}},
+				'weekly': {'-': {'-': 'injectAdvisor'}}},
 			'history': {'-': {'-': {'-': 'addHistoryWidgets'}}},
 			'view': {'-': {'-': {'-': 'injectViewGuild'}}},
 			'scouttower': {'-': {'-': {'-': 'injectScouttower'}}},
@@ -1271,7 +1275,7 @@ FSH.Data = {
 				'2': {'-': 'playerLog'},
 				'3': {'-': 'playerLog'}}},
 			'outbox': {'-': {'-': {'-': 'outbox'}}}},
-		potionbazaar: {'-': {'-': {'-': {'-': 'injectBazaar'}}}},
+		potionbazaar: {'-': {'-': {'-': {'-': 'bazaar.inject'}}}},
 		marketplace: {
 			'createreq': {'-': {'-': {'-': 'addMarketplaceWidgets'}}}},
 		quickbuff: {'-': {'-': {'-': {'-': 'injectQuickBuff'}}}},
@@ -1315,6 +1319,17 @@ FSH.Data = {
 		skills: {'-': {'-': {'-': {'-': 'injectSkills'}}}},
 		composing: {'-': {'-': {'-': {'-': 'composing.injectComposing'}}}},
 		'-': {'-': {'-': {'-': {'-': 'unknownPage'}}}}
+	},
+
+	excludeBuff: {
+		'skill-50' : 'Death Dealer',
+		'skill-54' : 'Counter Attack',
+		'skill-55' : 'Summon Shield Imp',
+		'skill-56' : 'Vision',
+		'skill-60' : 'Nightmare Visage',
+		'skill-61' : 'Quest Finder',
+		'skill-98' : 'Barricade',
+		'skill-101': 'Severe Condition'
 	}
 
 };
@@ -1606,51 +1621,73 @@ FSH.Layout = {
 		'recall tip-static" href="@@secondHref@@" data-tipped="Click to ' +
 		'recall to guild store">Fast GS</span></span><span ' +
 		'class="fshWearHide"> | <span class="reportLink @@linktype@@">Fast ' +
-		'Wear</span></span></span>'
+		'Wear</span></span></span>',
+
+	bazaarTable:
+		'<table id="fshBazaar"><tr><td colspan="5">Select an item to ' +
+		'quick-buy:</td></tr><tr><td colspan="5">Select how many to ' +
+		'quick-buy</td></tr><tr><td colspan="5"><input id="buy_amount" ' +
+		'class="fshNumberInput" type="number" min="0" max="99" value="1">' +
+		'</td></tr><tr><td>@0@</td><td>@1@</td><td>@2@</td><td>@3@</td><td>' +
+		'@4@</td></tr><tr><td>@5@</td><td>@6@</td><td>@7@</td><td>@8@</td>' +
+		'<td>@9@</td></tr><tr><td colspan="3">Selected item:</td><td id="' +
+		'selectedItem" colspan="2"></td></tr><tr><td colspan="5"><span id="' +
+		'warning">Warning:<br>pressing [<span id="fshBuy" class="fshLink">' +
+		'This button</span>] now will buy the <span id="quantity">1</span> ' +
+		'item(s) WITHOUT confirmation!</span></td></tr><tr>' +
+		'<td id="buy_result" colspan="5"></td></tr></table>',
+
+	bazaarItem:
+		'<img class="tip-dynamic" width="20" height="20" src="@src@" ' +
+		'itemid="@itemid@" data-tipped="@tipped@">'
 
 };
 
 FSH.ajax = {
-	getMembrList: function(fn, force) {
-		if (force) {
-			$.ajax({
-				dataType: 'json',
-				url:'index.php',
-				data: {
-					cmd: 'export',
-					subcmd: 'guild_members',
-					guild_id: FSH.Layout.guildId()//,
-				},
-				success: function(data) {
-					var membrList = {};
-					membrList.lastUpdate = Date.now();
-					data.forEach(function(ele) {
-						membrList[ele.username] = ele;
-					});
-					localforage.setItem('fsh_membrList', membrList,
-						function(err, membrList) {
-							if (err) {console.log('localforage error', err);}
-							FSH.Helper.membrList = membrList;
-// console.log('getMembrList forage set success');
-							fn(membrList);
-						}
-					);
-				}
-			});
-			return;
-		}
-		localforage.getItem('fsh_membrList', function(err, membrList) {
-			if (err) {console.log('localforage error', err);}
-			if (!membrList || membrList.lastUpdate < Date.now() - 300000) {
-				FSH.ajax.getMembrList(fn, true);
-				return;
-			}
+	getMembrList: function(force, fn) {
+		var dfr = FSH.ajax.guildMembers(force);
+		dfr.done(function(membrList) {
 			FSH.Helper.membrList = membrList;
-// console.log('getMembrList forage get success');
-			fn(membrList);
+			if (typeof fn === 'function') {fn(membrList);}
+		});
+		return dfr;
+	},
+
+	guildMembers: function(force) {
+		if (force) {
+			return FSH.ajax.getGuildMembers();
+		}
+		var prm = FSH.ajax.getForage('fsh_membrList');
+		return prm.pipe(function(membrList) {
+			if (!membrList || membrList.lastUpdate < Date.now() - 300000) {
+				return FSH.ajax.getGuildMembers();
+			}
+			return membrList;
 		});
 	},
 
+	getGuildMembers: function() {
+		var prm = $.ajax({
+			dataType: 'json',
+			url:'index.php',
+			data: {
+				cmd: 'export',
+				subcmd: 'guild_members',
+				guild_id: FSH.Layout.guildId()
+			}
+		});
+		return prm.pipe(function(data) {
+			var membrList = {};
+			membrList.lastUpdate = Date.now();
+			data.forEach(function(ele) {
+				membrList[ele.username] = ele;
+			});
+			FSH.ajax.setForage('fsh_membrList', membrList);
+			return membrList;
+		});
+	},
+
+	// this is a shit name, change it
 	getInv: function(fn, force) {
 		var ajax = 'inventory';
 		var forage = 'fsh_selfInv';
@@ -1688,46 +1725,83 @@ FSH.ajax = {
 		});
 	},
 
-	myStats: function(fn, force) {
+	myStats: function(force) {
 		FSH.Helper.myUsername = $('dt#statbar-character').text();
-		var forage = 'fsh_selfProfile';
-		if (force) {
-			$.ajax({
-				dataType: 'json',
-				url: 'index.php',
-				data: {
-					cmd:             'export',
-					subcmd:          'profile',
-					player_username: FSH.Helper.myUsername
-				},
-				success: function(data) {
-					data.lastUpdate = Date.now();
-					localforage.setItem(forage, data,
-						function(err, data) {
-							if (err) {console.log('localforage error', err);}
-							FSH.Helper.profile = FSH.Helper.profile || {};
-							FSH.Helper.profile[FSH.Helper.myUsername] = data;
-// console.log('myStats forage set success');
-							if (typeof fn === 'function') {fn();}
-						}
-					);
-				}
-			});
-			return;
-		}
-		localforage.getItem(forage, function(err, data) {
-			if (err) {console.log('localforage error', err);}
-			if (!data || data.lastUpdate < Date.now() -
-				FSH.Helper.allyEnemyOnlineRefreshTime) {
-				FSH.ajax.myStats(fn, true);
-				return;
-			}
+		var dfr = FSH.ajax.getMyStats(force);
+		dfr.done(function(data) {
 			FSH.Helper.profile = FSH.Helper.profile || {};
 			FSH.Helper.profile[FSH.Helper.myUsername] = data;
-// console.log('getInv forage get success');
-			if (typeof fn === 'function') {fn();}
 		});
+		return dfr;
+	},
+
+	getMyStats: function(force) {
+		if (force) {
+			return FSH.ajax.getMyProfile();
+		} else {
+			var prm = FSH.ajax.getForage('fsh_selfProfile');
+			// jQuery 1.7 uses pipe instead of then
+			return prm.pipe(function(data) {
+				if (!data || data.lastUpdate < Date.now() -
+					FSH.Helper.allyEnemyOnlineRefreshTime) {
+					//console.log('myStats doing refresh');
+					return FSH.ajax.getMyProfile();
+				} else {
+					return data;
+				}
+			});
+		}
+	},
+
+	getMyProfile: function() {
+		var prm = FSH.ajax.getProfile(FSH.Helper.myUsername);
+		return prm.done(function(data) {
+			data.lastUpdate = Date.now();
+			FSH.ajax.setForage('fsh_selfProfile', data);
+		});
+	},
+
+	getProfile: function(username) {
+		return $.getJSON('index.php', {
+			cmd:             'export',
+			subcmd:          'profile',
+			player_username: username
+		});
+	},
+
+	setForage: function(forage, data) {
+		// Wrap in jQuery Deferred because we're using 1.7
+		// rather than using ES6 promise
+		var dfr = $.Deferred();
+		localforage.setItem(forage, data, function(err, data) {
+			if (err) {
+				console.log(forage + ' forage error', err);
+				dfr.reject(err);
+			} else {
+				//console.log(forage + ' forage set success');
+				dfr.resolve(data);
+			}
+		});
+		return dfr.promise();
+	},
+
+	getForage: function(forage) {
+		// Wrap in jQuery Deferred because we're using 1.7
+		// rather than using ES6 promise
+		var dfr = $.Deferred();
+		localforage.getItem(forage, function(err, data) {
+			if (err) {
+				console.log(forage + ' forage error', err);
+				dfr.reject(err);
+			} else {
+				// returns null if key does not exist
+				//console.log(forage + ' forage get success');
+				dfr.resolve(data);
+			}
+		});
+		return dfr.promise();
 	}
+
 };
 
 FSH.composing = {
@@ -1959,7 +2033,7 @@ FSH.notification = {
 FSH.guildReport = {
 
 	injectReportPaint: function() {
-		FSH.ajax.getMembrList(FSH.guildReport.doReportPaint, false);
+		FSH.ajax.getMembrList(false, FSH.guildReport.doReportPaint);
 	},
 
 	reportHeader: function(innerTable) {
@@ -2105,6 +2179,64 @@ FSH.guildReport = {
 			);
 		}
 	},
+
+};
+
+FSH.bazaar = {
+
+	inject: function() { // jQuery
+		var pbImg = $('div#pCC img[alt="Potion Bazaar"]');
+		pbImg.css('float', 'left');
+		var myTable = FSH.Layout.bazaarTable;
+		$('div#pCC table table table img[src*="/items/"]').each(function(i) {
+			var item = $(this);
+			var tipped = item.data('tipped');
+			myTable = myTable
+				.replace('@' + i + '@', FSH.Layout.bazaarItem)
+				.replace('@src@', item.attr('src'))
+				.replace('@itemid@', tipped.match(/\?item_id=(\d+)/)[1])
+				.replace('@tipped@', tipped);
+		});
+		myTable = $(myTable.replace(/@\d@/g, ''));
+		$('span#warning', myTable).hide();
+		myTable.on('click', 'img[width="20"]', FSH.bazaar.select);
+		myTable.on('input', 'input#buy_amount', FSH.bazaar.quantity);
+		myTable.on('click', 'span#fshBuy', FSH.bazaar.buy);
+		pbImg.parent().append(myTable);
+	},
+
+	select: function(evt) { // jQuery
+		var target = $(evt.target);
+		FSH.bazaar.ItemId = target.attr('itemid');
+		$('table#fshBazaar span#quantity').text(
+			$('table#fshBazaar input#buy_amount').val());
+		$('table#fshBazaar span#warning').show();
+		$('table#fshBazaar td#selectedItem').empty().append(
+			target.clone().attr('width', '45').attr('height', '45'));
+	},
+
+	quantity: function(evt) { // mixed
+		var theValue = parseInt(evt.target.value, 10);
+		if (!isNaN(theValue) && theValue > 0 && theValue < 100) {
+			$('table#fshBazaar span#quantity:visible').text(theValue);
+		}
+	},
+
+	buy: function() {
+		if (!FSH.bazaar.ItemId) {return;}
+		var buyAmount = $('table#fshBazaar input#buy_amount').val();
+		$('table#fshBazaar td#buy_result')
+			.html('Buying ' + buyAmount + ' items');
+		for (var i = 0; i < buyAmount; i += 1) {
+			$.get('index.php?cmd=potionbazaar&subcmd=buyitem&item_id=' +
+				FSH.bazaar.ItemId, FSH.bazaar.done);
+		}
+	},
+
+	done: function(responseText) {
+		$('table#fshBazaar td#buy_result')
+			.append('<br>' + FSH.Layout.infoBox(responseText));
+	}
 
 };
 

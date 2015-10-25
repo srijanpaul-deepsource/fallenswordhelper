@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1510b5
+// @version        1510b6
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -708,20 +708,9 @@ FSH.Helper = {
 	},
 
 	quickBuyItem: function() {
-		var i;
-		if($('img[alt="Potion Bazaar"]').length > 0){//bazaar
-			if(!FSH.Helper.bazaarItemId){return;}
-			document.getElementById('buy_result').innerHTML='Buying '+document.getElementById('buy_amount').value+' Items';
-			for (i=0;i<document.getElementById('buy_amount').value;i += 1) {
-				//http://www.fallensword.com/index.php?cmd=potionbazaar&subcmd=buyitem&item_id=3683
-				FSH.System.xmlhttp('index.php?cmd=potionbazaar&subcmd=buyitem&item_id='+FSH.Helper.bazaarItemId,
-					FSH.Helper.quickDone);
-			}
-		}
-
 		if (!FSH.Helper.shopId || !FSH.Helper.shopItemId) {return;}
 		document.getElementById('buy_result').innerHTML='Buying '+document.getElementById('buy_amount').value+' Items';
-		for (i=0;i<document.getElementById('buy_amount').value;i += 1) {
+		for (var i=0;i<document.getElementById('buy_amount').value;i += 1) {
 			FSH.System.xmlhttp('index.php?cmd=shop&subcmd=buyitem&item_id='+FSH.Helper.shopItemId+'&shop_id='+FSH.Helper.shopId,
 				FSH.Helper.quickDone);
 		}
@@ -731,41 +720,6 @@ FSH.Helper = {
 		var infoMessage = FSH.Layout.infoBox(responseText);
 		document.getElementById('buy_result').innerHTML+='<br />'+infoMessage;
 	},
-
-	/**************************************************************************/
-	injectBazaar: function() {
-		var injectHere=$('img[alt="Potion Bazaar"]').parents('center:first');
-		var itemNodes=$('td center a img[src*="/items/"]');
-
-		var selector='<span style="font-size:xx-small">Select an item to quick-buy:<br>Select how many to quick-buy <input style="font-size:xx-small" value=1 id="buy_amount" name="buy_amount" size=1 class="custominput"><table cellpadding=2><tr>';
-		var itemId;
-		for (var i=0;i<itemNodes.length;i += 1) {
-			var item=itemNodes[i];
-			var src=item.getAttribute('src');
-			var text=item.parentNode.parentNode.textContent;
-			var onmouseover=$(item).data('tipped').replace('Click to Buy','Click to Select');
-			itemId=item.parentNode.getAttribute('href').match(/&item_id=(\d+)/)[1];
-			selector+='<td width=20 height=20 ><img width=20 height=20 id=select'+itemId+' itemId='+itemId+' src="'+src+
-				'" class="tipped" data-tipped-options="skin: \'fsItem\', ajax: true" data-tipped=\''+onmouseover+'\'>'+text+'</td>';
-			if (i%6===5 && i!==itemNodes.length-1) {selector+='</tr><tr>';}
-		}
-		selector+='</tr><tr><td colspan=3>Selected item:</td><td colspan=3 align=center>'+
-			'<table><tr><td width=45 height=45 id=selectedItem align=center></td></tr></table>'+
-			'<td></tr><tr><td id=warningMsg colspan=6 align=center></td></tr><tr><td id=buy_result colspan=6 align=center></td></tr></table>';
-		injectHere.html('<table><tr><td>'+injectHere.html()+'</td><td>'+selector+'</td></tr></table>');
-		for (i=0;i<itemNodes.length;i += 1) {
-			itemId=itemNodes[i].parentNode.getAttribute('href').match(/&item_id=(\d+)$/)[1];
-			document.getElementById('select'+itemId).addEventListener('click',FSH.Helper.selectBazaarItem,true);
-		}
-	},
-
-	selectBazaarItem: function(evt) {
-		FSH.Helper.bazaarItemId=evt.target.getAttribute('itemId');
-		document.getElementById('warningMsg').innerHTML='<span style="color:red;font-size:small">Warning:<br> pressing "t" now will buy the '+document.getElementById('buy_amount').value+' item(s) WITHOUT confirmation!</span>';
-		document.getElementById('selectedItem').innerHTML=
-			document.getElementById('select'+FSH.Helper.bazaarItemId).parentNode.innerHTML.replace(/='20'/g,'=45');
-	},
-	/**************************************************************************/
 
 	injectRelic: function() {
 		var relicNameElement = $('td:contains("Below is the current status ' +
@@ -807,8 +761,8 @@ FSH.Helper = {
 		document.getElementById('calculatedefenderstats')
 			.addEventListener('click',
 				function() {
-					FSH.ajax.getMembrList(FSH.Helper.calculateRelicDefenderStats,
-						false);
+					FSH.ajax.getMembrList(false,
+						FSH.Helper.calculateRelicDefenderStats);
 				},
 				true);
 	},
@@ -1514,10 +1468,10 @@ FSH.Helper = {
 		FSH.Helper.appendHead({
 			js: ['https://cdn.jsdelivr.net/jquery.datatables/1.10.4/js/jquery.dataTables.min.js'],
 			callback: FSH.ajax.getMembrList,
-			param1: FSH.subcmd2 === 'weekly' ?
+			param1: false,
+			param2: FSH.subcmd2 === 'weekly' ?
 				FSH.Helper.injectAdvisorWeekly :
-				FSH.Helper.injectAdvisorNew,
-			param2: false
+				FSH.Helper.injectAdvisorNew
 		});
 	},
 
@@ -3834,7 +3788,10 @@ FSH.Helper = {
 	},
 
 	addLogWidgets: function() {
-		FSH.ajax.getMembrList(FSH.Helper.addLogWidgetsOld, false);
+		$.when(
+			FSH.ajax.getMembrList(false),
+			FSH.ajax.myStats(false)
+		).done(FSH.Helper.addLogWidgetsOld);
 	},
 
 	addLogWidgetsOld: function() {
@@ -3846,11 +3803,12 @@ FSH.Helper = {
 		var logTable = FSH.System.findNode('//table[tbody/tr/td/span[contains' +
 			'(.,"Currently showing:")]]');
 		if (!logTable) {return;}
-		var memberNameString = ' ' + Object.keys(FSH.Helper.membrList).join(' ') + ' ';
-		var listOfEnemies = FSH.System.getValue('listOfEnemies');
-		if (!listOfEnemies) {listOfEnemies = '';}
-		var listOfAllies = FSH.System.getValue('listOfAllies');
-		if (!listOfAllies) {listOfAllies = '';}
+		var memberNameString = Object.keys(FSH.Helper.membrList);
+		var profile = FSH.Helper.profile[FSH.Helper.myUsername];
+		var listOfAllies = profile._allies.map(function(obj) {
+			return obj.username;});
+		var listOfEnemies = profile._enemies.map(function(obj) {
+			return obj.username;});
 		var showPvPSummaryInLog = FSH.System.getValue('showPvPSummaryInLog');
 		var messageType;
 		for (i=0;i<logTable.rows.length;i += 1) {
@@ -3887,14 +3845,14 @@ FSH.Helper = {
 				colorPlayerName = true;
 			}
 			if (colorPlayerName) {
-				if (memberNameString.search(' '+playerName+' ') !==-1) {
+				if (memberNameString.indexOf(playerName) !== -1) {
 					playerElement.style.color='green';
 					isGuildMate = true;
 				}
-				if (listOfEnemies.search(' '+playerName+' ') !==-1) {
+				if (listOfEnemies.indexOf(playerName) !== -1) {
 					playerElement.style.color='red';
 				}
-				if (listOfAllies.search(' '+playerName+' ') !==-1) {
+				if (listOfAllies.indexOf(playerName) !== -1) {
 					playerElement.style.color='blue';
 				}
 			}
@@ -4956,88 +4914,27 @@ FSH.Helper = {
 			});
 	},
 
-	profileParseAllyEnemy: function() {
-		var startIndex;
+	profileParseAllyEnemy: function() { // jquery
 		// Allies/Enemies count/total function
 		var alliesTotal = FSH.System.getValue('alliestotal');
-		var alliesTitle = FSH.System.findNode('//div[strong[.="Allies"]]');
-		var alliesTable = alliesTitle.nextSibling.nextSibling;
-		if (alliesTable) {
-			var numberOfAllies = 0;
-			startIndex = 0;
-			while (alliesTable.innerHTML.indexOf('/avatars/', startIndex+1) !== -1) {
-				numberOfAllies += 1;
-				startIndex = alliesTable.innerHTML.indexOf('/avatars/',startIndex+1);
-			}
-			startIndex = 0;
-			while (alliesTable.innerHTML.indexOf('/skin/player_default.jpg', startIndex+1) !== -1) {
-				numberOfAllies += 1;
-				startIndex = alliesTable.innerHTML.indexOf('/skin/player_default.jpg',startIndex+1);
-			}
-			alliesTitle.innerHTML += '&nbsp<span style="color:blue">' + numberOfAllies + '</span>';
-			if (alliesTotal && alliesTotal >= numberOfAllies) {
-				alliesTitle.innerHTML += '/<span style="color:blue" findme="alliestotal">' + alliesTotal + '</span>';
-			}
-		}
+		var alliesTitle = $('div#profileLeftColumn strong:contains("Allies")')
+			.parent();
+		var numberOfAllies = alliesTitle.next().find('img')
+			.filter('[src*="/avatars/"],[src$="/skin/player_default.jpg"]')
+			.length;
+		alliesTitle.append('<span class="fshBlue">&nbsp;' + numberOfAllies +
+			(alliesTotal && alliesTotal >= numberOfAllies ? '/' +
+			alliesTotal : '') + '</span>');
+
 		var enemiesTotal = FSH.System.getValue('enemiestotal');
-		var enemiesTitle = FSH.System.findNode('//div[strong[.="Enemies"]]');
-		var enemiesTable = enemiesTitle.nextSibling.nextSibling;
-		if (enemiesTable) {
-			var numberOfEnemies = 0;
-			startIndex = 0;
-			while (enemiesTable.innerHTML.indexOf('/avatars/', startIndex+1) !== -1) {
-				numberOfEnemies += 1;
-				startIndex = enemiesTable.innerHTML.indexOf('/avatars/',startIndex+1);
-			}
-			startIndex = 0;
-			while (enemiesTable.innerHTML.indexOf('/skin/player_default.jpg', startIndex+1) !== -1) {
-				numberOfEnemies += 1;
-				startIndex = enemiesTable.innerHTML.indexOf('/skin/player_default.jpg',startIndex+1);
-			}
-			enemiesTitle.innerHTML += '&nbsp;<span style="color:blue">' + numberOfEnemies + '</span>';
-			if (enemiesTotal && enemiesTotal >= numberOfEnemies) {
-				enemiesTitle.innerHTML += '/<span style="color:blue" findme="enemiestotal">' + enemiesTotal + '</span>';
-			}
-		}
-
-		var i;
-		var aRow;
-		var j;
-		var aCell;
-		//store a list of allies and enemies for use in coloring
-		var listOfAllies = ' ';
-		if (alliesTable) {
-			var alliesTableActual = alliesTable.firstChild.nextSibling.firstChild.nextSibling;
-			for (i=0;i<alliesTableActual.rows.length;i += 1) {
-				aRow = alliesTableActual.rows[i];
-				for (j=0;j<alliesTableActual.rows[i].cells.length;j += 1) {
-					aCell = aRow.cells[j];
-					if (aCell.firstChild.firstChild.nextSibling) {
-						var allyNameTable = aCell.firstChild.firstChild.nextSibling.nextSibling;
-						var allyName = allyNameTable.rows[0].cells[1].firstChild.textContent;
-						listOfAllies += allyName + ' ';
-					}
-				}
-			}
-		}
-
-		var listOfEnemies = ' ';
-		if (enemiesTable) {
-			var enemiesTableActual = enemiesTable.firstChild.nextSibling.firstChild.nextSibling;
-			for (i=0;i<enemiesTableActual.rows.length;i += 1) {
-				aRow = enemiesTableActual.rows[i];
-				for (j=0;j<enemiesTableActual.rows[i].cells.length;j += 1) {
-					aCell = aRow.cells[j];
-					if (aCell.firstChild.firstChild.nextSibling) {
-						var enemyNameTable = aCell.firstChild.firstChild.nextSibling.nextSibling;
-						var enemyName = enemyNameTable.rows[0].cells[1].firstChild.textContent;
-						listOfEnemies += enemyName + ' ';
-					}
-				}
-			}
-		}
-		FSH.System.setValue('listOfAllies', listOfAllies);
-		FSH.System.setValue('listOfEnemies', listOfEnemies);
+		var enemiesTitle = $('div#profileLeftColumn strong:contains("Enemies")')
+			.parent();
+		var numberOfEnemies = enemiesTitle.next().find('img')
+			.filter('[src*="/avatars/"],[src$="/skin/player_default.jpg"]')
+			.length;
+		enemiesTitle.append('<span class="fshBlue">&nbsp;' + numberOfEnemies +
+			(enemiesTotal && enemiesTotal >= numberOfEnemies ? '/' +
+			enemiesTotal : '') + '</span>');
 	},
 
 	addClickListener: function(id, listener) {
@@ -6175,7 +6072,7 @@ FSH.Helper = {
 	dataTableSearch: function() {
 		/* Custom filtering function which will search data in column three between two values */
 		$.fn.dataTable.ext.search.push(
-			function(settings, data) {
+			function(_settings, data) {
 				var min = parseInt($('#fshMinLvl', FSH.Helper.context).val(), 10); // context
 				var max = parseInt($('#fshMaxLvl', FSH.Helper.context).val(), 10); // context
 				if (!isNaN(min)) {FSH.System.setValue('onlinePlayerMinLvl', min);}
@@ -6612,7 +6509,7 @@ FSH.Helper = {
 	},
 
 	injectGroups: function() {
-		FSH.ajax.getMembrList(FSH.Helper.doGroupPaint, false);
+		FSH.ajax.getMembrList(false, FSH.Helper.doGroupPaint);
 		FSH.Helper.displayMinGroupLevel();
 		FSH.Helper.groupButtons();
 	},
@@ -6641,9 +6538,10 @@ FSH.Helper = {
 		document.getElementById('fetchgroupstats')
 			.addEventListener('click', FSH.Helper.fetchGroupData, true);
 
-		var re=/subcmd2=([a-z]+)/;
-		var subPage2IdRE = re.exec(document.location.search);
-		if (subPage2IdRE && subPage2IdRE[1] === 'joinallgroupsundersize') {
+		//~ var re=/subcmd2=([a-z]+)/;
+		//~ var subPage2IdRE = re.exec(document.location.search);
+		//~ if (subPage2IdRE && subPage2IdRE[1] === 'joinallgroupsundersize') {
+		if (FSH.subcmd2 === 'joinallgroupsundersize') {
 			FSH.Helper.joinAllGroupsUnderSize();
 		}
 	},
@@ -6779,20 +6677,11 @@ FSH.Helper = {
 		FSH.System.xmlhttp('index.php?cmd=profile', FSH.Helper.getSustain);
 		//$('div#packs').on('click', 'h1', window.updateCost);
 		$('div#players').on('click', 'h1', FSH.Helper.addBuffLevels);
-		var excludeBuff = {
-			'skill-50': 'Death Dealer',
-			'skill-54': 'Counter Attack',
-			'skill-55': 'Summon Shield Imp',
-			'skill-56': 'Vision',
-			'skill-60': 'Nightmare Visage',
-			'skill-61': 'Quest Finder',
-			'skill-98': 'Barricade',
-			'skill-101': 'Severe Condition'};
 		$('div#buff-outer label').each(function() {
 			var lbl = $(this);
 			var myLvl = parseInt($('span > span', lbl)
 				.text().replace(/\[|\]/g, ''), 10);
-			if (!excludeBuff[lbl.attr('for')] && myLvl < 125) {
+			if (!FSH.Data.excludeBuff[lbl.attr('for')] && myLvl < 125) {
 				lbl.addClass('fshDim');}
 		});
 		$('div#players h1').first().click();
@@ -9319,7 +9208,8 @@ FSH.Helper = {
 	},
 
 	injectTitan: function() {
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=scouttower', FSH.Helper.getScoutTowerDetails);
+		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=scouttower',
+			FSH.Helper.getScoutTowerDetails);
 	},
 
 	getScoutTowerDetails: function(responseText) {
@@ -9571,9 +9461,9 @@ FSH.Helper = {
 			for (var i = 1; i < activeTable.rows.length - 2; i+=2) {
 				var target = activeTable.rows[i].cells[0].firstChild
 					.firstChild.firstChild.textContent;
-if (target === '[ No bounties available. ]') {break;}
+				if (target === '[ No bounties available. ]') {break;}
 				for (var j = 0; j < wantedArray.length; j += 1) {
-					if (target === wantedArray[j].trim()) {
+					if (target === wantedArray[j].trim() || wantedArray.indexOf('*') !== -1) {
 						wantedList.wantedBounties = true;
 						var bounty = {};
 						bounty.target = target;
@@ -9808,7 +9698,8 @@ if (target === '[ No bounties available. ]') {break;}
 		FSH.Helper.allyEnemyOnlineRefreshTime =
 			FSH.System.getValue('allyEnemyOnlineRefreshTime');
 		FSH.Helper.allyEnemyOnlineRefreshTime *= 1000;
-		FSH.ajax.myStats(FSH.Helper.injectAllyEnemyList, false);
+		FSH.ajax.myStats(false)
+			.done(FSH.Helper.injectAllyEnemyList);
 	},
 
 	injectAllyEnemyList: function() {
@@ -9901,7 +9792,8 @@ if (target === '[ No bounties available. ]') {break;}
 	},
 
 	resetAllyEnemyList: function() {
-		FSH.ajax.myStats(FSH.Helper.injectAllyEnemyList, true);
+		FSH.ajax.myStats(true)
+			.done(FSH.Helper.injectAllyEnemyList);
 	},
 
 	toggleCheckAllPlants: function(evt) {
@@ -10230,7 +10122,7 @@ if (target === '[ No bounties available. ]') {break;}
 	},
 
 	injectGuildRanks: function() {
-		FSH.ajax.getMembrList(FSH.Helper.doRankPaint, true);
+		FSH.ajax.getMembrList(true, FSH.Helper.doRankPaint);
 		// gather rank info button
 		$('td', '#pCC').has('a#show-guild-founder-rank-name')
 			.append('&nbsp;<input id="getrankweightings" type="button" ' +
@@ -10261,11 +10153,9 @@ if (target === '[ No bounties available. ]') {break;}
 					ranks[rankName].join(', ') + '</span>');
 			}
 		});
-
 		if (FSH.System.getValue('ajaxifyRankControls')) {
 			FSH.Helper.ajaxifyRankControls();
 		}
-
 	},
 
 	ajaxifyRankControls: function() {
