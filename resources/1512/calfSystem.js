@@ -6643,9 +6643,6 @@ FSH.environment = { // Legacy
 		FSH.type = type;
 		FSH.fromWorld = fromWorld;
 
-console.log('cmd: ', cmd, ' subcmd: ', subcmd, ' subcmd2: ', subcmd2,
-	' type: ', type, ' fromWorld: ', fromWorld);
-
 		FSH.Helper.page = cmd + '/' + subcmd + '/' + subcmd2 + '(' + type + ')';
 	//console.log('FSH.Helper.page', FSH.Helper.page);
 
