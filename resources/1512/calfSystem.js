@@ -4261,11 +4261,7 @@ FSH.profile = { // Legacy
 	fastWearLinks: function() { // jQuery
 		var backpackContainer = $('div#backpackContainer');
 		var theBackpack = backpackContainer.data('backpack');
-
-console.log('srcData: ', theBackpack.srcData);
-
 		var backpackTab = $('div#backpackTab_' + theBackpack.type);
-
 		var theDivs = $('div.backpackTabContent > div', backpackTab);
 		theDivs.each(function() {
 			var self = $(this);
@@ -4273,7 +4269,6 @@ console.log('srcData: ', theBackpack.srcData);
 			if (theBackpack.options.checkboxesEnabled) {
 				myDiv.append($('input', self));
 			}
-
 			var theSpan = $('span', self)
 				.not('.item_giftSelect')
 				.not('.backpackEmptySlot');
