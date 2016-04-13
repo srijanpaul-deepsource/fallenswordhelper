@@ -3746,10 +3746,6 @@ FSH.profile = { // Legacy
 
 			playername = playername.substr(0, playername.indexOf('\'s Avatar'));
 
-//************************************ DEV ONLY********************************
-			FSH.dev.testProfileExport(playername);
-//************************************ DEV ONLY********************************
-
 			var avyExtrasDiv = document.createElement('DIV');
 			avyImg.parentNode.appendChild(avyExtrasDiv);
 			avyExtrasDiv.align = 'center';
@@ -6593,10 +6589,6 @@ FSH.news = { // Legacy
 			$('div#pCC'));
 		archiveLink.after('&nbsp;<a href="index.php?cmd=&subcmd=viewarchive&' +
 			'subcmd2=&page=2&search_text=">View News Page 2</a>');
-//************************************ DEV ONLY********************************
-		$('.news_body:first').hide().data('open', false);
-		$('.news_body_tavern:first').hide().data('open', false);
-//************************************ DEV ONLY********************************
 	},
 
 };
@@ -7235,137 +7227,6 @@ FSH.mailbox = { // Hybrid
 			$('#currentMBDisplay').attr('value','mailbox');
 		}
 	},
-
-};
-
-FSH.dev = {
-
-	injectSkills: function() { //jquery
-		//~ console.log('console=', location.href.slice(-1));
-		//~ var treeid = 'treeId: ' + location.href.slice(-1);
-		//~ var html = '<tr><td height="15"></td></tr>' +
-				//~ '<tr><td><center>My Insertion Point</center></td></tr>' +
-				//~ '<tr><td height="15"></td></tr>'
-		//~ $('table.skill-icon').find('img').each(function() {
-			//~ var skillid = 'skillId: ' + $(this).attr('src').replace(/\D/g, '')
-			//~ var dt = $(this).attr('data-tipped')
-			//~ dt = dt.replace('<b>', '"');
-			//~ dt = dt.replace('</b>', '"');
-			//~ dt = dt.replace('<font color=#cccccc>', 'buff: "');
-			//~ dt = dt.replace('</span><br />', '"');
-			//~ dt = dt.replace(' min(s)', '');
-			//~ dt = dt.replace('Stamina: ', 'stamina: ');
-			//~ dt = dt.replace('Duration: ', '"duration": ');
-			//~ dt = dt.replace(/<br \/>/g, '|');
-			//~ var datas = dt.split('|');
-			//~ html += '<tr><td>{name: ' + datas[0] + ',|' + datas[2] + ',|' + datas[3] + ',|minCastLevel: ?,|' +
-					//~ treeid + ',|' + skillid + ',|' + datas[1] + ', nicks: ' + datas[0].toLowerCase() + '},</td></tr>';
-		//~ });
-		//~ html += '<tr><td height="15"></td></tr>'
-		//~ $('div#pCC > table > tbody').children('tr').last().after(html);
-	},
-
-	testProfileExport: function(pl) { //jquery
-		$.ajax({
-			dataType: 'json',
-			url: 'index.php',
-			data: {
-				cmd:             'export',
-				subcmd:          'profile',
-				player_username: pl
-			}
-		}).done(function(data) {
-			console.log('export profile data', data);
-		});
-		//~ $.ajax({
-			//~ dataType: 'json',
-			//~ url: 'index.php',
-			//~ data: {
-				//~ cmd:    'quickbuff',
-				//~ subcmd: 'lookup',
-				//~ player: pl
-			//~ }
-		//~ }).done(function(data) {
-			//~ console.log('quickbuff lookup data', data);
-		//~ });
-	},
-
-	rankHighlight: function() {
-		var theRows = $('tr', $('#pCC table table').last())
-			.filter(function() {
-				return $('td', this).length === 5 &&
-					$('td', this).eq(3).text() !== 'Rank';
-			});
-		var contrib1 = 0;
-		var contrib2 = 0;
-		theRows.each(function() {
-			contrib2 = parseInt($('td', this).eq(4).text().replace(/,/g,''),10);
-			if (contrib2 > contrib1) {
-				$(this).css('background-color', 'MistyRose');
-			}
-			contrib1 = contrib2;
-		});
-	},
-
-	exportButton: function() {
-		var btns = $('#pCC table table font ' +
-			'a[href="index.php?cmd=guild&subcmd=members"]');
-		if (btns.length === 0) {return;}
-		btns.before(' <span id = "fshExport" class="fshLink">Export</span> | ');
-		$('#pCC span#fshExport').click(function() {
-
-			var myTable = $('<table>');
-			var theDate = new Date();
-
-			var theRows = $('tr', $('#pCC table table').last())
-				.filter(function() {
-					return $('td', this).length === 5 &&
-						$('td', this).eq(3).text() !== 'Rank';
-				});
-			theRows.each(function() {
-				var theLink = $('a', this).eq(0).clone();
-				var tipped = $('<div>').append(theLink.data('tipped'));
-				var level = $('td:contains("Level:")', tipped).next().text();
-				var theVL = $('td:contains("VL:")', tipped).next().text();
-				var stam = $('td:contains("Stamina:")', tipped).next().text()
-					.match(/(\d+) \/ (\d+)/);
-				var lastAct = $('td:contains("Last Activity:")', tipped).next()
-					.text().match(/(\d+)d (\d+)h (\d+)m (\d+)s/);
-				var theName = theLink.removeAttr('class')
-					.removeAttr('data-tipped').prop('outerHTML');
-				var contribXP = $('td', this).eq(4).text().replace(/,/g, '');
-				myTable.append('<tr>' +
-					'<td>' + FSH.dev.toExcelDate(theDate).toFixed(6) + 
-					'</td>' +
-					'<td>' + theName + '</td>' +
-					'<td>' + level + '</td>' +
-					'<td>' + theVL + '</td>' +
-					'<td>' + stam[1] + '</td>' +
-					'<td>' + stam[2] + '</td>' +
-					'<td>' + (stam[1] / stam[2]).toFixed(6) + '</td>' +
-					'<td>' + lastAct[0] + '</td>' +
-					'<td>' + lastAct[1] + '</td>' +
-					'<td>' + lastAct[2] + '</td>' +
-					'<td>' + lastAct[3] + '</td>' +
-					'<td>' + lastAct[4] + '</td>' +
-					'<td>' + contribXP + '</td>' +
-					'</tr>'
-				);
-			});
-
-
-			$('#pCC table').first().find('tr').eq(3).html(myTable);
-
-		});
-	},
-
-	toExcelDate:function(inDate) {
-		var returnDateTime = 25569.0 + (inDate.getTime() -
-			inDate.getTimezoneOffset() * 60 * 1000) / (1000 * 60 * 60 * 24);
-		return returnDateTime.toString().substr(0,20) * 1;
-	},
-
-//findOnlinePlayers
 
 };
 
