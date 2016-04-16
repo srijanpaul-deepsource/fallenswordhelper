@@ -464,6 +464,9 @@ FSH.System = {
 	},
 
 	getFunction: function(funcName) {
+
+		ga('fsh.send', 'screenview', {screenName: funcName});
+
 		funcName = funcName.split('.');
 		if (funcName.length === 1) {
 			return FSH.Helper[funcName[0]];
@@ -6597,6 +6600,10 @@ FSH.environment = { // Legacy
 
 	// main event dispatcher
 	dispatch: function() { // jQuery
+
+		ga('create', 'UA-76488113-1', 'auto', 'fsh');
+		ga('fsh.set', 'appName', 'fsh');
+		ga('fsh.set', 'appVersion', '1512b3');
 
 		var cmd;
 		var subcmd;
