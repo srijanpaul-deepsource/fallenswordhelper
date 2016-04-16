@@ -3086,8 +3086,6 @@ FSH.inventory = { // jQuery
 
 	getInvMan: function() {
 
-console.log('getInvMan FSH.Helper.inventory', FSH.Helper.inventory);
-
 		if (FSH.Helper.membrList) {
 			FSH.inventory.rekeyMembrList();
 		}
@@ -3294,7 +3292,6 @@ console.log('getInvMan FSH.Helper.inventory', FSH.Helper.inventory);
 
 	inspect: function() {
 		var self = $(this);
-		console.log('this', self);
 		var img = $('<img>', {width: '30', height: '30'})
 			.attr('src', self.attr('src'))
 			.addClass('tip-dynamic')
@@ -3430,7 +3427,6 @@ FSH.quickBuff = { // jQuery
 				player_username: player.text()
 			}
 		}).done(function(data) {
-				//console.log('7344 data', data);
 				player.after('<span class="fshLastActivity">Last Activity: ' +
 					FSH.System.formatLastActivity(data.last_login) +
 					'<br>Stamina: ' + data.current_stamina + ' / ' +
@@ -3548,7 +3544,7 @@ FSH.toprated = { // jQuery
 		for (var i = 1; i < topPlayerRows.length; i += 4) {
 
 			guildALink = $('a', $('td', topPlayerRows.eq(i)).eq(2));
-			if (guildALink.length === 0) {console.log('guildId not found');continue;} // Player does not belong to a guild
+			if (guildALink.length === 0) {continue;} // Player does not belong to a guild
 			// TODO player array for exceptions or just get profiles for everyone?
 
 			guildId = guildALink.attr('href').match(/guild_id=([0-9]+)/)[1];
@@ -4243,13 +4239,10 @@ FSH.profile = { // Legacy
 
 	injectFastWear: function() { // jQuery
 		$('div#backpack').css('height', '500');
-		//console.log('backpack: ', $('#backpackContainer').data('backpack'));
 		var theBackpack = $('#backpackContainer').data('backpack');
 		var oldShow = theBackpack._showPage;
 		theBackpack._showPage = function(type, page) {
-			//console.log('I am rendering...');
 			oldShow.call(theBackpack, type, page);
-			//console.log('I have rendered...');
 			FSH.profile.fastWearLinks();
 		};
 		if ($('span#backpack_current').text().length !== 0) {
@@ -4576,7 +4569,6 @@ FSH.logs = { // Legacy
 			var aRow = chatTable.rows[i];
 			var addBuffTag = true;
 			if (aRow.cells[0].innerHTML) {
-				//console.log(aRow.cells[dateColumn].innerHTML);
 				var cellContents = aRow.cells[dateColumn].innerHTML;
 				if (logScreen !== 'Chat') {
 					cellContents = cellContents.substring(6,23); // fix for player log screen.
@@ -6622,7 +6614,6 @@ FSH.environment = { // Legacy
 			cmd = $('input[name="cmd"]').val() || '-';
 			subcmd = $('input[name="subcmd"]').val() || '-';
 			if (subcmd==='dochat') {
-				console.log('Investigate this...');
 				cmd='-';
 				subcmd='-';
 			}
@@ -6638,7 +6629,6 @@ FSH.environment = { // Legacy
 		FSH.fromWorld = fromWorld;
 
 		FSH.Helper.page = cmd + '/' + subcmd + '/' + subcmd2 + '(' + type + ')';
-	//console.log('FSH.Helper.page', FSH.Helper.page);
 
 		var hcsData = $('html').data('hcs');
 		if (hcsData && hcsData['new-ui']) { // UFSG or QuickBuff
@@ -7003,8 +6993,6 @@ FSH.environment = { // Legacy
 	},
 
 	unknownPage: function() { // Legacy
-
-console.log('*** unknownPage ***');
 
 		//var isRelicPage = $('div#pCC td:contains("Below is the current status for the relic")');
 		//var isRelicPage = FSH.System.findNode('//td[contains(.,"Below is the current status for the relic")]/b');
