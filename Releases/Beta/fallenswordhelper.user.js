@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1513b1
+// @version        1513b5
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -24,9 +24,15 @@ var fshMain = function() {
 window.FSH = window.FSH || {};
 FSH.dataTablesLoc = 'https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js';
 
+if (typeof GM_info === 'undefined') {
+	FSH.version = 'undefined';
+} else {
+	FSH.version = GM_info.script.version;
+}
+
 FSH.Helper = {
 
-	injectShop: function() {
+	injectShop: function() { // Hybrid - Old map?
 		var injectHere = $('#shop-info');
 		var itemNodes = $('td center a img[src*="/items/"]');
 
@@ -35,622 +41,64 @@ FSH.Helper = {
 			'size:xx-small" value=1 id="buy_amount" name="buy_amount" size=3 ' +
 			'class="custominput"><table cellpadding=2><tr>';
 		var itemId;
-		for (var i=0;i<itemNodes.length;i += 1) {
-			var item=itemNodes[i];
-			var src=item.getAttribute('src');
-			var text=item.parentNode.parentNode.textContent;
-			var onmouseover=$(item).data('tipped').replace('Click to Buy','Click to Select');
-			itemId=item.parentNode.getAttribute('href').match(/&item_id=(\d+)&/)[1];
-			selector+='<td width=20 height=20 ><img width=20 height=20 id=select'+itemId+' itemId='+itemId+' src="'+src+
-				'" class="tipped" data-tipped-options="skin: \'fsItem\', ajax: true" data-tipped=\''+onmouseover+'\'>'+text+'</td>';
-			if (i%25===24 && i!==itemNodes.length-1) {selector+='</tr><tr>';}
+		for (var i = 0; i < itemNodes.length; i += 1) {
+			var item = itemNodes[i];
+			var src = item.getAttribute('src');
+			var text = item.parentNode.parentNode.textContent;
+			var onmouseover = $(item).data('tipped')
+				.replace('Click to Buy', 'Click to Select');
+			itemId = item.parentNode.getAttribute('href').match(/&item_id=(\d+)&/)[1];
+			selector += '<td width=20 height=20 ><img width=20 height=20 id=select' +
+				itemId + ' itemId=' + itemId + ' src="' + src + '" class="tipped" ' +
+				'data-tipped-options="skin: \'fsItem\', ajax: true" data-tipped=\'' +
+				onmouseover + '\'>' + text + '</td>';
+			if (i % 25 === 24 && i !== itemNodes.length - 1) {
+				selector += '</tr><tr>';
+			}
 		}
 		selector+='</table><table width="600px"></tr><tr><td align="right" ' +
 			'width="50%">Selected item:</td><td height=45 width="50%" id=' +
 			'selectedItem align="left">&nbsp;</td></tr><tr><td id=warningMsg' +
 			' colspan="2" align="center"></td></tr><tr><td id=buy_result ' +
 			'colspan="2" align="center"></td></tr>';
-		injectHere.after('<table><tr><td>'+selector+'</td></tr></table>');
-		for (i=0;i<itemNodes.length;i += 1) {
-			itemId=itemNodes[i].parentNode.getAttribute('href').match(/&item_id=(\d+)&/)[1];
-			document.getElementById('select'+itemId).addEventListener('click',FSH.Helper.selectShopItem,true);
+		injectHere.after('<table><tr><td>' + selector + '</td></tr></table>');
+		for (i = 0; i < itemNodes.length; i += 1) {
+			itemId = itemNodes[i].parentNode.getAttribute('href')
+				.match(/&item_id=(\d+)&/)[1];
+			document.getElementById('select' + itemId)
+				.addEventListener('click', FSH.Helper.selectShopItem, true);
 		}
-		FSH.Helper.shopId=itemNodes[0].parentNode.getAttribute('href').match(/&shop_id=(\d+)/)[1];
+		FSH.Helper.shopId = itemNodes[0].parentNode.getAttribute('href')
+			.match(/&shop_id=(\d+)/)[1];
 	},
 
-	selectShopItem: function(evt) {
-		FSH.Helper.shopItemId=evt.target.getAttribute('itemId');
-		document.getElementById('warningMsg').innerHTML='<span style="color:red;font-size:small">Warning:<br> pressing "t" now will buy the '+document.getElementById('buy_amount').value+' item(s) WITHOUT confirmation!</span>';
-		document.getElementById('selectedItem').innerHTML=
-			document.getElementById('select'+FSH.Helper.shopItemId).parentNode.innerHTML.replace(/='20'/g,'=45');
+	selectShopItem: function(evt) { // Native - Old map?
+		FSH.Helper.shopItemId = evt.target.getAttribute('itemId');
+		document.getElementById('warningMsg').innerHTML = '<span style="' +
+			'color:red;font-size:small">Warning:<br> pressing "t" now will buy the ' +
+			document.getElementById('buy_amount').value +
+			' item(s) WITHOUT confirmation!</span>';
+		document.getElementById('selectedItem').innerHTML =
+			document.getElementById('select' + FSH.Helper.shopItemId).parentNode
+			.innerHTML.replace(/='20'/g,'=45');
 	},
 
-	quickBuyItem: function() {
+	quickBuyItem: function() { // Legacy - Old map? - from key handler
 		if (!FSH.Helper.shopId || !FSH.Helper.shopItemId) {return;}
-		document.getElementById('buy_result').innerHTML='Buying '+document.getElementById('buy_amount').value+' Items';
-		for (var i=0;i<document.getElementById('buy_amount').value;i += 1) {
-			FSH.System.xmlhttp('index.php?cmd=shop&subcmd=buyitem&item_id='+FSH.Helper.shopItemId+'&shop_id='+FSH.Helper.shopId,
+		document.getElementById('buy_result').innerHTML = 'Buying ' +
+			document.getElementById('buy_amount').value + ' Items';
+		for (var i = 0; i < document.getElementById('buy_amount').value; i += 1) {
+			FSH.System.xmlhttp('index.php?cmd=shop&subcmd=buyitem&item_id=' +
+				FSH.Helper.shopItemId + '&shop_id=' + FSH.Helper.shopId,
 				FSH.Helper.quickDone);
 		}
 	},
 
-	quickDone: function(responseText) {
+	quickDone: function(responseText) { // Native - Old map?
 		var infoMessage = FSH.Layout.infoBox(responseText);
-		document.getElementById('buy_result').innerHTML+='<br />'+infoMessage;
+		document.getElementById('buy_result').innerHTML += '<br />' + infoMessage;
 	},
 
-	injectRelic: function() {
-		var relicNameElement = $('td:contains("Below is the current status ' +
-			'for the relic"):last');
-		relicNameElement.css('font-size', 'x-small');
-
-		var injectHere = $('td:contains("Defended"):last');
-		if (injectHere.length === 0) {return;}
-		var defendingGuildMiniSRC = $('img[src*="_mini.jpg"]').attr('src');
-		var defendingGuildID = /guilds\/(\d+)_mini.jpg/
-			.exec(defendingGuildMiniSRC)[1];
-		if (defendingGuildID === FSH.Layout.guildId().toString()) {
-			var listOfDefenders = injectHere.next().text().split(',');
-			// quick buff only supports 16
-			var shortList = [];
-			if (listOfDefenders) {
-				var modifierWord;
-				for (var i = 0; i < listOfDefenders.length; i += 1) {
-					shortList.push(listOfDefenders[i]);
-					if ((i + 1) % 16 === 0 && i !== 0 ||
-						i === listOfDefenders.length - 1) {
-						modifierWord = FSH.Layout.places[Math.floor(i / 16)];
-						var htmlToAppend = '<br><nobr><a href="#" id="buffAll' +
-							modifierWord + '"><span style="color:blue; font-' +
-							'size:x-small;" title="Quick buff functionality ' +
-							'from HCS only does 16">Buff ' + modifierWord +
-							' 16</span></a></nobr>';
-						injectHere.append(htmlToAppend);
-						var buffAllLink = $('#buffAll' + modifierWord);
-						buffAllLink.attr('href', FSH.Layout.buffAllHref(shortList));
-						shortList = [];
-					}
-				}
-			}
-		}
-		injectHere.append('<input id="calculatedefenderstats" type="button" ' +
-			'value="Fetch Stats" title="Calculate the stats of the players ' +
-			'defending the relic." class="custombutton">');
-		document.getElementById('calculatedefenderstats')
-			.addEventListener('click',
-				function() {
-					FSH.ajax.getMembrList(false)
-						.done(FSH.Helper.calculateRelicDefenderStats);
-				},
-				true);
-	},
-
-	calculateRelicDefenderStats: function() {
-		var validMemberString;
-		var membrList = FSH.Helper.membrList;
-		//hide the calc button
-		$('input[id="calculatedefenderstats"]').css('visibility','hidden');
-		//make the text smaller
-		$('td:contains("Below is the current status for the relic"):last')
-			.css('fontSize','x-small');
-		//set the colspan of all other rows to 3
-		$('table[width="600"]>tbody>tr:not(:eq(9))>td').attr('colspan',3);
-
-		var tableWithBorderElement = $('table[cellpadding="5"]');
-		tableWithBorderElement
-			.attr('align','left')
-			.attr('colSpan',2);
-		var tableInsertPoint = tableWithBorderElement.parents('tr:first');
-		tableInsertPoint.append('<td colspan="1"><table width="200" style="' +
-			'border:1px solid #A07720;"><tbody><tr><td id="InsertSpot"></td>' +
-			'</tr></tbody></table></td>');
-		var extraTextInsertPoint = FSH.System.findNode('//td[@id="InsertSpot"]');
-		var defendingGuildHref = $('a[href*="index.php?cmd=guild&subcmd=view' +
-			'&guild_id="]:first').attr('href');
-		FSH.Helper.getRelicGuildData(extraTextInsertPoint,defendingGuildHref);
-
-		var defendingGuildMiniSRC = $('img[src*="_mini.jpg"]').attr('src');
-		var defendingGuildID = /guilds\/(\d+)_mini.jpg/
-			.exec(defendingGuildMiniSRC)[1];
-		var myGuildID = FSH.Layout.guildId().toString();
-
-		var hideRelicOffline = FSH.System.getValue('hideRelicOffline');
-		if (defendingGuildID === myGuildID && !hideRelicOffline) {
-			validMemberString = '';
-			Object.keys(membrList).forEach(function(val) {
-				var member = membrList[val];
-				var lastLogin = 0;
-				if (member.last_login) {
-					lastLogin = Math.floor(Date.now() / 1000 -
-						member.last_login);
-				}
-				if (lastLogin >= 120 && // two minutes is offline
-					lastLogin <= 604800 && // 7 days max
-					(member.level < 400 || member.level > 421 &&
-					member.level < 441 || member.level > 450)) {
-					validMemberString += member.username + ' ';
-				}
-			});
-		}
-
-		var defenders = $('a[href*="cmd=profile&player_id="]',
-			'div#pCC table table');
-		defenders.each(function(ind) {
-			var $this = $(this);
-			FSH.Helper.getRelicPlayerData(ind, $this.attr('href'), $this.text());
-			if (defendingGuildID === myGuildID && !hideRelicOffline) {
-				validMemberString = validMemberString.replace(
-					$this.text() + ' ','');
-			}
-		});
-		FSH.Helper.relicDefenderCount = defenders.length;
-
-		var textToInsert = '<tr><td><table class="relicT">' +
-			'<tr><td colspan="2" class="headr">Defending Guild Stats</td></tr>' +
-			'<tr><td class="brn">Number of Defenders:</td>' +
-				'<td>' + FSH.Helper.relicDefenderCount + '</td></tr>' +
-			'<tr><td class="brn">Relic Count:</td>' +
-				'<td title="relicCount">0</td></tr>' +
-			'<tr><td class="brn">Lead Defender Bonus:</td>' +
-				'<td title="LDPercentage">0</td></tr>' +
-			'<tr class="hidden"><td>Relic Count Processed:</td>' +
-				'<td title="relicProcessed">0</td></tr>' +
-			'<tr class="hidden"><td colspan="2" class="headr">Lead Defender Full Stats</td></tr>' +
-			'<tr class="hidden"><td>Attack:</td>' +
-				'<td title="LDattackValue">0</td></tr>' +
-			'<tr class="hidden"><td>Defense:</td>' +
-				'<td title="LDdefenseValue">0</td></tr>' +
-			'<tr class="hidden"><td>Armor:</td>' +
-				'<td title="LDarmorValue">0</td></tr>' +
-			'<tr class="hidden"><td>Damage:</td>' +
-				'<td title="LDdamageValue">0</td></tr>' +
-			'<tr class="hidden"><td>HP:</td>' +
-				'<td title="LDhpValue">0</td></tr>' +
-			'<tr class="hidden"><td>LDProcessed:</td>' +
-				'<td title="LDProcessed">0</td></tr>' +
-			'<tr class="hidden"><td>LDFlinchLevel:</td>' +
-				'<td title="LDFlinchLevel">0</td></tr>' +
-			'<tr class="hidden"><td>LDConstitutionLevel:</td>' +
-				'<td title="LDConstitutionLevel">0</td></tr>' +
-			'<tr class="hidden"><td>LDNightmareVisageLevel:</td>' +
-				'<td title="LDNightmareVisageLevel">0</td></tr>' +
-			'<tr class="hidden"><td>LDFortitudeLevel:</td>' +
-				'<td title="LDFortitudeLevel">0</td></tr>' +
-			'<tr class="hidden"><td>LDChiStrikeLevel:</td>' +
-				'<td title="LDChiStrikeLevel">0</td></tr>' +
-			'<tr class="hidden"><td>LDTerrorizeLevel:</td>' +
-				'<td title="LDTerrorizeLevel">0</td></tr>' +
-			'<tr class="hidden"><td>LDSanctuaryLevel:</td>' +
-				'<td title="LDSanctuaryLevel">0</td></tr>' +
-			'<tr><td colspan="2" class="headr">Other Defender Stats</td></tr>' +
-			'<tr><td class="brn">Raw Attack:</td>' +
-				'<td class="grey" title="attackValue">0</td></tr>' +
-			'<tr><td class="brn">Attack w/ buffs:</td>' +
-				'<td title="attackValueBuffed">0</td></tr>' +
-			'<tr><td class="brn">Raw Defense:</td>' +
-				'<td class="grey" title="defenseValue">0</td></tr>' +
-			'<tr><td class="brn">Defense w/buffs:</td>' +
-				'<td title="defenseValueBuffed">0</td></tr>' +
-			'<tr><td class="brn">Raw Armor:</td>' +
-				'<td title="armorValue">0</td></tr>' +
-			'<tr><td class="brn">Armor w/ buffs:</td>' +
-				'<td title="armorValueBuffed">0</td></tr>' +
-			'<tr><td class="brn">Raw Damage:</td>' +
-				'<td class="grey" title="damageValue">0</td></tr>' +
-			'<tr><td class="brn">Damage w/ buffs:</td>' +
-				'<td title="damageValueBuffed">0</td></tr>' +
-			'<tr><td class="brn">Raw HP:</td>' +
-				'<td class="grey" title="hpValue">0</td></tr>' +
-			'<tr><td class="brn">HP w/ buffs:</td>' +
-				'<td title="hpValueBuffed">0</td></tr>' +
-			'<tr><td class="brn">Processed:</td>' +
-				'<td title="defendersProcessed">0</td></tr>' +
-			'<tr><td class="headr" colspan=2>Adjusted defense values:</td></tr>' +
-			'<tr><td class="brn">DC225:</td>' +
-				'<td title="DC225">0</td></tr>' +
-			'<tr><td class="brn">DC175:</td>' +
-				'<td title="DC175">0</td></tr>' +
-			'<tr><td class="headr" colspan=2>Attacking Group Stats:</td></tr>' +
-			'<tr><td class="brn">Raw Group Attack:</td>' +
-				'<td class="grey" title="GroupAttack"></td></tr>' +
-			'<tr><td class="brn">Group Attack w/ buffs:</td>' +
-				'<td title="GroupAttackBuffed"></td></tr>' +
-			'<tr><td class="brn">Raw Group Defense:</td>' +
-				'<td class="grey" title="GroupDefense"></td></tr>' +
-			'<tr><td class="brn">Group Defense w/ buffs:</td>' +
-				'<td title="GroupDefenseBuffed"></td></tr>' +
-			'<tr><td class="brn">Raw Group Armor:</td>' +
-				'<td title="GroupArmor"></td></tr>' +
-			'<tr><td class="brn">Group Armor w/ buffs:</td>' +
-				'<td title="GroupArmorBuffed"></td></tr>' +
-			'<tr><td class="brn">Raw Group Damage:</td>' +
-				'<td class="grey" title="GroupDamage"></td></tr>' +
-			'<tr><td class="brn">Group Damage w/ buffs:</td>' +
-				'<td title="GroupDamageBuffed"></td></tr>' +
-			'<tr><td class="brn">Raw Group HP:</td>' +
-				'<td class="grey" title="GroupHP"></td></tr>' +
-			'<tr><td class="brn">Group HP w/ buffs:</td>' +
-				'<td title="GroupHPBuffed"></td></tr>' +
-			'<tr><td class="headr" colspan=2>Processing:</td></tr>' +
-			'<tr><td style="color:green;" colspan="2" title="ProcessingStatus">Parsing defending guild stats ...</td></tr>' +
-			'<tr><td class="headr" colspan=2>Assumptions:</td></tr>' +
-			'<tr><td colspan="2" class="grey">Above calculations include Constitution, Fortitude, Nightmare Visage, Chi Strike, Terrorize and Flinch bonus calculations (in that order) on both the defending group and attacking group.</td></tr>';
-
-		if (defendingGuildID === myGuildID && !hideRelicOffline) {
-			validMemberString = validMemberString.slice(0, -1);
-			var validMemberArray = validMemberString.split(' ');
-			validMemberArray.forEach(function(val, ind, arr) {
-				if (membrList[val]) {
-					arr[ind] = '<a style="color:red;" href="index.php?cmd=' +
-						'profile&player_id=' + membrList[val].id + '">' +
-						val + '</a>';
-				}
-			});
-			validMemberString = validMemberArray.join(' ');
-
-			textToInsert += '<tr><td class="headr" colspan=2>Offline guild members not at relic:</td></tr>' +
-				'<tr title="offlinePlayerListControl"><td colspan=2 style="color:red;" title="offlinePlayerList">' + validMemberString + '</td></tr>' +
-				'<tr class="hidden"><td class="brn">OfflinePlayerCount:</td><td title="offlinePlayerCount">' + validMemberArray.length + '</td></tr>' +
-				'<tr class="hidden"><td class="brn">OfflinePlayersProcessed:</td><td title="offlinePlayersProcessed">0</td></tr>' +
-				'<tr class="hidden" title="offlinePlayerListControlTemp" style="display:block;"><td style="color:green;" colspan=2>Checking offline status ...</td></tr>';
-		}
-		textToInsert += '</table><td><tr>';
-		extraTextInsertPoint.innerHTML += textToInsert;
-	},
-
-	getRelicGuildData: function(extraTextInsertPoint, hrefpointer) {
-		FSH.System.xmlhttp(hrefpointer, FSH.Helper.parseRelicGuildData);
-	},
-
-	parseRelicGuildData: function(responseText) {
-		var doc = FSH.System.createDocument(responseText);
-		var relicCount = $('div#pCC table table table img[data-tipped*="' +
-			'Relic Bonuses"]', doc).length;
-		var relicCountElement = $('td[title="relicCount"]');
-		relicCountElement.html(relicCount);
-		var relicProcessedElement = $('td[title="relicProcessed"]');
-		relicProcessedElement.html(1);
-		FSH.Helper.syncRelicData();
-	},
-
-	getRelicPlayerData: function(defenderCount, hrefpointer, pl) {
-		if (defenderCount === 0) {
-			FSH.System.xmlhttp(
-				hrefpointer,
-				FSH.Helper.parseRelicPlayerData,
-				{'defenderCount': defenderCount}
-			);
-		} else {
-			$.ajax({
-				cache: false,
-				dataType: 'json',
-				url:'index.php',
-				data: {
-					'cmd': 'export',
-					'subcmd': 'profile',
-					'player_username': pl
-				},
-				success: function(data) {
-					FSH.Helper.parseRelicPlayerData(data, {'defenderCount': defenderCount});
-				}
-			});
-		}
-	},
-
-	parseRelicPlayerData: function(responseText, callback) {
-		var defenderMultiplier;
-		var attackValue;
-		var defenseValue;
-		var overallDefense;
-		var armorValue;
-		var damageValue;
-		var hpValue;
-		var defendersProcessed;
-		var defendersProcessedNumber;
-		var attackNumber;
-		var defenseNumber;
-		var armorNumber;
-		var damageNumber;
-		var hpNumber;
-
-		var defenderCount = callback.defenderCount;
-
-		var player = FSH.Helper.playerData(responseText);
-
-		if (defenderCount !== 0) {
-			defenderMultiplier = 0.2;
-			attackValue = $('td[title="attackValue"]');
-			attackNumber = FSH.System.intValue(attackValue.html());
-			attackValue.html(FSH.System.addCommas(attackNumber + Math.round(player.attackValue*defenderMultiplier)));
-			defenseValue = $('td[title="defenseValue"]');
-			defenseNumber = FSH.System.intValue(defenseValue.html());
-			overallDefense = defenseNumber + Math.round(player.defenseValue*defenderMultiplier);
-			defenseValue.html(FSH.System.addCommas(overallDefense));
-			armorValue = $('td[title="armorValue"]');
-			armorNumber = FSH.System.intValue(armorValue.html());
-			armorValue.html(FSH.System.addCommas(armorNumber + Math.round(player.armorValue*defenderMultiplier)));
-			damageValue = $('td[title="damageValue"]');
-			damageNumber = FSH.System.intValue(damageValue.html());
-			damageValue.html(FSH.System.addCommas(damageNumber + Math.round(player.damageValue*defenderMultiplier)));
-			hpValue = $('td[title="hpValue"]');
-			hpNumber = FSH.System.intValue(hpValue.html());
-			hpValue.html(FSH.System.addCommas(hpNumber + Math.round(player.hpValue*defenderMultiplier)));
-			defendersProcessed = $('td[title="defendersProcessed"]');
-			defendersProcessedNumber = FSH.System.intValue(defendersProcessed.html());
-			defendersProcessed.html(FSH.System.addCommas(defendersProcessedNumber + 1));
-		}
-		else {
-			FSH.Helper.leadDefender(player);
-		}
-		FSH.Helper.syncRelicData();
-	},
-
-	syncRelicData: function() {
-		var defendersProcessed = $('td[title="defendersProcessed"]');
-		var defendersProcessedNumber = FSH.System.intValue(defendersProcessed
-			.html());
-		var relicProcessedValue = $('td[title="relicProcessed"]');
-		if (FSH.Helper.relicDefenderCount === defendersProcessedNumber &&
-			relicProcessedValue.html() === '1') {
-			FSH.Helper.processRelicStats();
-		}
-	},
-
-	leadDefender: function(player) {
-		//get lead defender (LD) buffs here for use later ... 
-		var attackValue = $('td[title="LDattackValue"]');
-		var attackNumber = FSH.System.intValue(attackValue.html());
-		attackValue.html(FSH.System.addCommas(attackNumber + Math.round(player.attackValue)));
-		var defenseValue = $('td[title="LDdefenseValue"]');
-		var defenseNumber = FSH.System.intValue(defenseValue.html());
-		defenseValue.html(FSH.System.addCommas(defenseNumber + Math.round(player.defenseValue)));
-		var armorValue = $('td[title="LDarmorValue"]');
-		var armorNumber=FSH.System.intValue(armorValue.html());
-		armorValue.html(FSH.System.addCommas(armorNumber + Math.round(player.armorValue)));
-		var damageValue = $('td[title="LDdamageValue"]');
-		var damageNumber=FSH.System.intValue(damageValue.html());
-		damageValue.html(FSH.System.addCommas(damageNumber + Math.round(player.damageValue)));
-		var hpValue = $('td[title="LDhpValue"]');
-		var hpNumber=FSH.System.intValue(hpValue.html());
-		hpValue.html(FSH.System.addCommas(hpNumber + Math.round(player.hpValue)));
-		var defendersProcessed = $('td[title="defendersProcessed"]');
-		var defendersProcessedNumber = FSH.System.intValue(defendersProcessed.html());
-		defendersProcessed.html(FSH.System.addCommas(defendersProcessedNumber + 1));
-		var LDProcessed = $('td[title="LDProcessed"]');
-		LDProcessed.html(1);
-		var storedConstitutionLevel = $('td[title="LDConstitutionLevel"]');
-		storedConstitutionLevel.html(player.constitutionLevel);
-		var storedFlinchLevel = $('td[title="LDFlinchLevel"]');
-		storedFlinchLevel.html(player.flinchLevel);
-		var storedNightmareVisageLevel = $('td[title="LDNightmareVisageLevel"]');
-		storedNightmareVisageLevel.html(player.nightmareVisageLevel);
-		var storedFortitudeLevel = $('td[title="LDFortitudeLevel"]');
-		storedFortitudeLevel.html(player.fortitudeLevel);
-		var storedChiStrikeLevel = $('td[title="LDChiStrikeLevel"]');
-		storedChiStrikeLevel.html(player.chiStrikeLevel);
-		var storedTerrorizeLevel = $('td[title="LDTerrorizeLevel"]');
-		storedTerrorizeLevel.html(player.terrorizeLevel);
-		var storedSanctuaryLevel = $('td[title="LDSanctuaryLevel"]');
-		storedSanctuaryLevel.html(player.sanctuaryLevel);
-	},
-
-	processRelicStats: function() {
-		var processingStatus = $('td[title="ProcessingStatus"]');
-		processingStatus.html('Processing defending guild stats ... ');
-		var relicCountValue = $('td[title="relicCount"]');
-		var relicCount = FSH.System.intValue(relicCountValue.html());
-		var relicMultiplier = 1;
-		if (relicCount === 1) {
-			relicMultiplier = 1.5;
-		}
-		else if (relicCount >= 2) {
-			relicMultiplier = Math.round((1 - relicCount/10)*100)/100;
-		}
-
-		var LDConstitutionLevel = FSH.System.intValue($('td[title="LDConstitutionLevel"]').text());
-		var LDNightmareVisageLevel = FSH.System.intValue($('td[title="LDNightmareVisageLevel"]').text());
-		var LDFortitudeLevel = FSH.System.intValue($('td[title="LDFortitudeLevel"]').text());
-		var LDChiStrikeLevel = FSH.System.intValue($('td[title="LDChiStrikeLevel"]').text());
-		var LDSanctuaryLevel = FSH.System.intValue($('td[title="LDSanctuaryLevel"]').text());
-		var attackValue = $('td[title="attackValue"]');
-		var attackValueBuffed = $('td[title="attackValueBuffed"]');
-		var LDattackValue = $('td[title="LDattackValue"]');
-		var attackNumber = FSH.System.intValue(attackValue.html());
-		var LDattackNumber = FSH.System.intValue(LDattackValue.html());
-		var overallAttack = attackNumber + Math.round(LDattackNumber*relicMultiplier);
-		attackValue.html(FSH.System.addCommas(overallAttack));
-		var nightmareVisageEffect = Math.ceil(overallAttack*(LDNightmareVisageLevel * 0.0025));
-		attackValueBuffed.html(FSH.System.addCommas(overallAttack - nightmareVisageEffect));
-		var defenseValue = $('td[title="defenseValue"]');
-		var defenseValueBuffed = $('td[title="defenseValueBuffed"]');
-		var LDdefenseValue = $('td[title="LDdefenseValue"]');
-		var defenseNumber = FSH.System.intValue(defenseValue.html());
-		var LDdefenseNumber = FSH.System.intValue(LDdefenseValue.html());
-		var overallDefense = defenseNumber + Math.round(LDdefenseNumber*relicMultiplier);
-		defenseValue.html(FSH.System.addCommas(overallDefense));
-		var defenseWithConstitution = Math.ceil(overallDefense * (1 + LDConstitutionLevel * 0.001));
-		var totalDefense = defenseWithConstitution + nightmareVisageEffect;
-		defenseValueBuffed.html(FSH.System.addCommas(totalDefense));
-		var dc225 = $('td[title="DC225"]');
-		var dc175 = $('td[title="DC175"]');
-		dc225.html(FSH.System.addCommas(Math.ceil(totalDefense * (1 - 225 * 0.002))));
-		dc175.html(FSH.System.addCommas(Math.ceil(totalDefense * (1 - 175 * 0.002))));
-		var armorValue = $('td[title="armorValue"]');
-		var armorValueBuffed = $('td[title="armorValueBuffed"]');
-		var LDarmorValue = $('td[title="LDarmorValue"]');
-		var armorNumber = FSH.System.intValue(armorValue.html());
-		var LDarmorNumber = FSH.System.intValue(LDarmorValue.html());
-		var totalArmor = armorNumber + Math.round(LDarmorNumber*relicMultiplier);
-		armorValue.html(FSH.System.addCommas(totalArmor));
-		armorValueBuffed.html(FSH.System.addCommas(totalArmor + Math.floor(totalArmor * LDSanctuaryLevel * 0.001)));
-		var damageValue = $('td[title="damageValue"]');
-		var damageValueBuffed = $('td[title="damageValueBuffed"]');
-		var LDdamageValue = $('td[title="LDdamageValue"]');
-		var damageNumber = FSH.System.intValue(damageValue.html());
-		var LDdamageNumber = FSH.System.intValue(LDdamageValue.html());
-		var hpValue = $('td[title="hpValue"]');
-		var hpValueBuffed = $('td[title="hpValueBuffed"]');
-		var LDhpValue = $('td[title="LDhpValue"]');
-		var hpNumber = FSH.System.intValue(hpValue.html());
-		var LDhpNumber = FSH.System.intValue(LDhpValue.html());
-		var fortitudeBonusHP = Math.ceil(defenseWithConstitution * LDFortitudeLevel * 0.001);
-		var chiStrikeBonusDamage = Math.ceil((hpNumber + Math.round(LDhpNumber*relicMultiplier) + fortitudeBonusHP) * LDChiStrikeLevel * 0.001);
-		damageValue.html(FSH.System.addCommas(damageNumber + Math.round(LDdamageNumber*relicMultiplier)));
-		damageValueBuffed.html(FSH.System.addCommas(damageNumber + Math.round(LDdamageNumber*relicMultiplier) + chiStrikeBonusDamage));
-		hpValue.html(FSH.System.addCommas(hpNumber + Math.round(LDhpNumber*relicMultiplier)));
-		hpValueBuffed.html(FSH.System.addCommas(hpNumber + Math.round(LDhpNumber*relicMultiplier) + fortitudeBonusHP));
-		var LDpercentageValue = $('td[title="LDPercentage"]');
-		LDpercentageValue.html(relicMultiplier*100 + '%');
-
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups', FSH.Helper.relicCheckIfGroupExists);
-	},
-
-	relicCheckIfGroupExists: function(responseText) {
-		var processingStatus = $('td[title="ProcessingStatus"]');
-		processingStatus.html('Checking attacking group ... ');
-		var doc=FSH.System.createDocument(responseText);
-		var groupExistsIMG = $(doc).find('img[title="Disband Group (Cancel Attack)"]');
-		if (groupExistsIMG.length > 0) {
-			var groupHref = groupExistsIMG.parents('td:first').find('a:first').attr('href');
-			FSH.System.xmlhttp(groupHref, FSH.Helper.getRelicGroupData);
-		} else {
-			processingStatus.html('Done.');
-		}
-	},
-
-	getRelicGroupData: function(responseText) {
-		var processingStatus = $('td[title="ProcessingStatus"]');
-		processingStatus.html('Parsing attacking group stats ... ');
-		var doc = FSH.System.createDocument(responseText);
-		var theTable = $('div#pCC table table table', doc);
-		FSH.Helper.relicGroupAttackValue = FSH.System.intValue($('td#stat-attack',
-			theTable).text());
-		FSH.Helper.relicGroupDefenseValue = FSH.System.intValue($('td#stat-defense',
-			theTable).text());
-		FSH.Helper.relicGroupArmorValue = FSH.System.intValue($('td#stat-armor',
-			theTable).text());
-		FSH.Helper.relicGroupDamageValue = FSH.System.intValue($('td#stat-damage',
-			theTable).text());
-		FSH.Helper.relicGroupHPValue = FSH.System.intValue($('td#stat-hp',
-			theTable).text());
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=mercs', FSH.Helper.parseRelicMercStats);
-	},
-
-	parseRelicMercStats: function(responseText) {
-		//merc stats do not count for group stats so subtract them here ...
-		var processingStatus = $('td[title="ProcessingStatus"]');
-		processingStatus.html('Subtracting group merc stats ... ');
-
-		var mercPage = FSH.System.createDocument(responseText);
-		var mercElements = mercPage.getElementsByTagName('IMG');
-		var totalMercAttack = 0;
-		var totalMercDefense = 0;
-		var totalMercArmor = 0;
-		var totalMercDamage = 0;
-		var totalMercHP = 0;
-		var merc;
-		for (var i=0; i<mercElements.length; i += 1) {
-			merc = mercElements[i];
-			var mouseoverText = $(merc).data('tipped');
-			var src = merc.getAttribute('src');
-			if (mouseoverText && src.search('/merc/') !== -1){
-				var attackRE=/<td>Attack:<\/td><td>(\d+)<\/td>/;
-				var mercAttackValue = attackRE.exec(mouseoverText)[1]*1;
-				totalMercAttack += mercAttackValue;
-				var defenseRE=/<td>Defense:<\/td><td>(\d+)<\/td>/;
-				var mercDefenseValue = defenseRE.exec(mouseoverText)[1]*1;
-				totalMercDefense += mercDefenseValue;
-				var armorRE=/<td>Armor:<\/td><td>(\d+)<\/td>/;
-				var mercArmorValue = armorRE.exec(mouseoverText)[1]*1;
-				totalMercArmor += mercArmorValue;
-				var damageRE=/<td>Damage:<\/td><td>(\d+)<\/td>/;
-				var mercDamageValue = damageRE.exec(mouseoverText)[1]*1;
-				totalMercDamage += mercDamageValue;
-				var hpRE=/<td>HP:<\/td><td>(\d+)<\/td>/;
-				var mercHPValue = hpRE.exec(mouseoverText)[1]*1;
-				totalMercHP += mercHPValue;
-			}
-		}
-		FSH.Helper.relicGroupAttackValue = FSH.Helper.relicGroupAttackValue - Math.round(totalMercAttack*0.2);
-		FSH.Helper.relicGroupDefenseValue = FSH.Helper.relicGroupDefenseValue - Math.round(totalMercDefense*0.2);
-		FSH.Helper.relicGroupArmorValue = FSH.Helper.relicGroupArmorValue - Math.round(totalMercArmor*0.2);
-		FSH.Helper.relicGroupDamageValue = FSH.Helper.relicGroupDamageValue - Math.round(totalMercDamage*0.2);
-		FSH.Helper.relicGroupHPValue = FSH.Helper.relicGroupHPValue - Math.round(totalMercHP*0.2);
-
-		FSH.System.xmlhttp('index.php?cmd=profile', FSH.Helper.getRelicPlayerBuffs);
-	},
-
-	getRelicPlayerBuffs: function(responseText) {
-		var processingStatus = $('td[title="ProcessingStatus"]');
-		processingStatus.html('Processing attacking group stats ... ');
-
-		var player = FSH.Helper.playerData(responseText);
-		var groupAttackElement = $('td[title="GroupAttack"]');
-		var groupAttackBuffedElement = $('td[title="GroupAttackBuffed"]');
-		groupAttackElement.html(FSH.System.addCommas(FSH.Helper.relicGroupAttackValue));
-		var nightmareVisageEffect = Math.ceil(FSH.Helper.relicGroupAttackValue *
-			(player.nightmareVisageLevel * 0.0025));
-		FSH.Helper.relicGroupAttackValue = FSH.Helper.relicGroupAttackValue -
-			nightmareVisageEffect;
-		var storedFlinchLevel = FSH.System.intValue($('td[title="LDFlinchLevel"]')
-			.text());
-		var storedFlinchEffectValue = Math.ceil(FSH.Helper.relicGroupAttackValue *
-			storedFlinchLevel * 0.001);
-		groupAttackBuffedElement.html(FSH.System.addCommas(
-			FSH.Helper.relicGroupAttackValue - storedFlinchEffectValue));
-		var defenseWithConstitution = Math.ceil(FSH.Helper.relicGroupDefenseValue *
-			(1 + player.constitutionLevel * 0.001));
-		var totalDefense = defenseWithConstitution + nightmareVisageEffect;
-		var groupDefenseElement = $('td[title="GroupDefense"]');
-		var groupDefenseBuffedElement = $('td[title="GroupDefenseBuffed"]');
-		groupDefenseElement.html(FSH.System.addCommas(
-			FSH.Helper.relicGroupDefenseValue));
-		groupDefenseBuffedElement.html(FSH.System.addCommas(totalDefense));
-		var groupArmorElement = $('td[title="GroupArmor"]');
-		var groupArmorBuffedElement = $('td[title="GroupArmorBuffed"]');
-		groupArmorElement.html(FSH.System.addCommas(FSH.Helper.relicGroupArmorValue));
-		groupArmorBuffedElement.html(FSH.System.addCommas(
-			FSH.Helper.relicGroupArmorValue +
-			Math.floor(FSH.Helper.relicGroupArmorValue * player.sanctuaryLevel *
-			0.001)));
-		var groupDamageElement = $('td[title="GroupDamage"]');
-		var groupDamageBuffedElement = $('td[title="GroupDamageBuffed"]');
-		var groupHPElement = $('td[title="GroupHP"]');
-		var groupHPBuffedElement = $('td[title="GroupHPBuffed"]');
-		var fortitudeBonusHP = Math.ceil(defenseWithConstitution *
-			player.fortitudeLevel * 0.001);
-		var chiStrikeBonusDamage = Math.ceil((FSH.Helper.relicGroupHPValue +
-			fortitudeBonusHP) * player.chiStrikeLevel * 0.001);
-		var storedTerrorizeLevel = FSH.System.intValue(
-			$('td[title="LDTerrorizeLevel"]').text());
-		var storedTerrorizeEffectValue = Math.ceil(
-			FSH.Helper.relicGroupDamageValue * storedTerrorizeLevel * 0.001);
-		groupDamageElement.html(FSH.System.addCommas(FSH.Helper.relicGroupDamageValue));
-		groupDamageBuffedElement.html(FSH.System.addCommas(
-			FSH.Helper.relicGroupDamageValue + chiStrikeBonusDamage -
-			storedTerrorizeEffectValue));
-		groupHPElement.html(FSH.System.addCommas(FSH.Helper.relicGroupHPValue));
-		groupHPBuffedElement.html(FSH.System.addCommas(FSH.Helper.relicGroupHPValue +
-			fortitudeBonusHP));
-
-		//Effect on defending group from Flinch on attacking group.
-		var defGuildBuffedAttackElement = $('td[title="attackValueBuffed"]');
-		var defGuildBuffedAttackValue = FSH.System.intValue(
-			defGuildBuffedAttackElement.text());
-		var flinchEffectValue = Math.ceil(defGuildBuffedAttackValue *
-			player.flinchLevel * 0.001);
-		defGuildBuffedAttackElement.html(FSH.System.addCommas(
-			defGuildBuffedAttackValue - flinchEffectValue));
-		var defGuildBuffedDamageElement = $('td[title="damageValueBuffed"]');
-		var defGuildBuffedDamageValue = FSH.System.intValue(
-			defGuildBuffedDamageElement.text());
-		var terrorizeEffectValue = Math.ceil(defGuildBuffedDamageValue *
-			player.terrorizeLevel * 0.001);
-		defGuildBuffedDamageElement.html(FSH.System.addCommas(
-			defGuildBuffedDamageValue - terrorizeEffectValue));
-
-		processingStatus.html('Done.');
-	},
 
 	position: function() {
 		var result = {};
@@ -674,7 +122,7 @@ FSH.Helper = {
 		return result;
 	},
 
-	mapThis: function() {
+	mapThis: function() { // Legacy - Old map
 		if (!FSH.System.getValue('footprints')) {return;}
 		var realmId;
 		var levelName;
@@ -780,7 +228,7 @@ FSH.Helper = {
 		return buffHash;
 	},
 
-	checkBuffs: function() {
+	checkBuffs: function() { // Legacy - Old Map
 		var onmouseover;
 		var impsRemaining;
 		var textToTest;
@@ -1236,7 +684,7 @@ FSH.Helper = {
 		});
 	},
 
-	readyViewCreature: function() {
+	readyViewCreature: function() { // Hybrid - New Map
 		$('div#creatureEvaluator').html('');
 		$('div#creatureEvaluatorGroup').html('');
 
@@ -1884,7 +1332,7 @@ FSH.Helper = {
 		var imageNodeSRC = imageNode.src.replace(/.jpg(.*)/,'.jpg');
 
 		if (showMonsterLog) {
-			FSH.Helper.pushMonsterInfo({'key0':nameNode.textContent, 'key1':imageNodeSRC, 'key2':classNode.textContent, 'key3':levelNode.textContent,
+			FSH.monstorLog.pushMonsterInfo({'key0':nameNode.textContent, 'key1':imageNodeSRC, 'key2':classNode.textContent, 'key3':levelNode.textContent,
 				'key4':attackNode.textContent, 'key5':defenseNode.textContent, 'key6':armorNode.textContent, 'key7':damageNode.textContent,
 				'key8':hitpointsNode.textContent, 'key9':goldNode.textContent, 'key10':enchantmentsList});
 		}
@@ -1917,183 +1365,6 @@ FSH.Helper = {
 		callback.monster.setAttribute('mouseOverWidth', '600');
 		callback.monster.addEventListener('mouseover', FSH.Helper.clientTip, true);
 		if (callback.showTip) {FSH.Helper.clientTip({'target':callback.monster});}
-	},
-
-	pushMonsterInfo: function(monster) {
-		var i;
-		var name = monster.key0;
-		var monsterLog = FSH.System.getValueJSON('monsterLog');
-		if (!monsterLog) {monsterLog = {};}
-		if (!monsterLog[name]) {
-			monsterLog[name] = {'min':{}, 'max':{}};
-			for (i = 1; i < 10; i += 1) {
-				monsterLog[name].min['key' + i] = 1e+100;
-				monsterLog[name].max['key' + i] = 0;
-			}
-			//monsterLog[name]['min'] = {'cls':1e+100, 'lvl':1e+100, 'atk':1e+100, 'def':1e+100, 'arm':1e+100, 'dmg':1e+100, 'hp':1e+100, 'gold':1e+100};
-			//monsterLog[name]['max'] = {'cls':0, 'lvl':0, 'atk':0, 'def':0, 'arm':0, 'dmg':0, 'hp':0, 'gold':0};
-			for (i = 10; i < 11; i += 1) {// enchantments
-				if (monster['key' + i]) { //does this critter have enchantments, if so, then see min and max with the initial list
-					monsterLog[name].min['key' + i] = monster['key' + i];
-					monsterLog[name].max['key' + i] = monster['key' + i];
-				}
-			}
-		}
-		for (i = 1; i < 4; i += 1) {
-			monsterLog[name].min['key' + i] = monster['key' + i];
-		}
-		for (i = 4; i < 10; i += 1) {
-			var value = FSH.System.intValue(monster['key' + i]);
-			monsterLog[name].min['key' + i] = monsterLog[name].min['key' + i] < value?
-				monsterLog[name].min['key' + i] : value;
-			monsterLog[name].max['key' + i] = monsterLog[name].max['key' + i] > value?
-				monsterLog[name].max['key' + i] : value;
-		}
-		for (i = 10; i < 11; i += 1) {// enchantments
-			if (monster['key' + i]) { //does this critter have enchantments
-				if (!monsterLog[name].min['key' + i] || !monsterLog[name].min['key' + i]) {
-					monsterLog[name].min['key' + i] = monster['key' + i];
-					monsterLog[name].max['key' + i] = monster['key' + i];
-				}
-				for (var j = 0; j < monster['key' + i].length; j += 1) {
-					//~ var enchantName = monster['key' + i][j].name;
-					var enchantValue = monster['key' + i][j].value*1;
-					monsterLog[name].min['key' + i][j].value = monsterLog[name].min['key' + i][j].value*1 < enchantValue?
-						monsterLog[name].min['key' + i][j].value : enchantValue;
-					monsterLog[name].max['key' + i][j].value = monsterLog[name].max['key' + i][j].value*1 > enchantValue?
-						monsterLog[name].max['key' + i][j].value : enchantValue;
-				}
-			}
-		}
-		FSH.System.setValueJSON('monsterLog', monsterLog);
-	},
-
-	injectMonsterLog: function() {
-		var entityLog = FSH.System.getValueJSON('monsterLog');
-		var i;
-		if (entityLog) {
-			FSH.Helper.entityLogTable = {entity:[]};
-			for (var name in entityLog) {
-				if (!entityLog.hasOwnProperty(name)) { continue; }
-				var newEntity = {};
-				newEntity.name = name;
-				newEntity.key1 = entityLog[name].min.key1;
-				for (i = 2; i < 4; i += 1) {
-					newEntity['key' + i] = entityLog[name].min['key' + i];
-				}
-				for (i = 4; i < 10; i += 1) {
-					newEntity['key' + i] = FSH.System.addCommas(entityLog[name].min['key'+i]) + ' - ' +
-						FSH.System.addCommas(entityLog[name].max['key'+i]);
-				}
-				for (i = 10; i < 11; i += 1) {
-					if (entityLog[name].min['key' + i]) {
-						newEntity['key' + i] = '';
-						for (var j = 0; j < entityLog[name].min['key' + i].length; j += 1) {
-							newEntity['key' + i] += '<nobr>' + entityLog[name].min['key'+i][j].name + ' ' +
-								entityLog[name].min['key'+i][j].value + ' - ' + entityLog[name].max['key'+i][j].value + '<nobr>' +
-								(j !== entityLog[name].min['key' + i].length - 1? '<br/>':'');
-						}
-					}
-				}
-				FSH.Helper.entityLogTable.entity.push(newEntity);
-			}
-			FSH.Helper.sortBy = 'key3';
-			FSH.Helper.sortAsc = true;
-			FSH.Helper.entityLogTable.entity.sort(FSH.System.numberSort);
-		}
-		var content=FSH.Layout.notebookContent();
-		content.innerHTML = '<span id=FSH.Helper.entityTableOutput>No monster information! Please enable entity log and travel a bit to see the world</span>';
-		FSH.Helper.generateEntityTable();
-	},
-
-	generateEntityTable: function() {
-		var content = document.getElementById('FSH.Helper.entityTableOutput');
-		var i;
-		if (!FSH.Helper.entityLogTable || !content) {return;}
-
-		var result = '<table cellspacing="0" cellpadding="0" border="0" width="100%"><tr style="background-color:#110011; color:white;">'+
-			'<td width="90%" nobr align=center><b>&nbsp;Entity Information</b></td>'+
-			'<td width="10%" nobr>[<span id="FSH.Helper.clearEntityLog">Clear</span>]</td>'+
-			'</tr>' +
-			'</table>'+
-			'<table id="Helper:EntityInfo" cellspacing="1" cellpadding="2" border="0" style="font-size:small;"><tr style="background-color:#e2b960;">' +
-			'<th width="25%" align="left" sortkey="name" colspan="2">Entity</th>' +
-			'<th align="center" sortkey="key2">Class</th>' +
-			'<th align="center" sortkey="key3" sorttype="number">Lvl</th>' +
-			'<th align="center">Attack</th>' +
-			'<th align="center">Defence</th>' +
-			'<th align="center">Armor</th>' +
-			'<th align="center">Damage</th>' +
-			'<th align="center">HP</th>' +
-			//'<th align="center">Gold</th>' +
-			'<th align="center">Enhancements</th>' +
-			'</tr>';
-		for (var k=0;k<FSH.Helper.entityLogTable.entity.length;k += 1) {
-			result += '<tr class="HelperMonsterLogRow'+(1+k % 2)+'"><td align="center"><img width=40 height=40 ' +
-					'data-tipped="' + FSH.Helper.entityLogTable.entity[k].key1 + '" ' +
-					'src="' + FSH.Helper.entityLogTable.entity[k].key1 + '"/></td>';
-			result += '<td align="left">' + FSH.Helper.entityLogTable.entity[k].name + '</td>';
-			for (i = 2; i < 4; i += 1) {
-				result += '<td align="center">' +
-					FSH.System.addCommas(FSH.Helper.entityLogTable.entity[k]['key'+i]) +
-					'</td>';
-			}
-			for (i = 4; i < 9; i += 1) {// 10 is gold, we don't need to show this
-				result += '<td align="center">' +
-					FSH.Helper.entityLogTable.entity[k]['key'+i] + '</td>';
-			}
-			for (i = 10; i < 11; i += 1) {
-				var entityInformationValue = FSH.Helper.entityLogTable.entity[k]['key'+i];
-				if (!entityInformationValue) {
-					result += '<td align="center" style="font-size:small; color:gray;">**Missing**</td>';
-				} else {
-					result += '<td align="center" style="font-size:xx-small;">' + entityInformationValue + '</td>';
-				}
-			}
-		}
-		result += '</table>';
-		content.innerHTML = result;
-		document.getElementById('FSH.Helper.clearEntityLog').addEventListener('click', FSH.Helper.clearEntityLog, true);
-
-		var theTable=document.getElementById('Helper:EntityInfo');
-		for (i=0; i<theTable.rows[0].cells.length; i += 1) {
-			var cell=theTable.rows[0].cells[i];
-			if (cell.getAttribute('sortkey')) {
-				cell.style.textDecoration='underline';
-				cell.style.cursor='pointer';
-				cell.addEventListener('click', FSH.Helper.sortEntityLogTable, true);
-			}
-		}
-	},
-
-	clearEntityLog: function() {
-		FSH.System.setValue('monsterLog', '');
-		location.href = 'index.php?cmd=notepad&blank=1&subcmd=monsterlog';
-	},
-
-	sortEntityLogTable: function(evt) {
-		var headerClicked = evt.target.getAttribute('sortKey');
-		var sortType = evt.target.getAttribute('sortType');
-		if (!sortType) {sortType='string';}
-		if (FSH.Helper.sortAsc === undefined) {FSH.Helper.sortAsc=true;}
-		if (FSH.Helper.sortBy && FSH.Helper.sortBy===headerClicked) {
-			FSH.Helper.sortAsc=!FSH.Helper.sortAsc;
-		}
-
-		FSH.Helper.sortBy=headerClicked;
-//console.log(FSH.Helper.sortAsc + ' ' + FSH.Helper.sortBy + ' ' + sortType);
-
-		switch(sortType) {
-			case 'string':
-				FSH.Helper.entityLogTable.entity.sort(FSH.System.stringSort);
-				break;
-			case 'number':
-				FSH.Helper.entityLogTable.entity.sort(FSH.System.numberSort);
-				break;
-			default:
-				break;
-		}
-		FSH.Helper.generateEntityTable();
 	},
 
 	backpackUpdater: function(count){
@@ -2499,542 +1770,6 @@ FSH.Helper = {
 		});
 	},
 
-	injectInventoryManager: function() {
-		var content = FSH.Layout.notebookContent();
-		content.innerHTML = '<img src = "' + FSH.System.imageServer +
-			'/world/actionLoadingSpinner.gif">&nbsp;Getting inventory data...';
-		if (FSH.subcmd === 'invmanager') {
-			$.getJSON('?cmd=export&subcmd=inventory', FSH.Helper.gotInvMan);
-		} else if (FSH.subcmd === 'guildinvmanager') {
-			$.getJSON('?cmd=export&subcmd=guild_store&inc_tagged=1',
-				FSH.Helper.gotGuildInvMan);
-		}
-	},
-
-	gotInvMan: function(data) {
-		FSH.Helper.inventory = data;
-		FSH.Helper.inventory.folders['-1']='Main';
-		FSH.Helper.inventoryManagerHeaders('self', FSH.Helper.inventory,
-			'Helper:InventoryManagerOutput');
-	},
-
-	gotGuildInvMan: function(data) {
-		FSH.Helper.guildinventory = data;
-		$.getJSON('?cmd=export&subcmd=guild_members&guild_id=' +
-			FSH.Helper.guildinventory.guild_id, FSH.Helper.gotGuildMembers);
-	},
-
-	gotGuildMembers: function(data) {
-		var buildJSON='{';
-		for (var x in data) {
-			if (!data.hasOwnProperty(x)) { continue; }
-			buildJSON += '"' + data[x].id + '":"' + data[x].username + '",';
-		}
-		buildJSON = buildJSON.substring(0, buildJSON.length - 1) + '}';
-		FSH.Helper.guildinventory.members = JSON.parse(buildJSON);
-		FSH.Helper.inventoryManagerHeaders('guild', FSH.Helper.guildinventory,
-			'Helper:GuildInventoryManagerOutput');
-	},
-
-	setItemFilterDefault: function() {
-		FSH.Helper.itemFilters = [
-			{'id':'showHelmetTypeItems', 'type':'Helmet'},
-			{'id':'showAmorTypeItems', 'type':'Armor'},
-			{'id':'showGloveTypeItems', 'type':'Gloves'},
-			{'id':'showBootTypeItems', 'type':'Boots'},
-			{'id':'showWeaponTypeItems', 'type':'Weapon'},
-			{'id':'showShieldTypeItems', 'type':'Shield'},
-			{'id':'showRingTypeItems', 'type':'Ring'},
-			{'id':'showAmuletTypeItems', 'type':'Amulet'},
-			{'id':'showRuneTypeItems', 'type':'Rune'}
-		];
-	},
-
-	inventoryManagerHeaders: function(reportType, targetInventory, targetID) {
-		var content=FSH.Layout.notebookContent();
-		FSH.Helper.setItemFilterDefault();
-		var minLvl = FSH.System.getValue('inventoryMinLvl');
-		var maxLvl = FSH.System.getValue('inventoryMaxLvl');
-		var reportTitle;
-		if(reportType==='self'){
-			reportTitle='<td width="90%" nobr><b>&nbsp;Inventory Manager</b> ' + targetInventory.items.length +
-						' items (green = worn, blue = backpack)</td>';
-		}else{
-			reportTitle='<td width="90%" nobr><b>&nbsp;Guild Inventory Manager</b> ' + targetInventory.items.length +
-						' items (maroon = in BP, blue=guild store)</td>';
-		}
-		var newhtml='<table cellspacing="0" cellpadding="0" border="0" width="100%"><tr style="background-color:#cd9e4b">'+
-			reportTitle + '<tr><td colspan=2>' +
-			'<table><tr><td><b>Show Items:</b></td>' +
-				'<td><table><tr><td>' +
-				'<div align=right><form id=Helper:inventoryFilterForm subject="inventory" href="index.php?cmd=notepad&blank=1&subcmd=invmanager' +
-				'" onSubmit="javascript:return false;">' +
-				'Min lvl:<input value="' + minLvl + '" size=5 name="FSH.Helper.inventoryMinLvl" id="FSH.Helper.inventoryMinLvl" style=custominput/> ' +
-				'Max lvl:<input value="' + maxLvl + '" size=5 name="FSH.Helper.inventoryMaxLvl" id="FSH.Helper.inventoryMaxLvl" style=custominput/> ' +
-				'<input id="Helper:inventoryFilter" subject="inventory" href="index.php?cmd=notepad&blank=1&subcmd=invmanager" ' +
-				'class="custombutton" type="submit" value="Filter"/><input id="reportType" type="hidden" value="'+reportType+'" />' +
-				'<input id="Helper:inventoryFilterReset" subject="inventory" href="index.php?cmd=notepad&blank=1&subcmd=invmanager" ' +
-				'class="custombutton" type="button" value="Reset"/></form></div>';
-		for (var i=0; i<FSH.Helper.itemFilters.length; i += 1) {
-			newhtml += i % 5 === 0 ? '</td></tr><tr><td>' : '';
-			newhtml+='&nbsp;' +FSH.Helper.itemFilters[i].type+ ':<input id="'+FSH.Helper.itemFilters[i].id+'" type="checkbox" linkto="'+FSH.Helper.itemFilters[i].id+'"' +
-					(FSH.System.getValue(FSH.Helper.itemFilters[i].id)?' checked':'') + '/>';
-		}
-		newhtml+=' Sets Only: <input id="Helper:SetFilter" type="checkbox" />';
-		newhtml+='</td></tr><tr><td>&nbsp;<span id=SelectAllFilters>[Select All]</span>&nbsp;<span id=SelectNoFilters>[Select None]</span>' +
-				'</td></tr></table></td></tr></table>' +
-				'<div style="font-size:small;" id="'+targetID+'">' +
-				'</div>';
-		content.innerHTML=newhtml;
-
-		document.getElementById('Helper:SetFilter').addEventListener('click', FSH.Helper.generateInventoryTable, true);
-
-		FSH.Helper.generateInventoryTable();
-
-		document.getElementById('Helper:inventoryFilterReset').addEventListener('click', function(){
-				FSH.System.setValue('inventoryMinLvl', FSH.Data.defaults.inventoryMinLvl);
-				FSH.System.setValue('inventoryMaxLvl', FSH.Data.defaults.inventoryMaxLvl);
-				$('input[id="FSH.Helper.inventoryMinLvl"]').attr('value', FSH.Data.defaults.inventoryMinLvl);
-				$('input[id="FSH.Helper.inventoryMaxLvl"]').attr('value', FSH.Data.defaults.inventoryMaxLvl);
-				FSH.Helper.generateInventoryTable();
-			}, true);
-		document.getElementById('Helper:inventoryFilterForm').addEventListener('submit', function(){
-				FSH.System.setValue('inventoryMinLvl', $('input[id="FSH.Helper.inventoryMinLvl"]').attr('value'));
-				FSH.System.setValue('inventoryMaxLvl', $('input[id="FSH.Helper.inventoryMaxLvl"]').attr('value'));
-
-				FSH.Helper.generateInventoryTable();
-
-			}, true);
-
-		for (i=0; i<FSH.Helper.itemFilters.length; i += 1) {
-			document.getElementById(FSH.Helper.itemFilters[i].id).addEventListener('click', FSH.Helper.toggleCheckboxAndRefresh, true);
-		}
-		document.getElementById('SelectAllFilters').addEventListener('click', FSH.Helper.InventorySelectFilters, true);
-		document.getElementById('SelectNoFilters').addEventListener('click', FSH.Helper.InventorySelectFilters, true);
-	},
-
-	inventoryTableHeader: function(reportType) {
-		return '<table id="Helper:InventoryTable"><tr>' +
-			'<th width="180" align="left" sortkey="item_name" sortType=' +
-				'"string" colspan="2">Name</th>' +
-			'<th sortkey="stats.min_level" sortType="number">Level</th>' +
-			'<th align="left" sortkey="' +
-			(reportType === 'guild' ?
-			'player_name" sortType="string' :
-			'folder_id" sortType="number') +
-			'">Where</th>' +
-			'<th align="left" sortkey="type" sortType="number">Type</th>' +
-			'<th sortkey="stats.attack" sortType="number">Att</th>' +
-			'<th sortkey="stats.defense" sortType="number">Def</th>' +
-			'<th sortkey="stats.armor" sortType="number">Arm</th>' +
-			'<th sortkey="stats.damage" sortType="number">Dam</th>' +
-			'<th sortkey="stats.hp" sortType="number">HP</th>' +
-			'<th colspan="2" sortkey="forge" sortType="number">Forge</th>' +
-			'<th align="left" sortkey="craft" sortType="string">Craft</th>' +
-			'<th align="right" sortkey="durabilityPer" sortType="number">' +
-				'Dur%</th>' +
-			//dropLink +
-			'<th width="10"></th>';
-	},
-
-	generateInventoryTable: function() {
-		var targetId;
-		var targetInventory;
-		var inventoryShell;
-
-		var reportType = $('input[id="reportType"]').attr('value');
-		if (reportType === 'guild') {
-			targetId = 'Helper:GuildInventoryManagerOutput';
-			targetInventory = FSH.Helper.guildinventory;
-			inventoryShell = 'guildinventory';
-		} else {
-			targetId = 'Helper:InventoryManagerOutput';
-			targetInventory = FSH.Helper.inventory;
-			inventoryShell = 'inventory';
-		}
-		if (!targetInventory) {return;}
-
-		var result = FSH.Helper.inventoryTableHeader(reportType);
-
-		FSH.Helper.disableItemColoring = FSH.System.getValue('disableItemColoring');
-
-		var allItems = targetInventory.items;
-		var minLvl = parseInt($('input[id="FSH.Helper.inventoryMinLvl"]')
-			.attr('value'), 10);
-		var maxLvl = parseInt($('input[id="FSH.Helper.inventoryMaxLvl"]')
-			.attr('value'), 10);
-		var setsOnly = $('input[id="Helper:SetFilter"]').is(':checked');
-		for (var i = 0; i < allItems.length;i += 1) {
-			var item = allItems[i];
-
-			//continue; if item is filtered.
-			if (item.type > 8 ||
-				!$('input[id="' + FSH.Helper.itemFilters[item.type].id + '"]')
-					.is(':checked') ||
-				minLvl > item.stats.min_level ||
-				maxLvl < item.stats.min_level || 
-				setsOnly && !item.stats.set_name) {continue;}
-
-			if (item.equipped) {item.folder_id = 99999999; } //for sorting purposes.
-			item.player_name = '';
-			var color;
-			var whereTitle = '';
-			var whereText = '';
-			var p = 0;
-			var t = 0;
-			if (reportType === 'guild') {
-				if (item.player_id === -1) { //guild store
-					item.player_name = 'GS';
-					color = 'navy';
-					whereText = 'GS';
-					whereTitle = 'Guild Store';
-					p = targetInventory.guild_id;
-					t = 4;
-				} else {
-					item.player_name = targetInventory.members[item.player_id];
-					color = 'maroon';
-					whereText = item.player_name;
-					whereTitle='Guild Report';
-					p = item.player_id;
-					t = 1;
-				}
-				p = p + '&currentPlayerId=' + targetInventory.current_player_id;
-			} else {
-				if (item.equipped) {
-					color = 'green';
-					whereText = 'Worn';
-					whereTitle = 'Wearing it';
-				} else {
-					color = 'blue';
-					whereText = FSH.Helper.inventory.folders[item.folder_id];
-					whereTitle = 'In Backpack';
-				}
-				p = targetInventory.player_id;
-				t = 1;
-			}
-
-			item.rarityColor = FSH.Helper.disableItemColoring ? '' : ' color:' +
-				FSH.Data.rarity[item.rarity].colour;
-
-			item.displayName = item.item_name;
-			if (item.equipped) {
-				item.displayName = '<b>' + item.displayName + '</b>';
-			}
-			result += '<tr style="color:' + color + '"><td></td><td><a ' +
-				'style="cursor:help;' + item.rarityColor + '" id="Helper:item' +
-				i + '" arrayID="' + i + '" class="tip-dynamic" data-tipped="' +
-				'fetchitem.php?item_id=' + item.item_id + '&inv_id=' +
-				item.inv_id + '&t=' + t + '&p=' + p + '">' + item.displayName +
-				'</a>';
-
-			var itemRE = new RegExp('amulet|armor|armored|axe|boots|fist|' +
-				'gauntlets|gloves|hammer|helm|helmet|mace|necklace|of|plate|' +
-				'ring|rune|shield|sword|the|weapon', 'gi');
-
-			if (item.stats.set_name && reportType === 'guild') {
-				result += ' (<a href="/index.php?cmd=guild&subcmd=inventory&' +
-					'subcmd2=report&set=' +
-					item.item_name.replace(itemRE,'').trim().replace(/  /g,' ')
-						.replace(/  /g,' ').replace(/ /g,'|') + '">set</a>)';
-			}
-
-			item.craftColor = FSH.Data.craft[item.craft] ?
-				FSH.Data.craft[item.craft].colour : '';
-
-			if (item.durability) {
-				item.durabilityPer = Math.floor(100 * item.durability /
-					item.max_durability);
-				item.durabilityColor = item.durabilityPer < 20 ? 'red' : 'gray';
-			}
-
-			result += '</td>' +
-				'<td align="right">' + item.stats.min_level + '</td>' +
-				'<td align="left" title="' + whereTitle + '">' + whereText +
-					'</td>' +
-				'<td align="left">' + FSH.Data.itemType[item.type] + '</td>' +
-				'<td align="right">' + item.stats.attack + '</td>' +
-				'<td align="right">' + item.stats.defense + '</td>' +
-				'<td align="right">' + item.stats.armor + '</td>' +
-				'<td align="right">' + item.stats.damage + '</td>' +
-				'<td align="right">' + item.stats.hp + '</td>' +
-				'<td align="right">' + item.forge + '</td>' +
-				'<td>' + (item.forge > 0 ? '<img src="' + FSH.System.imageServer +
-					'/hellforge/forgelevel.gif">':'') + '</td>' +
-				'<td align="left">' + '<span style="color:' + item.craftColor +
-					';">' + item.craft + '</span>' + '</td>' +
-				'<td align="right">' + '<span style="color:' +
-					item.durabilityColor + ';">' + item.durabilityPer +
-					'</span></td>' +
-				'<td></td></tr>';
-		}
-
-		result += '</table><input type="hidden" id="xcnum" value="' +
-			window.ajaxXC + '" />';
-
-		var output = document.getElementById(targetId);
-		output.innerHTML = result;
-
-		var inventoryTable=document.getElementById('Helper:InventoryTable');
-		for (i = 0; i < inventoryTable.rows[0].cells.length; i += 1) {
-			var cell = inventoryTable.rows[0].cells[i];
-			cell.style.textDecoration = 'underline';
-			cell.style.cursor = 'pointer';
-			cell.addEventListener('click', FSH.Helper.sortInventoryTable, true);
-		}
-
-		$('a[id*="Helper:item"]').click(FSH.Helper.inspectInventoryItem);
-	},
-
-	inspectInventoryItem: function() {
-		var reportType=$('input[id="reportType"]').attr('value');
-		var i=$(this).attr('arrayID');
-		var html = '';
-		var t=1;
-		var p=0;
-		var targetInventory;
-		//http://www.fallensword.com/index.php?cmd=guild&subcmd=inventory&subcmd2=takeitem&guildstore_id=24096093&ajax=1
-		if (reportType === 'guild') {
-			targetInventory = FSH.Helper.guildinventory;
-			html+='<span id="Helper:Recall">';
-			if(targetInventory.items[i].player_id===-1){
-				p=targetInventory.guild_id;
-				t=4;
-				html+='&nbsp;<span id="Helper:RecallToBP" style="cursor:pointer; text-decoration:underline; color:blue;" href="' +
-						FSH.System.server + 'index.php?cmd=guild&subcmd=inventory&subcmd2=takeitem&guildstore_id=' +
-						targetInventory.items[i].inv_id + '">Fast BP</span><br />';
-			}else{
-				p=targetInventory.items[i].player_id;
-				t=1;
-				html+='&nbsp;<span id="Helper:RecallToBP" style="cursor:pointer; text-decoration:underline; color:blue;" href="' +
-						FSH.System.server + 'index.php?cmd=guild&subcmd=inventory&subcmd2=recall&id=' + targetInventory.items[i].inv_id +
-						'&player_id='+ p +'&mode=0">Fast BP</span> |' + '&nbsp;<span id="Helper:RecallToStore" style="cursor:pointer; ' +
-						'text-decoration:underline; color:blue;" href="' + FSH.System.server + 'index.php?cmd=guild&subcmd=inventory&' +
-						'subcmd2=recall&id=' + targetInventory.items[i].inv_id + '&player_id=' + p + '&mode=1">Fast GS</span><br />';
-				if(targetInventory.items[i].equipped){
-					html+='<span id="Helper:isEquiped">This item is being worn!</span><br />';
-				}
-				html+='<span id="Helper:IsWornBy">Is being held by: '+targetInventory.items[i].player_name+'</span><br />';
-			}
-			html+='</span><br />';
-			p=p+'&currentPlayerId='+targetInventory.current_player_id;
-		}else{
-			targetInventory = FSH.Helper.inventory;
-			//'INSTANTLY DROP '+targetInventory.items[i].item_name+'. NO REFUNDS OR DO-OVERS! Use at own risk.'
-			html+='<span id="Helper:FolderMove"><select id="Helper:ToFolder"><option value="0">Move to folder</option>';
-			for(var key in targetInventory.folders){
-				if (!targetInventory.folders.hasOwnProperty(key)) { continue; }
-				html+= '<option value="'+key+'">'+targetInventory.folders[key]+'</option>';
-			}
-			html+='</select><input id="Helper:InitiateMove" type="submit" class="custombutton" value="Move!" invid="'+
-					targetInventory.items[i].inv_id+'" ></span><br />';
-			html+='<span id="Helper:Drop"><input id="Helper:DropItem" class="custombutton" type="submit" invid="'+
-					targetInventory.items[i].inv_id+'"  itemName="'+targetInventory.items[i].item_name+'" value="Drop Item!" /></span><br />' + 
-					'<span id="Helper:Send" >send to <input type="text" id="Helper:sendTo" size=5 /><input id="Helper:SendSubmit" ' +
-					'class="custombutton" type="submit" invid="'+targetInventory.items[i].inv_id+'" value="Send!"/></span><br />' +
-					'<span id="Helper:Wear"><input class="custombutton" type="submit" id="Helper:equipProfileInventoryItem" ' +
-					'itemID="' + targetInventory.items[i].inv_id + '" value="Put it on!"></span> <br />' +
-					'<span id="Helper:Sell"><a href="http://www.fallensword.com/index.php?cmd=auctionhouse&subcmd=create2&inv_id='+
-					targetInventory.items[i].inv_id+'">Post to AH</a></span><br />';
-			t=1;
-			p=targetInventory.player_id;
-		}
-		//http://www.fallensword.com/index.php?cmd=auctionhouse&type=-1&search_text=Bahmou%20Mask
-		html+='<span id="Helper:SearchAH"><a href="http://www.fallensword.com/index.php?cmd=auctionhouse&type=-1&search_text='+
-				encodeURI(targetInventory.items[i].item_name)+'">Search AH</a></span><br /><br />';
-		if(targetInventory.items[i].stats.set_name) {
-			html += 'Set Name: ' + targetInventory.items[i].stats.set_name +
-				'<br />';
-		}
-		html+='<img src="'+FSH.System.imageServer+'/items/'+targetInventory.items[i].item_id+'.gif" class="tip-dynamic" ' +
-				'data-tipped="fetchitem.php?item_id='+targetInventory.items[i].item_id+'&inv_id='+
-				targetInventory.items[i].inv_id+'&t='+t+'&p='+p+'" border=0>';
-		var $dialog = $('<div></div>')
-			.html(html)
-			.dialog({
-				title: targetInventory.items[i].item_name,
-				resizable: false,
-				height:350,
-				width:300,
-				modal: true,
-				buttons: {
-					'Close' : function() {
-						$dialog.dialog( 'close' );
-					}
-				}
-			});
-		if (reportType === 'self') {
-			document.getElementById('Helper:equipProfileInventoryItem').addEventListener('click', FSH.common.equipProfileInventoryItem, true);
-		}
-		$('input[id="Helper:DropItem"]').click(function() {
-			var answer = confirm('Are you sure you want to drop '+$(this).attr('itemName')+'?');
-			if(answer){
-				var itemInvId = $(this).attr('invid');
-				var dropHref = FSH.System.server + 'index.php?cmd=profile&subcmd=dodropitems&removeIndex[]=' + itemInvId;
-				$.ajax({
-					url: dropHref,
-					success: function( data ) {
-						var info = FSH.Layout.infoBox(data);
-						var drop=$('span[id="Helper:Drop"]');
-						if (info==='Items dropped and destroyed.') {
-							drop.html('Item Dropped!');
-							drop.css('color','green');
-							drop.css('fontWeight','bold');
-							drop.css('fontSize','small');
-						} else if (info!=='') {
-							drop.css('color','red');
-							drop.css('fontWeight','bold');
-							drop.css('fontSize','small');
-							drop.html('Error: ' + info);
-						} else {
-							drop.css('color','red');
-							drop.css('fontSize','small');
-							drop.html('Weird Error: check the Tools>Error Console');
-							console.log('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
-							console.log(data);
-						}
-					}
-				});
-			}
-		});
-		$('input[id="Helper:SendSubmit"]').click(function() {
-			var itemInvId = $(this).attr('invid');
-			var xcNum = $('input[id="xcnum"]').attr('value');
-			var itemRecipient = $('input[id="Helper:sendTo"]').val();
-			var sendItemHref = FSH.System.server + 'index.php?cmd=trade&subcmd=senditems&xc=' + xcNum + '&target_username=' + itemRecipient + '&sendItemList[]=' + itemInvId;
-			$.ajax({
-				url: sendItemHref,
-				success: function( data ) {
-					var info = FSH.Layout.infoBox(data);
-					var send=$('span[id="Helper:Send"]');
-					if (info==='Items sent successfully!') {
-						send.html('Item sent to ' + itemRecipient + '!');
-						send.css('color','green');
-						send.css('fontWeight','bold');
-						send.css('fontSize','small');
-					} else if (info!=='') {
-						send.css('color','red');
-						send.css('fontWeight','bold');
-						send.css('fontSize','small');
-						send.html('Error: ' + info);
-					} else {
-						send.css('color','red');
-						send.css('fontSize','small');
-						send.html('Weird Error: check the Tools>Error Console');
-						console.log('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
-						console.log(data);
-					}
-				}
-			});
-
-		});
-		$('span[id*="Helper:RecallTo"]').click(function() {
-			var href = $(this).attr('href');
-			var id = $(this).attr('id');
-			$.ajax({
-				url: href,
-				success: function( data ) {
-					var info = FSH.Layout.infoBox(data);
-					var recall=$('span[id="'+id+'"]');
-					if (info === 'You successfully recalled the item.' ||
-						info === 'You successfully took the item into your backpack.') {
-						recall.html('Recalled!');
-						recall.css('color','green');
-						recall.css('fontWeight','bold');
-						recall.css('fontSize','small');
-					} else if (info!=='') {
-						recall.css('color','red');
-						recall.css('fontWeight','bold');
-						recall.css('fontSize','small');
-						recall.html('Error: ' + info);
-					} else {
-						recall.css('color','red');
-						recall.css('fontSize','small');
-						recall.html('Weird Error: check the Tools>Error Console');
-						console.log('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
-						console.log(data);
-					}
-				}
-			});
-		});
-		$('input[id="Helper:InitiateMove"]').click(function() {
-			var itemInvId = $(this).attr('invid');
-			var folderID = $('select[id="Helper:ToFolder"]').val();
-			var moveHref = FSH.System.server + 'index.php?cmd=profile&subcmd=sendtofolder&folderItem[]='+itemInvId+'&folder_id=' + folderID;
-			$.ajax({
-				url: moveHref,
-				success: function( data ) {
-					var info = FSH.Layout.infoBox(data);
-					var move=$('span[id="Helper:FolderMove"]');
-					if (info==='Items moved to folder successfully!') {
-						move.html('Item Moved!');
-						move.css('color','green');
-						move.css('fontWeight','bold');
-						move.css('fontSize','small');
-					} else if (info!=='') {
-						move.css('color','red');
-						move.css('fontWeight','bold');
-						move.css('fontSize','small');
-						move.html('Error: ' + info);
-					} else {
-						move.css('color','red');
-						move.css('fontSize','small');
-						move.html('Weird Error: check the Tools>Error Console');
-						console.log('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
-						console.log(data);
-					}
-				}
-			});
-		});
-	},
-
-	sortInventoryTable: function(evt) {
-		var targetInventory;
-		var reportType=$('input[id="reportType"]').attr('value');
-		if (reportType === 'guild') {
-			targetInventory = FSH.Helper.guildinventory;
-		} else {
-			targetInventory = FSH.Helper.inventory;
-		}
-		var headerClicked=evt.target.getAttribute('sortKey');
-		var sortType=evt.target.getAttribute('sortType');
-		if (FSH.Helper.sortAsc===undefined) {FSH.Helper.sortAsc=true;}
-		if (FSH.Helper.sortBy && FSH.Helper.sortBy===headerClicked) {
-			FSH.Helper.sortAsc=!FSH.Helper.sortAsc;
-		}
-		FSH.Helper.sortBy='item_name';
-		targetInventory.items.sort(FSH.System.stringSort);
-
-		FSH.Helper.sortBy=headerClicked;
-		if (sortType === 'number') {
-			targetInventory.items.sort(FSH.System.numberSort);
-		}
-		else {
-			targetInventory.items.sort(FSH.System.stringSort);
-		}
-		FSH.Helper.generateInventoryTable();
-	},
-
-	InventorySelectFilters: function(evt) {
-		FSH.Helper.setItemFilterDefault();
-		var checkedValue = evt.target.id==='SelectAllFilters';
-		for (var i=0; i<FSH.Helper.itemFilters.length; i += 1) {
-			FSH.System.setValue(FSH.Helper.itemFilters[i].id, checkedValue);
-		}
-		for (i=0; i<FSH.Helper.itemFilters.length; i += 1) {
-			document.getElementById(FSH.Helper.itemFilters[i].id).checked = checkedValue;
-		}
-		setTimeout(function() {
-			FSH.Helper.generateInventoryTable();
-		});
-	},
-
-	toggleCheckboxAndRefresh: function(evt) {
-		FSH.System.setValue(evt.target.id, evt.target.checked);
-		setTimeout(function() {
-			FSH.Helper.generateInventoryTable();
-		});
-	},
-
 	getKillStreak: function(responseText) {
 		var doc=FSH.System.createDocument(responseText);
 		//Kill&nbsp;Streak:&nbsp;
@@ -3059,7 +1794,7 @@ FSH.Helper = {
 		FSH.System.setValue('lastDeathDealerPercentage', deathDealerPercentage);
 	},
 
-	injectCreature: function() {
+	injectCreature: function() { // Legacy - Old Map
 		FSH.System.xmlhttp('index.php?cmd=profile',
 			FSH.Helper.getCreaturePlayerData,
 			{	'groupExists': false,
@@ -3071,26 +1806,38 @@ FSH.Helper = {
 				'groupEvaluation': false
 			}
 		);
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups', FSH.Helper.checkIfGroupExists);
+		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups',
+			FSH.Helper.checkIfGroupExists);
 
-		var creatureName = FSH.System.findNode('//td[@align="center"]/font[@size=3]/b');
-		var doNotKillList=FSH.System.getValue('doNotKillList');
+		var creatureName =
+			FSH.System.findNode('//td[@align="center"]/font[@size=3]/b');
+		var doNotKillList = FSH.System.getValue('doNotKillList');
 		if (creatureName) {
-			creatureName.innerHTML += ' <a href="http://guide.fallensword.com/index.php?cmd=creatures&search_name=' + creatureName.textContent + '&search_level_min=&search_level_max=&search_class=-1" target="_blank">' +
-				'<img border=0 title="Search creature in Ultimate FSG" width=10 height=10 src="'+ FSH.System.imageServer + '/temple/1.gif"/></a>' +
-				' <a href="http://wiki.fallensword.com/index.php/Special:Search?search=' + creatureName.textContent + '&go=Go" target="_blank">' +
-				'<img border=0 title="Search creature in Wiki" width=10 height=10 src="/favicon.ico"/></a>';
+			creatureName.innerHTML += ' <a href="http://guide.fallensword.com/' +
+				'index.php?cmd=creatures&search_name=' + creatureName.textContent +
+				'&search_level_min=&search_level_max=&search_class=-1" ' +
+				'target="_blank">' +
+				'<img border=0 title="Search creature in Ultimate FSG" width=10 ' +
+				'height=10 src="' + FSH.System.imageServer + '/temple/1.gif"/></a>' +
+				' <a href="http://wiki.fallensword.com/index.php/Special:Search' +
+				'?search=' + creatureName.textContent + '&go=Go" target="_blank">' +
+				'<img border=0 title="Search creature in Wiki" width=10 ' +
+				'height=10 src="/favicon.ico"/></a>';
 			var extraText = 'Add to the do not kill list';
 			if (doNotKillList.indexOf(creatureName.textContent.trim()) !== -1) {
 				extraText = 'Remove from do not kill list';
 			}
-			creatureName.innerHTML += '&nbsp;<span style="cursor:pointer;text-decoration:underline;color:blue;font-size:x-small;" ' +
-				'id="addRemoveCreatureToDoNotKillList" creatureName="' + creatureName.textContent.trim() + '">' + extraText + '</span>';
-			document.getElementById('addRemoveCreatureToDoNotKillList').addEventListener('click', FSH.Helper.addRemoveCreatureToDoNotKillList, true);
+			creatureName.innerHTML += '&nbsp;<span style="cursor:pointer;' +
+				'text-decoration:underline;color:blue;font-size:x-small;" ' +
+				'id="addRemoveCreatureToDoNotKillList" creatureName="' +
+				creatureName.textContent.trim() + '">' + extraText + '</span>';
+			document.getElementById('addRemoveCreatureToDoNotKillList')
+				.addEventListener('click',
+					FSH.Helper.addRemoveCreatureToDoNotKillList, true);
 		}
 	},
 
-	addRemoveCreatureToDoNotKillList: function(evt) {
+	addRemoveCreatureToDoNotKillList: function(evt) { // Native - Both Maps
 		var creatureName = evt.target.getAttribute('creatureName');
 		var doNotKillList = FSH.System.getValue('doNotKillList');
 		var newDoNotKillList = '';
@@ -3098,11 +1845,13 @@ FSH.Helper = {
 			newDoNotKillList = doNotKillList.replace(creatureName, '');
 			newDoNotKillList = newDoNotKillList.replace(',,', ',');
 			if (newDoNotKillList.charAt(0) === ',') {
-				newDoNotKillList = newDoNotKillList.substring(1,newDoNotKillList.length);
+				newDoNotKillList = newDoNotKillList
+					.substring(1,newDoNotKillList.length);
 			}
 			evt.target.innerHTML = 'Add to the do not kill list';
 		} else {
-			newDoNotKillList = doNotKillList + (doNotKillList.length !== 0?',':'') + creatureName;
+			newDoNotKillList = doNotKillList +
+				(doNotKillList.length !== 0 ? ',' : '') + creatureName;
 			newDoNotKillList = newDoNotKillList.replace(',,', ',');
 			evt.target.innerHTML = 'Remove from do not kill list';
 		}
@@ -3112,22 +1861,34 @@ FSH.Helper = {
 		window.GameData.doAction(-1);
 	},
 
-	checkIfGroupExists: function(responseText) {
+	checkIfGroupExists: function(responseText) { // Hybrid - Both Maps
 		var doc=FSH.System.createDocument(responseText);
-		var groupExistsIMG = $(doc).find('img[title="Disband Group (Cancel Attack)"]');
+		var groupExistsIMG = $(doc)
+			.find('img[title="Disband Group (Cancel Attack)"]');
 		if (groupExistsIMG.length > 0) {
-			var groupHref = groupExistsIMG.parents('td:first').find('a:first').attr('href');
+			var groupHref = groupExistsIMG.parents('td:first').find('a:first')
+				.attr('href');
 			FSH.System.xmlhttp(groupHref, FSH.Helper.getCreatureGroupData);
 		}
 	},
 
-	getCreatureGroupData: function(responseText) {
-		var doc=FSH.System.createDocument(responseText);
-		var groupAttackValue = FSH.System.findNode('//table[@width="400"]/tbody/tr/td[contains(.,"Attack:")]',doc).nextSibling.textContent.replace(/,/,'')*1;
-		var groupDefenseValue = FSH.System.findNode('//table[@width="400"]/tbody/tr/td[contains(.,"Defense:")]',doc).nextSibling.textContent.replace(/,/,'')*1;
-		var groupArmorValue = FSH.System.findNode('//table[@width="400"]/tbody/tr/td[contains(.,"Armor:")]',doc).nextSibling.textContent.replace(/,/,'')*1;
-		var groupDamageValue = FSH.System.findNode('//table[@width="400"]/tbody/tr/td[contains(.,"Damage:")]',doc).nextSibling.textContent.replace(/,/,'')*1;
-		var groupHPValue = FSH.System.findNode('//table[@width="400"]/tbody/tr/td[contains(.,"HP:")]',doc).nextSibling.textContent.replace(/,/,'')*1;
+	getCreatureGroupData: function(responseText) { // Legacy - Both Maps
+		var doc = FSH.System.createDocument(responseText);
+		var groupAttackValue = FSH.System.findNode('//table[@width="400"]/tbody' +
+			'/tr/td[contains(.,"Attack:")]', doc).nextSibling.textContent
+			.replace(/,/, '') * 1;
+		var groupDefenseValue = FSH.System.findNode('//table[@width="400"]/tbody' +
+			'/tr/td[contains(.,"Defense:")]', doc).nextSibling.textContent
+			.replace(/,/, '') * 1;
+		var groupArmorValue = FSH.System.findNode('//table[@width="400"]/tbody' +
+			'/tr/td[contains(.,"Armor:")]', doc).nextSibling.textContent
+			.replace(/,/, '') * 1;
+		var groupDamageValue = FSH.System.findNode('//table[@width="400"]/tbody' +
+			'/tr/td[contains(.,"Damage:")]', doc).nextSibling.textContent
+			.replace(/,/, '') * 1;
+		var groupHPValue = FSH.System.findNode('//table[@width="400"]/tbody' +
+			'/tr/td[contains(.,"HP:")]', doc).nextSibling.textContent
+			.replace(/,/, '') * 1;
 		FSH.System.xmlhttp('index.php?cmd=profile',
 			FSH.Helper.getCreaturePlayerData,
 			{	'groupExists': true,
@@ -3254,7 +2015,7 @@ FSH.Helper = {
 		return obj;
 	},
 
-	creatureData: function(ses) {
+	creatureData: function(ses) { // Hybrid - Both Maps
 		var obj = {};
 		if ($('#worldPage').length > 0) { // new map
 			obj.name    = $('#dialog-viewcreature').find('h2.name').text();
@@ -3659,7 +2420,7 @@ FSH.Helper = {
 
 	},
 
-	getCreaturePlayerData: function(responseText, callback) {
+	getCreaturePlayerData: function(responseText, callback) { // Legacy - Both Maps
 
 		var combat = {};
 		combat.callback = callback;
@@ -3735,552 +2496,6 @@ FSH.Helper = {
 				window.alert('Please visit the preferences page to cache your Krul Portal link');
 			}
 		}
-	},
-
-	injectArena: function() {
-		var arenaTables = FSH.System.findNodes('//table[@width=620]/tbody/tr/td[contains(.,"Reward")]/../../..');
-		var injectHere = FSH.System.findNode('//tr[td/input[@value="Setup Combat Moves..."]]').previousSibling.previousSibling.firstChild;
-		var hideMatchesForCompletedMoves = FSH.System.getValue('hideMatchesForCompletedMoves');
-		injectHere.innerHTML = '<input id="Helper:hideMatchesForCompletedMoves" type="checkbox"' +
-				(hideMatchesForCompletedMoves?' checked':'') + '/>'+
-				'<span style="color:blue;">&nbsp;Hide Matches for Completed Moves ' +
-				'<div align=center><form id=Helper:arenaFilterForm subject="arena" onSubmit="javascript:return false;">' +
-				'Min lvl:<input value="' + FSH.System.getValue('arenaMinLvl') + '" size=5 name="FSH.Helper.arenaMinLvl" id="FSH.Helper.arenaMinLvl" style=custominput/> ' +
-				'Max lvl:<input value="' + FSH.System.getValue('arenaMaxLvl') + '" size=5 name="FSH.Helper.arenaMaxLvl" id="FSH.Helper.arenaMaxLvl" style=custominput/> ' +
-				'<input id="Helper:arenaFilter" subject="arena" class="custombutton" type="submit" value="Filter"/>' +
-				'<input id="Helper:arenaFilterReset" subject="arena" class="custombutton" type="button" value="Reset"/></form></div>'+
-				'</span>';
-		document.getElementById('Helper:hideMatchesForCompletedMoves').addEventListener('click', FSH.Helper.hideMatchesForCompletedMoves, true);
-		document.getElementById('Helper:arenaFilterReset').addEventListener('click', FSH.Helper.resetLevelFilter, true);
-		document.getElementById('Helper:arenaFilterForm').addEventListener('submit', FSH.Helper.setLevelFilter, true);
-
-		var arenaMoves = FSH.System.getValueJSON('arenaMoves');
-		var hideArenaPrizes = FSH.System.getValue('hideArenaPrizes');
-		var hideArenaPrizesArray;
-		if (hideArenaPrizes) {
-			hideArenaPrizesArray = hideArenaPrizes.split(',');
-		}
-		var oldArenaMatches = FSH.System.getValueJSON('arenaMatches');
-		var arenaMatches;
-		if (!oldArenaMatches) {
-			arenaMatches = [];
-		} else {
-			while (oldArenaMatches.length>1000)
-			{
-				oldArenaMatches.shift();
-			}
-			arenaMatches = oldArenaMatches;
-		}
-		var matchFound = false;
-		var minLvl=FSH.System.getValue('arenaMinLvl');
-		var maxLvl=FSH.System.getValue('arenaMaxLvl');
-		var k;
-		var prizeSRCShort;
-		var aMatch;
-		for( var ar = 0; ar < arenaTables.length;ar += 1)
-		{
-			var arenaTable = arenaTables[ar];
-			for (var i=1; i<arenaTable.rows.length; i += 1){
-				var row = arenaTable.rows[i];
-
-				matchFound = false;
-				aMatch = {};
-				var arenaIDRE = /#\s(\d+)/;
-				var arenaID = arenaIDRE.exec(row.cells[0].textContent)[1]*1;
-				if (oldArenaMatches){
-					for (k=0; k<oldArenaMatches.length; k += 1){
-						if (oldArenaMatches[k].arenaID === arenaID) {
-							matchFound = true;
-							break;
-						}
-					}
-				}
-				if (!matchFound) {
-					aMatch.arenaID = arenaID;
-					aMatch.arenaJoinCostHTML = row.cells[2].innerHTML;
-					aMatch.arenaSpecialsHTML = row.cells[4].innerHTML;
-					if (row.cells[4].innerHTML.search('/pvp/specials_1.gif') !== -1) {
-						aMatch.arenaSpecials = true;
-					} else {
-						aMatch.arenaSpecials = false;
-					}
-					aMatch.arenaHellForgeHTML = row.cells[5].innerHTML;
-					aMatch.arenaEpicHTML = row.cells[6].innerHTML;
-					aMatch.arenaMaxEquipHTML = row.cells[7].innerHTML;
-					aMatch.arenaRewardHTML = row.cells[8].innerHTML;
-					arenaMatches.push(aMatch);
-				}
-
-				var prizeSRC = row.cells[8].firstChild.getAttribute('src');
-				var maxEquipLvL = row.cells[7].textContent.replace(',','');
-				if (hideMatchesForCompletedMoves && arenaMoves && prizeSRC && prizeSRC.search('/pvp/') !== -1) {
-					for (var j=0; j<arenaMoves.length; j += 1){
-						prizeSRCShort = prizeSRC.substr(prizeSRC.indexOf('/pvp/'),prizeSRC.length);
-						var searchText = '/pvp/' + arenaMoves[j].moveID+ '.gif';
-						if (prizeSRCShort === searchText && arenaMoves[j].moveCount === 3){
-							row.style.visibility = 'hidden';
-							row.style.display = 'none';
-							break;
-						}
-					}
-				}
-				if (prizeSRC && prizeSRC.search('/items/') !== -1) {
-					var prizeImgElement = row.cells[8].firstChild;
-					var prizeOnmouseover = $(prizeImgElement).data('tipped');
-					//var itemIdRE = /ajaxLoadCustom\((\d+)/;
-					var itemIdRE = /fetchitem.php\?item_id=(\d+)/;
-					var itemId = itemIdRE.exec(prizeOnmouseover)[1];
-					prizeOnmouseover = prizeOnmouseover.replace(/""/,'"ItemId = '+itemId+'"');
-					prizeImgElement.setAttribute('data-tipped', prizeOnmouseover);
-					if (hideArenaPrizes) {
-						for (k=0; k<hideArenaPrizesArray.length; k += 1){
-							prizeSRCShort = prizeSRC.substr(prizeSRC.indexOf('/items/'),prizeSRC.length);
-							var compareStr = '/items/' + hideArenaPrizesArray[k] + '.gif';
-							if (prizeSRCShort === compareStr) {
-								row.style.visibility = 'hidden';
-								row.style.display = 'none';
-								break;
-							}
-						}
-					}
-				}
-				if (!(maxEquipLvL >= minLvl && maxEquipLvL <= maxLvl)) {
-					row.style.visibility = 'hidden';
-					row.style.display = 'none';
-				}
-
-				if (!matchFound) {
-					//color new matches since last visit
-					row.style.backgroundColor = '#F5F298';
-				}
-			}
-		}
-		FSH.System.setValueJSON('arenaMatches', arenaMatches);
-
-		FSH.Helper.getArenaTable();
-		FSH.Helper.addEventSortArena();
-		if (FSH.System.getValue('autoSortArenaList')) {
-			FSH.Helper.sortArenaByHeader('');
-		}
-	},
-
-	setLevelFilter: function(evt) {
-		var filterSubject = evt.target.getAttribute('subject');
-		var href = evt.target.getAttribute('href');
-		var minLvlSearchText = filterSubject + 'MinLvl';
-		var maxLvlSearchText = filterSubject + 'MaxLvl';
-		var playerMinLvl = document.getElementById('FSH.Helper.' +
-			minLvlSearchText);
-		var playerMaxLvl = document.getElementById('FSH.Helper.' +
-			maxLvlSearchText);
-		if (playerMinLvl.value === '') {
-				playerMinLvl.value = FSH.Data.defaults[minLvlSearchText];}
-		if (playerMaxLvl.value === '') {
-				playerMaxLvl.value = FSH.Data.defaults[maxLvlSearchText];}
-		if (!isNaN(playerMinLvl.value)) {
-			FSH.System.setValue(minLvlSearchText, parseInt(playerMinLvl.value, 10));
-		}
-		if (!isNaN(playerMaxLvl.value)) {
-			FSH.System.setValue(maxLvlSearchText, parseInt(playerMaxLvl.value, 10));
-		}
-		if (href) {location.href = FSH.System.server + href;
-		} else {location.reload();}
-	},
-
-	resetLevelFilter: function(evt) {
-		var filterSubject = evt.target.getAttribute('subject');
-		var href = evt.target.getAttribute('href');
-		var minLvlSearchText = filterSubject + 'MinLvl';
-		var maxLvlSearchText = filterSubject + 'MaxLvl';
-		FSH.System.setValue(minLvlSearchText, FSH.Data.defaults[minLvlSearchText]);
-		document.getElementById('FSH.Helper.' + minLvlSearchText).value =
-			FSH.Data.defaults[minLvlSearchText];
-		FSH.System.setValue(maxLvlSearchText, FSH.Data.defaults[maxLvlSearchText]);
-		document.getElementById('FSH.Helper.' + maxLvlSearchText).value =
-			FSH.Data.defaults[maxLvlSearchText];
-		if (href) {location.href = FSH.System.server + href;
-		} else {location.reload();}
-	},
-
-	addEventSortArena: function() {
-		var titleCells=FSH.System.findNodes('//td[.="Id"]/../td');
-		for (var i=0; i<titleCells.length; i += 1) {
-			var cell=titleCells[i];
-			cell.innerHTML = cell.innerHTML.replace(/ \[/,'<br>[');
-			cell.innerHTML = cell.innerHTML.replace(/&nbsp;/,' ');
-			if (cell.innerHTML.search('LvL') !== -1 ||
-				cell.innerHTML.search('Join Cost') !== -1 ||
-				cell.innerHTML.search('State') !== -1 ||
-				cell.innerHTML.search('Specials') !== -1 ||
-				cell.innerHTML.search('Hell Forge') !== -1 ||
-				cell.innerHTML.search('Epic') !== -1 ||
-				cell.innerHTML.search('Id') !== -1){
-				cell.style.textDecoration='underline';
-				cell.style.cursor='pointer';
-				cell.innerHTML=cell.innerHTML.replace(/^&nbsp;/,'');
-				cell.addEventListener('click', FSH.Helper.sortArena, true);
-			}
-		}
-	},
-
-	hideMatchesForCompletedMoves: function(evt) {
-		FSH.System.setValue('hideMatchesForCompletedMoves', evt.target.checked);
-		location.reload();
-	},
-
-	sortArena: function(evt) {
-		FSH.Helper.sortArenaByHeader(evt.target.textContent.replace(/[ \s]/g,''));
-	},
-
-	getArenaTable: function() {
-		var list=FSH.System.findNode('//td[.="Id"]/../..');
-
-		FSH.Helper.arenaRows = [];
-		for (var i=1; i<list.rows.length; i += 1){
-			var theRow=list.rows[i];
-			FSH.Helper.arenaRows[i-1] = {
-				'ArenaID': theRow.cells[0].textContent,
-				'Players': theRow.cells[1].textContent,
-				'JoinCost': theRow.cells[2].textContent.replace(/,/g,'')*1,
-				'JoinCostHTML': theRow.cells[2].innerHTML,
-				'State': theRow.cells[3].textContent,
-				'Specials': theRow.cells[4].firstChild.getAttribute('src').search('/specials_1.gif') === -1? 1:0,
-				'SpecialsHTML': theRow.cells[4].innerHTML,
-				'HellForge': theRow.cells[5].firstChild.getAttribute('src').search('/specials_1.gif') === -1? 1:0,
-				'HellForgeHTML': theRow.cells[5].innerHTML,
-				'Epic': theRow.cells[6].firstChild.getAttribute('src').search('/specials_1.gif') === -1? 1:0,
-				'EpicHTML': theRow.cells[6].innerHTML,
-				'MaxEquipLvL': theRow.cells[7].textContent.replace(/,/g,'')*1,
-				'MaxEquipLvLHTML': theRow.cells[7].innerHTML,
-				'Reward': theRow.cells[8].innerHTML,
-				'Action': theRow.cells[9].innerHTML,
-				'Visibility': theRow.style.visibility,
-				'BackgroundColor': theRow.style.backgroundColor
-			};
-		}
-	},
-
-	sortArenaByHeader: function(headerClicked) {
-		if (headerClicked==='') {
-			headerClicked = FSH.System.getValue('arenaSortBy');
-			if (headerClicked === undefined) {headerClicked='State';}
-		} else {
-			FSH.System.setValue('arenaSortBy', headerClicked);
-		}
-		if (headerClicked==='Id') {headerClicked='ArenaID';}
-
-		if (FSH.Helper.sortAsc === undefined) {
-			FSH.Helper.sortAsc=FSH.System.getValue('arenaSortAsc');
-			if (FSH.Helper.sortAsc === undefined) {FSH.Helper.sortAsc=false;}
-		} else {
-			if (FSH.Helper.sortBy && FSH.Helper.sortBy===headerClicked) {
-				FSH.Helper.sortAsc=!FSH.Helper.sortAsc;
-			}
-		}
-		FSH.System.setValue('arenaSortAsc',FSH.Helper.sortAsc);
-		FSH.Helper.sortBy=headerClicked;
-
-		if (headerClicked==='Member' || headerClicked==='State') {
-			FSH.Helper.arenaRows.sort(FSH.System.stringSort);
-		}
-		else {
-			FSH.Helper.arenaRows.sort(FSH.System.numberSort);
-		}
-
-		var list=FSH.System.findNode('//td[.="Id"]/../..');
-		var result='<tr>' + list.rows[0].innerHTML + '</tr>';
-
-		var minLvl=FSH.System.getValue('arenaMinLvl');
-		var maxLvl=FSH.System.getValue('arenaMaxLvl');
-		for (var i=0; i<FSH.Helper.arenaRows.length; i += 1){
-			var r = FSH.Helper.arenaRows[i];
-			//var bgColor=((i % 2)===0)?'bgcolor="#e7c473"':'bgcolor="#e2b960"'
-			var bgColor='bgcolor="'+r.BackgroundColor+'"';
-			if (r.Action.search('View') !== -1) {
-				bgColor = 'bgcolor="#f5e2b3"';
-			}
-			if (r.Visibility!=='hidden' && r.MaxEquipLvL >= minLvl && r.MaxEquipLvL <= maxLvl) {
-				result += '<TR>'+
-				'<TD '+bgColor+' style="border-bottom:1px solid #CD9E4B;">'+r.ArenaID+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.Players+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.JoinCostHTML+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.State+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.SpecialsHTML+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.HellForgeHTML+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.EpicHTML+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.MaxEquipLvLHTML+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;">'+r.Reward+'</TD>'+
-				'<TD '+bgColor+' align="center" style="border-bottom:1px solid #CD9E4B;"><form method="post" action="index.php">'+r.Action+'</form></TD></TR>';
-			}
-		}
-		//result+='<tr>' + list.rows[list.rows.length-1].innerHTML + '</tr>'
-
-		list.innerHTML=result;
-
-		FSH.Helper.addEventSortArena();
-	},
-
-	storeArenaMoves: function(){
-		var arenaMoves = FSH.System.findNodes('//img[@vspace="4"]');
-		var moves = [];
-		var arenaMove;
-		var aMove;
-		for (var i=1; i<arenaMoves.length; i += 1) {
-			arenaMove = arenaMoves[i];
-			aMove = {};
-			var moveGifNumberRE = /(\d+).gif/;
-			var moveGifNumber = moveGifNumberRE.exec(arenaMove.getAttribute('src'))[1];
-			var moveCountRE = /<\/a><br>(\d)\&nbsp;\/\&nbsp;(\d)/;
-			var moveCount = moveCountRE.exec(arenaMove.parentNode.parentNode.innerHTML);
-			aMove.moveID = moveGifNumber;
-			aMove.moveCount = moveCount[2];
-			aMove.moveHREF = arenaMove.getAttribute('src');
-			moves.push(aMove);
-		}
-		FSH.System.setValueJSON('arenaMoves', moves);
-	},
-
-	getCombatMoves: function(responseText) {
-		var doc=FSH.System.createDocument(responseText);
-		var combatMovesTable = FSH.System.findNode('//td[table/tbody/tr/td/table/tbody/tr/td/a[@href="index.php?cmd=arena&subcmd=pickmove&slot_id=1"]]', doc);
-		var injectHere = FSH.System.findNode('//span[@id="Helper:combatMoves"]');
-		injectHere.innerHTML = combatMovesTable.innerHTML;
-	},
-
-	storeCompletedArenas: function() {
-		//fix button class and add go to first and last
-		var prevButton = FSH.System.findNode('//input[@value="<"]');
-		var nextButton = FSH.System.findNode('//input[@value=">"]');
-		if (prevButton) {
-			prevButton.setAttribute('class', 'custombutton');
-			var startButton = document.createElement('input');
-			startButton.setAttribute('type', 'button');
-			startButton.setAttribute('onclick', prevButton.getAttribute('onclick').replace(/\&page=[0-9]*/, '&page=1'));
-			startButton.setAttribute('class', 'custombutton');
-			startButton.setAttribute('value', '<<');
-			prevButton.parentNode.insertBefore(startButton,prevButton);
-		}
-		if (nextButton) {
-			nextButton.setAttribute('class', 'custombutton');
-			var lastPageNode=FSH.System.findNode('//input[@value="Go"]/../preceding-sibling::td');
-			var lastPage = lastPageNode.textContent.replace(/\D/g,'');
-			var finishButton = document.createElement('input');
-			finishButton.setAttribute('type', 'button');
-			finishButton.setAttribute('onclick', nextButton.getAttribute('onclick').replace(/\&page=[0-9]*/, '&page=' + lastPage));
-			finishButton.setAttribute('class', 'custombutton');
-			finishButton.setAttribute('value', '>>');
-			nextButton.parentNode.insertBefore(finishButton, nextButton.nextSibling);
-		}
-
-		var arenaTable = FSH.System.findNode('//table[@width=620]/tbody/tr/td[contains(.,"Reward")]/table');
-
-		// var arenaMoves = FSH.System.getValueJSON('arenaMoves');
-		var oldArenaMatches = FSH.System.getValueJSON('arenaMatches');
-		var arenaMatches;
-		var aMatch;
-		if (!oldArenaMatches) {
-			arenaMatches = [];
-		} else {
-			while (oldArenaMatches.length>1000)
-			{
-				oldArenaMatches.shift();
-			}
-			arenaMatches = oldArenaMatches;
-		}
-		var matchFound = false;
-
-		for (var i=1; i<arenaTable.rows.length-1; i += 1){
-			var row = arenaTable.rows[i];
-			matchFound = false;
-			aMatch = {};
-			var arenaIDRE = /#\s(\d+)/;
-			var arenaID = arenaIDRE.exec(row.cells[0].textContent)[1]*1;
-			if (oldArenaMatches){
-				for (var k=0; k<oldArenaMatches.length; k += 1){
-					if (oldArenaMatches[k].arenaID === arenaID) {
-						matchFound = true;
-						break;
-					}
-				}
-			}
-			if (!matchFound) {
-				aMatch.arenaID = arenaID;
-				aMatch.arenaJoinCostHTML = row.cells[2].innerHTML;
-				aMatch.arenaSpecialsHTML = row.cells[4].innerHTML;
-				if (row.cells[4].innerHTML.search('/pvp/specials_1.gif') !== -1) {
-					aMatch.arenaSpecials = true;
-				} else {
-					aMatch.arenaSpecials = false;
-				}
-				aMatch.arenaHellForgeHTML = row.cells[5].innerHTML;
-				aMatch.arenaMaxEquipHTML = row.cells[6].innerHTML;
-				aMatch.arenaRewardHTML = row.cells[7].innerHTML;
-				arenaMatches.push(aMatch);
-			}
-		}
-		FSH.System.setValueJSON('arenaMatches', arenaMatches);
-	},
-
-	injectArenaSetupMove: function() {
-		var node=FSH.System.findNode('//b[.="Setup Combat Moves"]');
-		if (!node) {return;}
-		node.style.textDecoration = 'underline';
-		node.style.color = 'green';
-		node.style.cursor= 'pointer';
-		node.addEventListener('click', FSH.Helper.changeArenaMove, true);
-	},
-
-	changeArenaMove: function() {
-		if (document.getElementById('updateMv')) {return;}
-		var nodes = FSH.System.findNodes('//a[contains(@href,"index.php?cmd=arena&subcmd=pickmove&slot_id=")]');
-		var table = nodes[0].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
-		var imgs = FSH.System.findNodes('//img[contains(@src,"pvp/bar_spacer.jpg")]');
-
-		// selection row
-		var row=table.insertRow(-1);
-		var html='<td></td>';
-		var arr=['BL', 'CA','CH','DD','DF','DG', 'LG','PA','SA','PS','CR', 'WK'];
-		//		   0	1	 2	  3		4	5	  6		7	8	 9	  10	11
-		var i;
-		var select = '<option value=x>BA</option>';
-		for (i=0; i<arr.length; i += 1) {
-			select += '<option value='+i+'>'+arr[i]+'</option>';
-		}
-		for (i=0; i<nodes.length; i += 1) {
-			var s=select;
-			var m=nodes[i].firstChild.getAttribute('src');
-			if (m.indexOf('bar_icon_holder.jpg')>0) {
-				m='x';
-			} else {
-				m=m.match(/pvp\/(\d+).gif$/)[1];
-			}
-			html += '<td colspan=3><select id=mv'+i+'>'+s.replace('value='+m+'>','value='+m+' selected>')+'</select></td>';
-		}
-		row.innerHTML = html;
-
-		// img row
-		for (i=0; i<imgs.length; i += 1) {
-			imgs[i].width=15;
-			imgs[i].height=50;
-		}
-
-		// action row
-		row=table.insertRow(-1);
-		row.innerHTML='<td colspan=31 align=center><input id=updateMv type=button class=custombutton value=Update name=updateMoves></td>';
-		document.getElementById('updateMv').addEventListener('click', FSH.Helper.updateMove, true);
-	},
-
-	updateMove: function(evt, moves) {
-		var mv=[], oldmv=[];
-		for (var i=0; i<10; i += 1) {
-			mv.push(document.getElementById('mv'+i).value);
-		}
-		if (moves) {mv = moves;}
-		var nodes = FSH.System.findNodes('//a[contains(@href,"index.php?cmd=arena&subcmd=pickmove&slot_id=")]');
-		for (i=0; i<nodes.length; i += 1) {
-			var m=nodes[i].firstChild.getAttribute('src');
-			if (m.indexOf('bar_icon_holder.jpg')>0) {
-				m='x';
-			} else {
-				m=m.match(/pvp\/(\d+).gif$/)[1];
-			}
-			oldmv.push(m);
-		}
-		for (i=0; i<10; i += 1) {
-			if (mv[i] !== oldmv[i]) {
-				FSH.System.xmlhttp('index.php?cmd=arena&subcmd=dopickmove&move_id=x&slot_id='+i);
-			}
-		}
-		setTimeout(function() {
-			for (i=0; i<10; i += 1) {
-				if (mv[i] !== oldmv[i] && mv[i] !== 'x') {
-					FSH.System.xmlhttp('index.php?cmd=arena&subcmd=dopickmove&move_id='+mv[i]+'&slot_id='+i);
-				}
-			}
-			setTimeout(function() {location.reload();}, 500);
-		}, 500);
-	},
-
-	injectNotepadShowLogs: function(content) {
-		if (!content) {content = FSH.Layout.notebookContent();}
-		var combatLog = FSH.System.getValue('CombatLog');
-		//combatLog = JSON.stringify(combatLog);
-		if (combatLog.indexOf(',') === 0)
-		{
-			//combat logs start with a ,
-			combatLog=combatLog.substr(1);
-			FSH.System.setValue('CombatLog', combatLog);
-		}
-
-		// var playerName = $('dt[id="statbar-character"]').html();
-		var yuuzParser = '<tr><td align="center" colspan="4"><b>Log Parser</b></td></tr>'+
-			'<tr><td colspan="4" align="center">WARNING: this links to an external site not related to HCS.<br />' +
-			'If you wish to visit site directly URL is: http://evolutions.yvong.com/fshlogparser.php<br />'+
-			//'NOTE: Combat Log Parser will be updated soon to work with the new combat logs, if your combat loogs look different, the parser may not work.</td></tr>'+
-			//'<tr><td colspan=1>Nick (This is used for parsing, it is not case sensitive):</td><td colspan=3><input type="text" name="nick" value="'+playerName+'"></td></tr>'+
-			//'<tr><td colspan=1>Doubler Level: </td><td colspan=3><input type="text" name="dob" value=''></td></tr>'+
-			//'<tr><td colspan=1>Counter Attack Level: </td><td colspan=3 align="left"><input type="text" name="ca" value=''></td></tr>'+
-			'<tr><td colspan=4 align="center"><input type="hidden" value="true" name="submit"><input type="submit" value="Analyze!"></td></tr>';
-		content.innerHTML = '<h1>Combat Logs</h1><br /><form action="http://evolutions.yvong.com/fshlogparser.php" method="post" target="_blank">' +
-			'<div align="center"><textarea align="center" cols="80" rows="25" ' +
-			'readonly style="background-color:white;font-family:Consolas,\'Lucida Console\',\'Courier New\',monospace;" id="Helper:CombatLog" name="logs">[' + combatLog + ']</textarea></div>' +
-			'<br /><br /><table width="100%"><tr>'+
-			'<td colspan="2" align=center>' +
-			'<input type="button" class="custombutton" value="Select All" id="Helper:CopyLog"></td>' +
-			'<td colspan="2" align=center>' +
-			'<input type="button" class="custombutton" value="Clear" id="Helper:ClearLog"></td>' +
-			'</tr>'+yuuzParser+'</table></div>'+
-			'</form>';
-
-		document.getElementById('Helper:CopyLog').addEventListener('click', FSH.Helper.notepadCopyLog, true);
-		document.getElementById('Helper:ClearLog').addEventListener('click', FSH.Helper.notepadClearLog, true);
-	},
-
-	notepadCopyLog: function() {
-		var combatLog=document.getElementById('Helper:CombatLog');
-		combatLog.focus();
-		combatLog.select();
-	},
-
-	notepadClearLog: function() {
-		if (window.confirm('Are you sure you want to clear your log?')) {
-			// var combatLog=document.getElementById('Helper:CombatLog');
-			FSH.System.setValue('CombatLog', '');
-			location.reload();
-		}
-	},
-
-	guildRelationship: function(txt) {
-		var guildSelf = FSH.System.getValue('guildSelf');
-		var guildFrnd = FSH.System.getValue('guildFrnd');
-		var guildPast = FSH.System.getValue('guildPast');
-		var guildEnmy = FSH.System.getValue('guildEnmy');
-		if (!guildSelf) {
-			guildSelf = '';
-			FSH.System.setValue('guildSelf', guildSelf);
-		}
-		if (!guildFrnd) {
-			guildFrnd = '';
-			FSH.System.setValue('guildFrnd', guildFrnd);
-		}
-		if (!guildPast) {
-			guildPast = '';
-			FSH.System.setValue('guildPast', guildPast);
-		}
-		if (!guildEnmy) {
-			guildEnmy = '';
-			FSH.System.setValue('guildEnmy', guildEnmy);
-		}
-		guildSelf = guildSelf.toLowerCase().replace(/\s*,\s*/, ',').replace(/\s\s*/g, ' ').split(',');
-		guildFrnd = guildFrnd.toLowerCase().replace(/\s*,\s*/, ',').replace(/\s\s*/g, ' ').split(',');
-		guildPast = guildPast.toLowerCase().replace(/\s*,\s*/, ',').replace(/\s\s*/g, ' ').split(',');
-		guildEnmy = guildEnmy.toLowerCase().replace(/\s*,\s*/, ',').replace(/\s\s*/g, ' ').split(',');
-		txt = txt.toLowerCase().replace(/\s\s*/g, ' ');
-		if (guildSelf.indexOf(txt) !== -1) {return 'self';}
-		if (guildFrnd.indexOf(txt) !== -1) {return 'friendly';}
-		if (guildPast.indexOf(txt) !== -1) {return 'old';}
-		if (guildEnmy.indexOf(txt) !== -1) {return 'enemy';}
-		return '';
 	},
 
 	displayMiniMap: function() {
@@ -4494,416 +2709,6 @@ FSH.Helper = {
 			questInfoElement.innerHTML = 'None';
 		}
 		document.getElementById('dontTrackThisQuest' + idx).addEventListener('click', FSH.questBook.dontTrackThisQuest, true);
-	},
-
-	addContact: function(contactList, type) {
-		var now = Math.floor(Date.now() / 1000);
-		var contactColor;
-		var output = '';
-		contactList.forEach(function(val) {
-			if (now - val.last_login > 1800) {return;} // 30 mins
-			contactColor = FSH.System.contactColor(val.last_login, type);
-
-			output += FSH.Layout.allyEnemyContact;
-			output = output.replace(/@@username@@/g, val.username);
-			output = output.replace(/@@contactColor@@/g, contactColor);
-			output = output.replace(/@@level@@/g, val.level);
-			output = output.replace(/@@last_login@@/g,
-				FSH.System.formatLastActivity(val.last_login));
-			output = output.replace(/@@id@@/g, val.id);
-		});
-		return output;
-	},
-
-	injectFindBuffs: function(content) {
-		if (!content) {content=FSH.Layout.notebookContent();}
-		var buffList = FSH.Data.buffList;
-		FSH.Helper.sortBy='name';
-		FSH.Helper.sortAsc=true;
-		buffList.sort(FSH.System.stringSort);
-		var injectionText = '';
-		var extraProfile = FSH.System.getValue('extraProfile');
-		injectionText += '<table width="620" cellspacing="0" cellpadding="2" border="0" align="center"><tbody>';
-		injectionText += '<tr><td rowspan="2" colspan="2" width="50%"><h1>Find Buff</h1></td>' +
-			'<td align="right" style="color:brown;">Select buff to search for:</td>';
-
-		injectionText += '<td align="left"><select style="width:140px;" id="selectedBuff">';
-		for (var j = 0; j < buffList.length; j += 1) {
-			injectionText += '<option value="' + buffList[j].skillId + '">' + buffList[j].name + '</option>';
-		}
-		injectionText += '</select></td></tr>';
-
-		injectionText += '<tr>' +
-			'<td align="right" style="color:brown;">Level 175 buffers only:</td><td align="left"><input id="level175" type="checkbox"></td></tr>';
-		injectionText += '<tr><td align="right" style="color:brown;" width="30%">Nicknames of buff searched:&nbsp;</td><td align="left" id="buffNicks">&nbsp;</td>' +
-			'<td align="right" style="color:brown;">Search guild members:</td><td align="left"><input id="guildMembers" type="checkbox" checked></td></tr>';
-		injectionText += '<tr>' +
-			'<td align="right" style="color:brown;"># potential buffers to search:&nbsp;</td><td align="left" id="potentialBuffers"></td>' +
-			'<td align="right" style="color:brown;">Search allies/enemies:' +
-				FSH.Layout.helpLink('Search Allies/Enemies', 'The checkbox enables searching your own personal allies/enemies list for buffs.<br><br>' +
-				'Additional profiles to search can be added in the text field to the right, separated by commas.') + '</td>' +
-			'<td align="left"><input id="alliesEnemies" type="checkbox" checked>' +
-				'<input style="width:118px;" class="custominput" id="extraProfile" type="text" title="Extra profiles to search" value="' + (extraProfile?extraProfile:'') + '"></td></tr>';
-		injectionText += '<tr><td align="right" style="color:brown;"># Buffers processed:&nbsp;</td><td align="left" id="buffersProcessed">0</td>' +
-			'<td align="right" style="color:brown;">Search online list:</td><td align="left"><select style="width:140px;" id="onlinePlayers">' +
-				'<option value="0">Disabled</option>' +
-				'<option value="49">Short (fastest)</option>' +
-				'<option value="47">Medium (medium)</option>' +
-				'<option value="45">Long (slowest)</option>' +
-				'</select></td></tr>';
-		injectionText += '<tr><td align="right" style="color:brown;">Find buffers progress:&nbsp;</td><td align="left" width="310" id="bufferProgress">Idle</td>'+
-			'<td align="center"><input id="clearresultsbutton" class="custombutton" type="button" value="Clear Results"></td><td align="center"><input id="findbuffsbutton" class="custombutton" type="button" value="Find Buffers"></td></tr>';
-		injectionText += '</tbody></table><br>';
-		injectionText += '<h1>Potential Buffers and Bio Info</h1><br>';
-		injectionText += '<table width="620" cellspacing="0" cellpadding="3" border="1" align="center" id="buffTable"><tbody>';
-		injectionText += '<tr><th width="120">&nbsp;Name</th><th width="200">&nbsp;Player Info</th><th>&nbsp;Notable Bio Text</th></tr>';
-		injectionText += '</tbody></table><br>';
-		injectionText += '<div class=content style="font-size:xx-small; color:brown; margin-left:28px; margin-right:28px;">Disclaimer: This functionality does a simple text search for the terms above. '+
-			'It is not as smart as you are, so please do not judge the results too harshly. It does not search all online players, just a subset of those that have been on recently. ' +
-			'The aim is to be fast and still return a good set of results. This feature is a work in progress, so it may be tweaked and enhanced over time.</div>';
-		content.innerHTML = injectionText;
-		document.getElementById('findbuffsbutton').addEventListener('click', FSH.Helper.findBuffsStart, true);
-		document.getElementById('clearresultsbutton').addEventListener('click', FSH.Helper.findBuffsClearResults, true);
-	},
-
-	findBuffsClearResults: function() {
-		var buffTable = document.getElementById('buffTable');
-		for (var j = buffTable.rows.length; j > 1; j-=1) {
-			buffTable.deleteRow(j-1);
-		}
-		document.getElementById('buffNicks').innerHTML = '';
-		var bufferProgress = document.getElementById('bufferProgress');
-		bufferProgress.innerHTML = 'Idle.';
-		bufferProgress.style.color = 'black';
-		document.getElementById('potentialBuffers').innerHTML = '';
-		document.getElementById('buffersProcessed').innerHTML = 0;
-	},
-
-	findBuffsStart: function() {
-		var selectedBuff = $('#selectedBuff').val();
-		//create array of buff nicknames ...
-		var buffList = FSH.Data.buffList;
-		for (var j = 0; j < buffList.length; j += 1) {
-			if (selectedBuff === buffList[j].skillId) {
-				FSH.Helper.findBuffNicks = buffList[j].nicks;
-				FSH.Helper.findBuffMinCastLevel = buffList[j].minCastLevel;
-				break;
-			}
-		}
-		document.getElementById('buffNicks').innerHTML = FSH.Helper.findBuffNicks;
-		var bufferProgress = document.getElementById('bufferProgress');
-		bufferProgress.innerHTML = 'Gathering list of potential buffers ...';
-		bufferProgress.style.color = 'green';
-		FSH.Helper.findBuffsLevel175Only = document.getElementById('level175').checked;
-		document.getElementById('buffersProcessed').innerHTML = 0;
-		FSH.Helper.onlinePlayers = [];
-		FSH.Helper.extraProfile = document.getElementById('extraProfile').value;
-		FSH.System.setValue('extraProfile', FSH.Helper.extraProfile);
-		//get list of players to search, starting with guild>manage page
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=manage', FSH.Helper.findBuffsParseGuildManagePage);
-	},
-
-	injectFindOther: function(content) {
-		if (!content) {content=FSH.Layout.notebookContent();}
-		var injectionText = '';
-		var textToSearchFor = FSH.System.getValue('textToSearchFor');
-		var extraProfile = FSH.System.getValue('extraProfile');
-		injectionText += '<table width="620" cellspacing="0" cellpadding="2" border="0" align="center"><tbody>';
-		injectionText += '<tr><td rowspan="2" colspan="2" width="50%"><h1>Find Other</h1></td>' +
-			'<td align="right" style="color:brown;">Select text to search for:</td>';
-
-		injectionText += '<td align="left"><input style="width:140px;" class="custominput" id="textToSearchFor" type="text" title="Text to search for" value="' + (textToSearchFor?textToSearchFor:'') + '"></td></tr>';
-
-		injectionText += '<tr>' +
-			'<td align="right" style="color:brown;">Level 500+ players only:</td><td align="left"><input id="level175" type="checkbox"></td></tr>';
-		injectionText += '<tr><td align="right" style="color:brown;" width="30%">Text searched for:&nbsp;</td><td align="left" id="buffNicks">&nbsp;</td>' +
-			'<td align="right" style="color:brown;">Search guild members:</td><td align="left"><input id="guildMembers" type="checkbox" checked></td></tr>';
-		injectionText += '<tr>' +
-			'<td align="right" style="color:brown;"># potential players to search:&nbsp;</td><td align="left" id="potentialBuffers"></td>' +
-			'<td align="right" style="color:brown;">Search allies/enemies:' +
-				FSH.Layout.helpLink('Search Allies/Enemies', 'The checkbox enables searching your own personal allies/enemies list for buffs.<br><br>' +
-				'Additional profiles to search can be added in the text field to the right, separated by commas.') + '</td>' +
-			'<td align="left"><input id="alliesEnemies" type="checkbox" checked>' +
-				'<input style="width:118px;" class="custominput" id="extraProfile" type="text" title="Extra profiles to search" value="' + (extraProfile?extraProfile:'') + '"></td></tr>';
-		injectionText += '<tr><td align="right" style="color:brown;"># Players processed:&nbsp;</td><td align="left" id="buffersProcessed">0</td>' +
-			'<td align="right" style="color:brown;">Search online list:</td><td align="left"><select style="width:140px;" id="onlinePlayers">' +
-				'<option value="0">Disabled</option>' +
-				'<option value="49">Short (fastest)</option>' +
-				'<option value="47">Medium (medium)</option>' +
-				'<option value="45">Long (slowest)</option>' +
-				'</select></td></tr>';
-		injectionText += '<tr><td align="right" style="color:brown;">Find Other progress:&nbsp;</td><td align="left" width="310" id="bufferProgress">Idle</td>'+
-			'<td align="center"><input id="clearresultsbutton" class="custombutton" type="button" value="Clear Results"></td><td align="center"><input id="findbuffsbutton" class="custombutton" type="button" value="Find Buffers"></td></tr>';
-		injectionText += '</tbody></table><br>';
-		injectionText += '<h1>Potential Players and Bio Info</h1><br>';
-		injectionText += '<table width="620" cellspacing="0" cellpadding="3" border="1" align="center" id="buffTable"><tbody>';
-		injectionText += '<tr><th width="120">&nbsp;Name</th><th width="200">&nbsp;Player Info</th><th>&nbsp;Notable Bio Text</th></tr>';
-		injectionText += '</tbody></table><br>';
-		injectionText += '<div class=content style="font-size:xx-small; color:brown; margin-left:28px; margin-right:28px;">Disclaimer: This functionality does a simple text search for the terms above. '+
-			'It is not as smart as you are, so please do not judge the results too harshly. It does not search all online players, just a subset of those that have been on recently. ' +
-			'The aim is to be fast and still return a good set of results. This feature is a work in progress, so it may be tweaked and enhanced over time.</div>';
-		content.innerHTML = injectionText;
-		document.getElementById('findbuffsbutton').addEventListener('click', FSH.Helper.findOtherStart, true);
-		document.getElementById('clearresultsbutton').addEventListener('click', FSH.Helper.findBuffsClearResults, true);
-	},
-
-	findOtherStart: function() {
-		var textToSearchFor = $('#textToSearchFor').val();
-		//use existing array structure to save search text ...
-		var textArray=textToSearchFor.split(',');
-		var tempArray = [];
-		for (var i=0;i<textArray.length;i += 1) {
-			tempArray.push(textArray[i].trim());
-		}
-		textToSearchFor = tempArray.join(',');
-		FSH.Helper.findBuffNicks = textToSearchFor;
-		FSH.Helper.findBuffMinCastLevel = 1;
-
-		document.getElementById('buffNicks').innerHTML = FSH.Helper.findBuffNicks;
-		var bufferProgress = document.getElementById('bufferProgress');
-		bufferProgress.innerHTML = 'Gathering list of profiles to search ...';
-		bufferProgress.style.color = 'green';
-		FSH.Helper.findBuffsLevel175Only = document.getElementById('level175').checked;
-		document.getElementById('buffersProcessed').innerHTML = 0;
-		FSH.Helper.onlinePlayers = [];
-		FSH.System.setValue('textToSearchFor', textToSearchFor);
-		FSH.Helper.extraProfile = document.getElementById('extraProfile').value;
-		FSH.System.setValue('extraProfile', FSH.Helper.extraProfile);
-		//get list of players to search, starting with guild>manage page
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=manage', FSH.Helper.findBuffsParseGuildManagePage);
-	},
-
-	findBuffsParseGuildManagePage: function(responseText) {
-		var doc = FSH.System.createDocument(responseText);
-		var characterName = $('dt.stat-name:first').next().text().replace(/,/g,'');
-		var memberTableRows = $(doc).find('table:has(td:contains("Rank")[bgcolor="#C18B35"]):last').find('tr:gt(1):not(:has(td[colspan="5"]))');
-		if (document.getElementById('guildMembers').checked) {
-			memberTableRows.each(function(){
-				var contactLink = $(this).find('a');
-				var onMouseOver = $(contactLink).data('tipped');
-				var lastActivity = /<td>Last Activity:<\/td><td>(\d+)d (\d+)h (\d+)m (\d+)s<\/td>/.exec(onMouseOver);
-				var lastActivityDays = parseInt(lastActivity[1],10);
-				var lastActivityHours = parseInt(lastActivity[2],10) + lastActivityDays*24;
-				var lastActivityMinutes = parseInt(lastActivity[3],10) + lastActivityHours*60;
-				//check if they are high enough level to cast the buff
-				var virtualLevel = /<td>VL:<\/td><td>([,0-9]+)<\/td>/.exec(onMouseOver);
-				virtualLevel = parseInt(virtualLevel[1].replace(/,/g,''),10);
-				var minPlayerVirtualLevel = 1;
-				if (FSH.Helper.findBuffsLevel175Only) {minPlayerVirtualLevel = 500;}
-				if (lastActivityMinutes < 5 && virtualLevel >= FSH.Helper.findBuffMinCastLevel && virtualLevel >= minPlayerVirtualLevel) {
-					//add online player to search list (all but self)
-					var onlinePlayer = contactLink.attr('href');
-					if (characterName !== $(this).find('td:eq(1)')
-						.text().trim()) {
-						FSH.Helper.onlinePlayers.push(onlinePlayer);
-					}
-				}
-			});
-		}
-		//continue with profile pages
-		FSH.Helper.findBuffsParseProfilePageStart();
-	},
-
-	findBuffsParseProfilePageStart: function() {
-		//if option enabled then parse profiles
-		FSH.Helper.profilePagesToSearch = [];
-		FSH.Helper.profilePagesToSearch.push('index.php?cmd=profile');
-		var extraProfileArray = FSH.Helper.extraProfile.split(',');
-		var i;
-		for (i=0;i<extraProfileArray.length ;i+= 1 ) {
-			FSH.Helper.profilePagesToSearch.push('index.php?cmd=findplayer&search_active=1&search_level_max=&search_level_min=&search_username='+extraProfileArray[i]+'&search_show_first=1');
-		}
-		FSH.Helper.profilePagesToSearchProcessed = 0;
-		if (document.getElementById('alliesEnemies').checked) {
-			for (i=0;i<FSH.Helper.profilePagesToSearch.length ;i+= 1 ) {
-				FSH.System.xmlhttp(FSH.Helper.profilePagesToSearch[i], FSH.Helper.findBuffsParseProfilePage);
-			}
-		} else {
-			FSH.Helper.findBuffsParseOnlinePlayersStart();
-		}
-	},
-
-	findBuffsParseProfilePage: function(responseText) {
-		var doc = FSH.System.createDocument(responseText);
-		var characterName = $('dt.stat-name:first').next().text().replace(/,/g,'');
-		var profileAlliesEnemies = $(doc).find('#profileLeftColumn').find('a[data-tipped*="Last Activity"]');
-		profileAlliesEnemies.each(function(){
-			var onMouseOver = $(this).data('tipped');
-			var lastActivity = /<td>Last Activity:<\/td><td>(\d+)d (\d+)h (\d+)m (\d+)s<\/td>/.exec(onMouseOver);
-			var lastActivityDays = parseInt(lastActivity[1],10);
-			var lastActivityHours = parseInt(lastActivity[2],10) + lastActivityDays*24;
-			var lastActivityMinutes = parseInt(lastActivity[3],10) + lastActivityHours*60;
-			//check if they are high enough level to cast the buff
-			var virtualLevel = /<td>VL:<\/td><td>([,0-9]+)<\/td>/.exec(onMouseOver);
-			virtualLevel = parseInt(virtualLevel[1].replace(/,/g,''),10);
-			var minPlayerVirtualLevel = 1;
-			if (FSH.Helper.findBuffsLevel175Only) {minPlayerVirtualLevel = 500;}
-			if (lastActivityMinutes < 5 && virtualLevel >= FSH.Helper.findBuffMinCastLevel && virtualLevel >= minPlayerVirtualLevel) {
-				//add online player to search list (all but self)
-				var onlinePlayer = $(this).attr('href');
-				if (characterName !== $(this).text().trim()) {
-					FSH.Helper.onlinePlayers.push(onlinePlayer);
-				}
-			}
-		});
-		//continue with online players
-		FSH.Helper.profilePagesToSearchProcessed += 1;
-		if (FSH.Helper.profilePagesToSearchProcessed === FSH.Helper.profilePagesToSearch.length) {
-			FSH.Helper.findBuffsParseOnlinePlayersStart();
-		}
-	},
-
-	findBuffsParseOnlinePlayersStart: function() {
-		//if option enabled then parse online players
-		FSH.Helper.onlinePlayersSetting = document.getElementById('onlinePlayers').value;
-		if (FSH.Helper.onlinePlayersSetting !== 0) {
-			FSH.System.xmlhttp('index.php?cmd=onlineplayers&page=1', FSH.Helper.findBuffsParseOnlinePlayers, {'page':1});
-		} else {
-			FSH.Helper.findBuffsParsePlayersForBuffs();
-		}
-	},
-
-	findBuffsParseOnlinePlayers: function(responseText) {
-		var doc = FSH.System.createDocument(responseText);
-		var playerRows = $(doc).find('table:contains("Username")>tbody>tr:has(td>a[href*="cmd=profile&player_id="])');
-		var maxPage = parseInt($(doc).find('td:has(input[name="page"]):last').text().replace(/\D/g, ''),10);
-		var curPage = parseInt($(doc).find('input[name="page"]:last').val().replace(/\D/g, ''),10);
-		var characterName = $('dt.stat-name:first').next().text().replace(/,/g,'');
-		if (curPage !== 1){
-			playerRows.each(function(){
-				var onlinePlayer = $(this).find('td:eq(1) a').attr('href');
-				var onlinePlayerLevel = parseInt($(this).find('td:eq(2)').text().replace(/,/g,''),10);
-				var onlinePlayerName = $(this).find('td:eq(1) a').text();
-				var minPlayerVirtualLevel = 1;
-				if (FSH.Helper.findBuffsLevel175Only) {minPlayerVirtualLevel = 500;}
-				if (onlinePlayerLevel >= FSH.Helper.findBuffMinCastLevel && onlinePlayerLevel >= minPlayerVirtualLevel) {
-					//add online player to search list (all but self)
-					if (characterName !== onlinePlayerName.trim()) {
-						FSH.Helper.onlinePlayers.push(onlinePlayer);
-					}
-				}
-			});
-		}
-		if (curPage < maxPage/*-maxPage+15*/) {
-			var newPage = curPage === 1 ? Math.round(FSH.Helper.onlinePlayersSetting * maxPage / 50) : curPage + 1;
-			var bufferProgress = document.getElementById('bufferProgress');
-			bufferProgress.innerHTML = 'Parsing online page ' + curPage + ' ...';
-			FSH.System.xmlhttp('index.php?cmd=onlineplayers&page=' + newPage, FSH.Helper.findBuffsParseOnlinePlayers, {'page':newPage});
-		}
-		else {
-			//all done so moving on
-			FSH.Helper.findBuffsParsePlayersForBuffs();
-		}
-	},
-
-	findBuffsParsePlayersForBuffs: function() {
-		//remove duplicates TODO
-		var bufferProgress = document.getElementById('bufferProgress');
-		//now need to parse player pages for buff ...
-		document.getElementById('potentialBuffers').innerHTML = FSH.Helper.onlinePlayers.length;
-		if (FSH.Helper.onlinePlayers.length <= 0) {
-			bufferProgress.innerHTML = 'Done.';
-			bufferProgress.style.color = 'blue';
-			return;
-		}
-		bufferProgress.innerHTML = 'Parsing player data ...';
-		bufferProgress.style.color = 'green';
-
-		for (var j = 0; j < FSH.Helper.onlinePlayers.length; j += 1) {
-			FSH.System.xmlhttp(FSH.Helper.onlinePlayers[j], FSH.Helper.findBuffsParseProfileAndDisplay, {'href': FSH.Helper.onlinePlayers[j]});
-		}
-	},
-
-	findBuffsParseProfileAndDisplay: function(responseText, callback) {
-		var doc = FSH.System.createDocument(responseText);
-		//name and level
-		var playerName = $(doc).find('div#pCC h1:first').text();
-		var levelElement = $(doc).find('td:contains("Level:"):last').next();
-		var levelValue = parseInt(levelElement.text().replace(/,/g,''),10);
-		var virtualLevelElement = $(doc).find('td:contains("VL:"):last').next();
-		var virtualLevelValue = parseInt(virtualLevelElement.text().replace(/,/g,''),10);
-		//last activity
-		var lastActivityElement = $(doc).find('div#pCC p:first');
-		var lastActivity = /(\d+) mins, (\d+) secs/.exec(lastActivityElement.text());
-		var lastActivityMinutes = parseInt(lastActivity[1],10);
-		var lastActivityIMG = FSH.Layout.onlineDot({min: lastActivityMinutes});
-		//buffs
-		var bioDiv = $(doc).find('div.innerColumnHeader:contains("Biography"):last');
-		var bioCell = bioDiv.next();
-		//~ var buffNickArray = FSH.Helper.findBuffNicks.split(',');
-		var buffTable = document.getElementById('buffTable');
-		var textLineArray = [];
-		var buffPosition = 0, startingPosition = 0, runningTotalPosition = 0;
-		var bioTextToSearch = ' '+bioCell.html()+' ';
-		var buffRE = new RegExp('[^a-zA-Z](('+FSH.Helper.findBuffNicks.replace(/,/g,')|(')+'))[^a-zA-Z]', 'i');
-		while (buffPosition !== -1) {
-			bioTextToSearch = bioTextToSearch.substr(startingPosition, bioTextToSearch.length);
-			buffPosition = bioTextToSearch.search(buffRE);
-			if (buffPosition !== -1) {
-				startingPosition = buffPosition + 1;
-				runningTotalPosition += buffPosition;
-				var prevBR = bioCell.html().lastIndexOf('<br>',runningTotalPosition-1);
-				if (prevBR===-1) {prevBR=0;}
-				var nextBR = bioCell.html().indexOf('<br>',runningTotalPosition);
-				if (nextBR===-1 && bioCell.html().indexOf('<br>') !== -1) {nextBR=bioCell.html().length-5;}
-				var textLine = bioCell.html().substr(prevBR + 4, nextBR - prevBR);
-				textLine = textLine.replace(/(`~)|(~`)|(\{b\})|(\{\/b\})/g,'');
-				textLineArray.push(textLine);
-			}
-		}
-		textLineArray = FSH.System.uniq(textLineArray);
-		//sustain
-		var sustainText = $(doc).find('td:has(a:contains("Sustain")):last').next().find('table.tipped').data('tipped');
-		var sustainLevel;
-		if (sustainText !== undefined) {
-			var sustainLevelRE = /Level<br>(\d+)%/;
-			sustainLevel = sustainLevelRE.exec(sustainText)[1];
-		} else {
-			sustainLevel = -1;
-		}
-		//extend
-		var hasExtendBuff = $(doc).find('img.tipped[data-tipped*="Extend"]');
-
-		//add row to table
-		if (textLineArray.length > 0) {
-			var newRow = buffTable.insertRow(-1);
-			//name cell
-			var newCell = newRow.insertCell(0);
-			newCell.style.verticalAlign = 'top';
-			var playerHREF = callback.href;
-			var bioTip = bioCell.html().replace(/'|"|\n/g,'');
-			newCell.innerHTML = '<nobr>' + lastActivityIMG + '&nbsp;<a href="' + playerHREF + '" target="new" ' +
-				// FIXME - It kind works now, but not guaranteed?
-				'class="tipped" data-tipped-options="hook: \'leftmiddle\'" ' + 
-				'data-tipped="'+bioTip+'">' + playerName + '</a>' +
-				'&nbsp;<span style="color:blue;">[<span class="a-reply" target_player="' + playerName +'" style="cursor:pointer; text-decoration:underline;">m</span>]</span>' + '</nobr><br>' +
-				'<span style="color:gray;">Level:&nbsp;</span>' + levelValue + '&nbsp;(' + virtualLevelValue + ')';
-			$('.a-reply').click(function(evt) {
-				window.openQuickMsgDialog(evt.target.getAttribute('target_player'));
-			});
-
-			//player info cell
-			newCell = newRow.insertCell(1);
-			var playerInfo = '<table><tbody><tr><td colspan="2" style="color:gray;" align="right" width="50%">Last Activity:</td><td colspan="2"><nobr>' + lastActivity[0] + '</nobr></td></tr>';
-			playerInfo += '<tr><td style="color:gray;" align="right" width="25%">Sustain:</td><td width="25%" style="color:' + (sustainLevel>=100?'green':'red') + ';">' + sustainLevel + '%</td>' +
-				'<td width="25%" style="color:gray;" align="right">Extend:</td><td width="25%">' + (hasExtendBuff.length > 0?'<span style="color:green;">Yes</span>':'<span style="color:red;">No</span>') + '</td></tr>';
-			newCell.innerHTML = playerInfo;
-			newCell.style.verticalAlign = 'top';
-			//buff cell
-			newCell = newRow.insertCell(2);
-			for (var i = 0; i < textLineArray.length; i += 1) {
-				newCell.innerHTML += textLineArray[i] + '<br>';
-			}
-		}
-		var processedBuffers = document.getElementById('buffersProcessed');
-		var potentialBuffers = parseInt(document.getElementById('potentialBuffers').textContent,10);
-		var processedBuffersCount = parseInt(processedBuffers.textContent,10);
-		processedBuffers.innerHTML = processedBuffersCount + 1;
-		if (potentialBuffers === processedBuffersCount + 1) {
-			var bufferProgress = document.getElementById('bufferProgress');
-			bufferProgress.innerHTML = 'Done.';
-			bufferProgress.style.color = 'blue';
-		}
 	},
 
 	useStairs: function() { //jquery
