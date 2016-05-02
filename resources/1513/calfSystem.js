@@ -1195,7 +1195,7 @@ FSH.Data = {
 
 	itemType: ['Helmet', 'Armor', 'Gloves', 'Boots', 'Weapon', 'Shield',
 		'Ring', 'Amulet', 'Rune', 'Quest Item', 'Potion', 'Component',
-		'Resource', 'Recipe', 'Container', 'Composed Potion', 'Frag Stash'],
+		'Resource', 'Recipe', 'Container', 'Composed', 'Frag Stash'],
 
 	rarityColour: [
 		'#ffffff', // Common
@@ -1709,9 +1709,9 @@ FSH.Layout = {
 		'itemid="@itemid@" data-tipped="@tipped@">',
 
 	invManFilter:
-		'<table class="fshInvFilter"><tr><th colspan="4">' +
-		'@@reportTitle@@</th></tr><tr><td rowspan="3">' +
-		'<b>&nbsp;Show Items:</b></td><td>' +
+		'<table class="fshInvFilter">' +
+		'<tr><th colspan="4">@@reportTitle@@</th></tr>' +
+		'<tr><td rowspan="3"><b>&nbsp;Show Items:</b></td><td>' +
 		'Helmet: <input id="fshHelmet" type="checkbox" item="0" checked/>' +
 		' Armor: <input id="fshArmor" type="checkbox" item="1" checked/>' +
 		' Gloves: <input id="fshGloves" type="checkbox" item="2" checked/>' +
@@ -1733,15 +1733,15 @@ FSH.Layout = {
 		'[<span id="fshDefault" class="fshLink">Defaults</span>]' +
 		'</td><td></td><td>' +
 		'<input id="fshReset" type="button" value="Reset"/>' +
-		'</td></tr></tr><tr><td colspan="4">' +
+		'</td></tr><tr><td colspan="4">' +
 		'&nbsp;Quest Item: <input id="fshQuest" item="9" type="checkbox"/>' +
 		' Potion: <input id="fshPotion" item="10" type="checkbox"/>' +
 		' Resource: <input id="fshResource" item="12" type="checkbox"/>' +
 		' Recipe: <input id="fshRecipe" item="13" type="checkbox"/>' +
 		' Container: <input id="fshContainer" item="14" type="checkbox"/>' +
-		' Composed Potion: <input id="fshComposed" item="15" type="checkbox"/>' +
+		//' Composed: <input id="fshComposed" item="15" type="checkbox"/>' +
 		' Frag Stash: <input id="fshStash" item="16" type="checkbox"/></td>' +
-		'</td></table>',
+		'</tr></table>',
 
 	helperMenu:
 		'<div class="column"><h3>Character</h3><ul><li>' +
@@ -2052,6 +2052,11 @@ FSH.composing = { // jQuery
 				FSH.composing.createPotion(temp);
 			}
 		});
+
+		$('div.composing-level').parent()
+			.before($('#pCC b:contains("Instant Finish Price Reset:")')
+				.parent().attr('style', 'text-align: right; padding: 0 38px 0 0'));
+
 	},
 
 	createPotion: function($template) { //jquery
@@ -2075,10 +2080,10 @@ FSH.composing = { // jQuery
 						.html('<div id="helperQCSuccess" style="height: ' +
 						'26px;">' + textStatus + '</div>');
 				}
-				if ($('select[id^="composing-template-"]').length === 0 &&
-					$('div#helperQCError').length === 0) {
-					location.href = 'index.php?cmd=composing';
-				}
+				//~ if ($('select[id^="composing-template-"]').length === 0 &&
+					//~ $('div#helperQCError').length === 0) {
+					//~ location.href = 'index.php?cmd=composing';
+				//~ }
 			});
 	}
 
@@ -2407,7 +2412,9 @@ FSH.guildAdvisor = { // jQuery
 		});
 		list.dataTable({pageLength: 25,
 			lengthMenu: [[25, 50, -1], [25, 50, 'All']],
-			columns: FSH.Layout.advisorColumns
+			columns: FSH.Layout.advisorColumns,
+			stateSave: true,
+			stateDuration: 0
 		});
 	},
 
@@ -2521,7 +2528,9 @@ FSH.guildAdvisor = { // jQuery
 			data: data,
 			pageLength: 25,
 			lengthMenu: [[25, 50, -1], [25, 50, 'All']],
-			columns: FSH.Layout.advisorColumns
+			columns: FSH.Layout.advisorColumns,
+			stateSave: true,
+			stateDuration: 0
 		});
 	}
 
@@ -3083,6 +3092,7 @@ FSH.inventory = { // jQuery
 	},
 
 	decorate: function() { // Native
+
 		if (FSH.Helper.inventory.folders &&
 			!FSH.Helper.inventory.folders['-1']) {
 			FSH.Helper.inventory.folders['-1'] = 'Main';
@@ -3090,6 +3100,14 @@ FSH.inventory = { // jQuery
 		var cur = FSH.Helper.inventory.player_id ?
 			FSH.Helper.inventory.player_id :
 			FSH.Helper.inventory.current_player_id;
+
+		// Hide composed potions until Zorg fixes the feed
+		FSH.Helper.inventory.items =
+			FSH.Helper.inventory.items.filter(function(obj) {
+					return obj.type !== '15';
+			});
+		//
+
 		FSH.Helper.inventory.items.forEach(function(data) {
 			var t = data.player_id === -1 ? 4 : 1;
 			var p = FSH.Helper.inventory.player_id ?
@@ -3109,6 +3127,13 @@ FSH.inventory = { // jQuery
 				'&inv_id=' + data.inv_id + '&t=' + t + '&p=' + p +
 				'&currentPlayerId=' + cur + '"' + imgsrc + setName + '>' +
 				bold + '</span>';
+
+			if (parseInt(data.max_durability, 10) > 0) {
+				data.durPerc = Math.ceil(data.durability / data.max_durability * 100);
+			}
+
+
+
 		});
 	},
 
@@ -3160,7 +3185,7 @@ FSH.inventory = { // jQuery
 							FSH.Data.craft[craft].abbr : '';
 					}
 				},
-				{title: 'Dur%', data: 'durability'}
+				{title: 'Dur%', data: 'durPerc'}
 			],
 			createdRow: FSH.inventory.createdRow
 		});
@@ -4725,12 +4750,16 @@ FSH.logs = { // Legacy
 				showPvPSummaryInLog &&
 				aRow.cells[2].innerHTML.search('combat_id=') !== -1) {
 				var combatID = /combat_id=(\d+)/.exec(aRow.cells[2].innerHTML)[1];
+				var defeat = /You were defeated by/.exec(aRow.cells[2].innerHTML);
 				var combatSummarySpan = document.createElement('SPAN');
 				combatSummarySpan.style.color = 'gray';
 				aRow.cells[2].appendChild(combatSummarySpan);
 				FSH.System.xmlhttp('index.php?cmd=combat&subcmd=view&combat_id=' +
 					combatID, FSH.logs.retrievePvPCombatSummary,
-					{'target': combatSummarySpan});
+					{
+						'target': combatSummarySpan,
+						winner  : defeat ? 0 : 1
+					});
 			}
 		}
 		$('.a-reply').click(function(evt) {
@@ -4836,7 +4865,8 @@ FSH.logs = { // Legacy
 
 	retrievePvPCombatSummary: function(responseText, callback) { // Native
 		// var doc = FSH.System.createDocument(responseText);
-		var winner = FSH.System.getIntFromRegExp(responseText, /var\s+winner=(-?[0-9]+);/i);
+		//~ var winner = FSH.System.getIntFromRegExp(responseText, /var\s+winner=(-?[0-9]+);/i);
+		var winner = callback.winner;
 		var xpGain = FSH.System.getIntFromRegExp(responseText, /var\s+xpGain=(-?[0-9]+);/i);
 		var goldGain = FSH.System.getIntFromRegExp(responseText, /var\s+goldGain=(-?[0-9]+);/i);
 		var prestigeGain = FSH.System.getIntFromRegExp(responseText, /var\s+prestigeGain=(-?[0-9]+);/i);
@@ -5463,7 +5493,9 @@ FSH.onlinePlayers = { // Bad jQuery
 					$('td', row).eq(2).addClass('lvlHighlight');
 				}
 			},
-			order: [3, 'desc']
+			order: [3, 'desc'],
+			stateSave: true,
+			stateDuration: 0
 		}).api();
 
 		FSH.onlinePlayers.doOnlinePlayerEventHandlers(table);
