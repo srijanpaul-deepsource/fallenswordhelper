@@ -2377,30 +2377,25 @@ FSH.guildAdvisor = { // jQuery
 			);
 	},
 
-	injectAdvisorNew: function(m) { // Hybrid
+	summaryLink: function() {
+		var updateInput = $('#pCC input[value="Update"]');
+		if (updateInput.length !== 1) {return;}
+		updateInput.after('<span> <a href="index.php?cmd=guild&subcmd=advisor&' +
+			'subcmd2=weekly">7-Day Summary</a></span>');
+	},
+
+	injectAdvisorNew: function(m) { // jQuery
 		var list = $('#pCC table[cellpadding="1"]');
 		if (list.length !== 1) {return;}
-
-		// insert weekly summary link
-		var injectHere = FSH.System.findNode('//td/select/..');
-		if (injectHere) {
-			var elem = document.createElement('span');
-			elem.innerHTML=' <a href="index.php?cmd=guild&subcmd=advisor&' +
-				'subcmd2=weekly">7-Day Summary</a>';
-			injectHere.appendChild(elem);
-		}
-
-		list.attr('id', 'advisorTable');
-		list.addClass('stripe hover');
-		list.append('<tfoot id="advTFoot"></tfoot>');
-		$('tfoot', list).append($('tr', list).last());
-		$('tr', list).first().remove();
-		$('#advTFoot td').first().removeAttr('class').attr('colspan', 3)
+		var tfoot = $('<tfoot/>').append($('tr', list).last());
+		$('td', tfoot).first().removeAttr('class').attr('colspan', 3)
 			.attr('style', 'text-align: right;');
-		$('#advisorTable td').removeAttr('bgcolor');
-		$('#advisorTable font').contents().unwrap();
-		$('#advTFoot b').contents().unwrap();
-		$('#advisorTable tbody tr').each(function(i, e) {
+		$('b', tfoot).contents().unwrap();
+		list.addClass('stripe hover');
+		$('tr', list).first().remove();
+		$('td', list).removeAttr('bgcolor');
+		$('font', list).contents().unwrap();
+		$('tr', list).each(function(_i, e) {
 			var td1 = $('td', e).first();
 			td1.html(td1.html().replace('&nbsp;', ''));
 			td1.html('<a href="index.php?cmd=profile&player_id=' +
@@ -2410,12 +2405,14 @@ FSH.guildAdvisor = { // jQuery
 				m[td1.text()].rank_name.substr(0,9) +
 				(m[td1.text()].rank_name.length > 9 ? '...' : '') + '</td>');
 		});
+		list.append(tfoot);
 		list.dataTable({pageLength: 25,
 			lengthMenu: [[25, 50, -1], [25, 50, 'All']],
 			columns: FSH.Layout.advisorColumns,
 			stateSave: true,
 			stateDuration: 0
 		});
+		FSH.guildAdvisor.summaryLink();
 	},
 
 	injectAdvisorWeekly: function(m) { // jQuery
@@ -2427,57 +2424,60 @@ FSH.guildAdvisor = { // jQuery
 		FSH.guildAdvisor.getAdvisorPages(list, m);
 	},
 
-	getAdvisorPages: function(list, m) { // jQuery
-		var count = 0;
+	getAdvisorPages: function(list, m) { // Bad jQuery
+		FSH.guildAdvisor.count = 0;
 		var pages = [1, 2, 3, 4, 5, 6, 7];
-		var advisorPages = [];
+		FSH.guildAdvisor.advisorPages = [];
 		pages.forEach(function(e) {
-			$.ajax({
-				url: 'index.php',
-				data: {
-					cmd: 'guild',
-					subcmd: 'advisor',
-					period: e
-				}
-			}).done(function(data) {
-					list.append(' day ' + e + ',');
-					var ob = {};
-					var tr = $('tr',
-						$('#pCC table[cellpadding="1"]',
-						FSH.System.createDocument(data)));
-					tr.each(function(i, el) {
-						var tds = $('td', el);
-						var member = $(tds.eq(0).html().replace(/&nbsp;/g, ''))
-							.text();
-						if (member !== 'Member') {
-							ob[member] = {
-								deposit: FSH.System.intValue(tds.eq(1).text()),
-								tax:     FSH.System.intValue(tds.eq(2).text()),
-								total:   FSH.System.intValue(tds.eq(3).text()),
-								fsp:     FSH.System.intValue(tds.eq(4).text()),
-								skills:  FSH.System.intValue(tds.eq(5).text()),
-								grpCrt:  FSH.System.intValue(tds.eq(6).text()),
-								grpJoin: FSH.System.intValue(tds.eq(7).text()),
-								relics:  FSH.System.intValue(tds.eq(8).text()),
-								contrib: FSH.System.intValue(tds.eq(9).text())
-							};
-						}
-					});
-					advisorPages[e-1] = ob;
-					count += 1; // .when
-					if (count === 7) {
-						FSH.guildAdvisor.addAdvisorPages(list, advisorPages, m);
-					}
-				});
+			FSH.guildAdvisor.getAdvisorPage(e, list, m);
 		});
 	},
 
-	addAdvisorPages: function(list, pages, m) { // Native
+	getAdvisorPage: function(e, list, m) {
+		$.ajax({
+			url: 'index.php',
+			data: {
+				cmd: 'guild',
+				subcmd: 'advisor',
+				period: e
+			}
+		}).done(function(data) {
+				list.append(' day ' + e + ',');
+				var ob = {};
+				var tr = $('tr',
+					$('#pCC table[cellpadding="1"]',
+					FSH.System.createDocument(data)));
+				tr.each(function(i, el) {
+					var tds = $('td', el);
+					var member = $(tds.eq(0).html().replace(/&nbsp;/g, ''))
+						.text();
+					if (member !== 'Member') {
+						ob[member] = {
+							deposit: FSH.System.intValue(tds.eq(1).text()),
+							tax:     FSH.System.intValue(tds.eq(2).text()),
+							total:   FSH.System.intValue(tds.eq(3).text()),
+							fsp:     FSH.System.intValue(tds.eq(4).text()),
+							skills:  FSH.System.intValue(tds.eq(5).text()),
+							grpCrt:  FSH.System.intValue(tds.eq(6).text()),
+							grpJoin: FSH.System.intValue(tds.eq(7).text()),
+							relics:  FSH.System.intValue(tds.eq(8).text()),
+							contrib: FSH.System.intValue(tds.eq(9).text())
+						};
+					}
+				});
+				FSH.guildAdvisor.advisorPages[e-1] = ob;
+				FSH.guildAdvisor.count += 1; // .when
+				if (FSH.guildAdvisor.count === 7) {
+					FSH.guildAdvisor.addAdvisorPages(list, m);
+				}
+			});
+	},
+
+	addAdvisorPages: function(list, m) { // Native
 		var o = {};
 		var data = [];
-		pages.forEach(function(e) {
-			// What are non-enumerable properties anyway?
-			Object.getOwnPropertyNames(e).forEach(function(f) {
+		FSH.guildAdvisor.advisorPages.forEach(function(e) {
+			Object.keys(e).forEach(function(f) {
 				o[f] = o[f] || {};
 				o[f].deposit = (o[f].deposit || 0) + e[f].deposit;
 				o[f].tax = (o[f].tax || 0) + e[f].tax;
@@ -2490,12 +2490,14 @@ FSH.guildAdvisor = { // jQuery
 				o[f].contrib = (o[f].contrib || 0) + e[f].contrib;
 			});
 		});
-		Object.getOwnPropertyNames(o).forEach(function(f) {
+		Object.keys(o).forEach(function(f) {
 			if (f !== 'Total:') {
 				data.push([
-					!m[f] ? f : '<a href="index.php?cmd=profile&player_id=' + m[f].id + '">' + f + '</a>',
+					!m[f] ? f : '<a href="index.php?cmd=profile&player_id=' + m[f].id +
+						'">' + f + '</a>',
 					!m[f] ? '' : m[f].level,
-					!m[f] ? '' : m[f].rank_name.substr(0,9) + (m[f].rank_name.length > 9 ? '...' : ''),
+					!m[f] ? '' : m[f].rank_name.substr(0,9) +
+						(m[f].rank_name.length > 9 ? '...' : ''),
 					FSH.System.addCommas(o[f].deposit),
 					FSH.System.addCommas(o[f].tax),
 					FSH.System.addCommas(o[f].total),
@@ -3636,13 +3638,14 @@ FSH.helperMenu = { // jQuery
 		helperMenu.on('mouseover', FSH.helperMenu.showHelperMenu);
 		helperMenu.draggable();
 		if (!FSH.System.getValue('keepHelperMenuOnScreen')) {return;}
-		$(document).ready(function() {
-			$(window).scroll(function() {
-				var offset = $(document).scrollTop() + 'px';
-				helperMenu.animate({top:offset},
-					{duration:0,queue:false});
-			});
-		});
+		helperMenu.css('position', 'fixed');
+		// $(document).ready(function() {
+			// $(window).scroll(function() {
+				// var offset = $(document).scrollTop() + 'px';
+				// helperMenu.animate({top:offset},
+					// {duration:0,queue:false});
+			// });
+		// });
 	},
 
 	showHelperMenu: function() { // jquery
@@ -7023,44 +7026,43 @@ FSH.environment = { // Legacy
 		});
 	},
 
-	injectQuickLinks: function() { //jquery
+	injectQuickLinks: function() { // Bad jquery
 		// don't put all the menu code here (but call if clicked) to minimize lag
-		var quickLinks = FSH.System.getValueJSON('quickLinks');
-		if (!quickLinks) {quickLinks=[];}
+		var quickLinks = FSH.System.getValueJSON('quickLinks') || [];
+		// if (!quickLinks) {quickLinks=[];}
 		//FSH.Helper.quickLinks = quickLinks;
 		if (quickLinks.length <= 0) {return;}
-		var node=$('#statbar-container');
+		var node = $('#statbar-container');
 		if (node.length === 0) {return;}
-		var html = '<div style="cursor:pointer; text-decoration:underline; ' +
-			'text-align:left; position:absolute; color:black; top:' +
+		var html = '<div style="top:' +
 			FSH.System.getValue('quickLinksTopPx') + 'px; left:' +
 			FSH.System.getValue('quickLinksLeftPx') + 'px; background-image:' +
-			'url(\'' + FSH.System.imageServer + '/skin/inner_bg.jpg\'); font-' +
-			'size:12px; -moz-border-radius:5px; -webkit-border-radius:5px; ' +
-			'border:3px solid #cb7; z-index: 1; width: 100px;" ' +
-			'id=fshQuickLinks nowrap>';
+			'url(\'' + FSH.System.imageServer + '/skin/inner_bg.jpg\');" ' +
+			'id=fshQuickLinks>';
 		for (var i=0; i<quickLinks.length; i += 1) {
 				html += '<li><span style="cursor:pointer; text-decoration:' +
 					'underline;"><a href="' + quickLinks[i].url + '"' +
 					(quickLinks[i].newWindow ? ' target=new' : '') +
 					'>' + quickLinks[i].name + '</a></span></li>';
-			
 		}
 		html += '</div>';
-		node.before(html);
-		$('#fshQuickLinks').draggable();
+		var divQuickLink = $(html);
+		// node.before(divQuickLink);
+		divQuickLink.draggable();
 		if (FSH.System.getValue('keepHelperMenuOnScreen')) {
-			var quickLinksTopPx = parseInt(
-				FSH.System.getValue('quickLinksTopPx'), 10);
-			$(document).ready(function(){  
-				$(window).scroll(function() {  
-					var offset = quickLinksTopPx + $(document).scrollTop() +
-						'px';  
-					$('#fshQuickLinks').animate({top:offset},
-						{duration:0,queue:false});  
-				});  
-			}); 
+			divQuickLink.css('position', 'fixed');
 		}
+		$('body').append(divQuickLink);
+		// var quickLinksTopPx = parseInt(
+			// FSH.System.getValue('quickLinksTopPx'), 10);
+		// $(document).ready(function(){  
+			// $(window).scroll(function() {  
+				// var offset = quickLinksTopPx + $(document).scrollTop() +
+					// 'px';  
+				// $('#fshQuickLinks').animate({top:offset},
+					// {duration:0,queue:false});  
+			// });  
+		// }); 
 	},
 
 	unknownPage: function() { // Legacy
@@ -7978,7 +7980,7 @@ FSH.newGuildLog = { // Legacy
 			}
 
 			//display the row or effectively hide it
-			newRow = $(this).clone(true);
+			var newRow = $(this).clone(true);
 			if (!displayRow) {
 				newRow.css('display','none')
 					.css('visibility','hidden');
@@ -11441,7 +11443,7 @@ FSH.arena = { // jQuery
 
 };
 
-FSH.combatLog = {
+FSH.combatLog = { // Native
 
 	injectNotepadShowLogs: function(content) { // Native
 		if (!content) {content = FSH.Layout.notebookContent();}
