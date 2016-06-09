@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1513b7
+// @version        1514b2
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -649,7 +649,8 @@ FSH.Helper = {
 			'<dt class="stat-gold-sendTo">Send?</dt><dd><input id="' +
 			'HelperSendGold" value="Send!" class="custombutton" ' +
 			'type="submit"><input type="hidden" id="xc" value="' +
-			FSH.System.getValue('goldConfirm') + '"</dd>' + 
+			// FSH.System.getValue('goldConfirm') + '"</dd>' + 
+			'"</dd>' +
 			'<dt class="stat-gold-sendTotal">Total Sent:</dt><dd ' +
 			'id="HelperSendTotal">' +
 			FSH.System.getValue('currentGoldSentTotal').toString()
@@ -661,9 +662,9 @@ FSH.Helper = {
 		var sendTo = $('#HelperSendTo').html();
 		var sendAmt = $('#HelperSendAmt').html()
 			.replace(/[^\d]/g,'');
-		var xcNum = $('#xc').val();
+		// var xcNum = $('#xc').val();
 		var sendHref = FSH.System.server + 'index.php?cmd=trade&' +
-			'subcmd=sendgold&xc=' + xcNum + '&target_username=' +
+			'subcmd=sendgold&xc=' + window.ajaxXC + '&target_username=' +
 			sendTo +'&gold_amount='+ sendAmt;
 		$.ajax({
 			url: sendHref,
@@ -1089,12 +1090,12 @@ FSH.Helper = {
 		var recipient = FSH.System.getValue('goldRecipient');
 		var amount = FSH.System.getValue('goldAmount');
 		//FSH.System.xmlhttp('index.php?cmd=trade');
-		var xcNum = FSH.System.getValue('goldConfirm');
-		if (xcNum === '') {
-			alert('You have to visit the trade page once to use the send gold functionality');
-			return;
-		}
-		var url = 'index.php?cmd=trade&subcmd=sendgold&xc=' + xcNum +
+		// var xcNum = FSH.System.getValue('goldConfirm');
+		// if (xcNum === '') {
+			// alert('You have to visit the trade page once to use the send gold functionality');
+			// return;
+		// }
+		var url = 'index.php?cmd=trade&subcmd=sendgold&xc=' + window.ajaxXC +
 			'&target_username=' + recipient +'&gold_amount='+ amount;
 		FSH.System.xmlhttp(url, FSH.Helper.goldToPlayerSent,
 			{'amount': amount, 'recipient': recipient} );
@@ -2758,9 +2759,9 @@ FSH.Helper = {
 
 (function loadScripts () {
 	var o = {
-		css: ['https://fallenswordhelper.github.io/fallenswordhelper/resources/1513/calfSystem.css'],
+		css: ['https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.css'],
 		js:  ['https://cdn.jsdelivr.net/localforage/1.2.10/localforage.min.js',
-			  'https://fallenswordhelper.github.io/fallenswordhelper/resources/1513/calfSystem.js'],
+			  'https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.js'],
 		callback: FSH.Helper.onPageLoad
 	};
 	if (typeof window.jQuery === 'undefined') {
