@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1514b3
+// @version        1514b4
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -24,7 +24,7 @@ var fshMain = function() {
 window.FSH = window.FSH || {};
 
 FSH.resources = {
-	calfSystemJs: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.js'],
+	calfSystemJs: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.js',
 	calfSystemCss: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.css',
 	localForage: 'https://cdn.jsdelivr.net/localforage/1.4.2/localforage.min.js',
 	dataTablesLoc: 'https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js',
