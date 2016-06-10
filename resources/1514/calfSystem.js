@@ -1447,13 +1447,13 @@ FSH.Layout = {
 					'character-monsterlog" href="index.php?cmd=notepad&blank' +
 					'=1&subcmd=monsterlog">Creature Logs</a></li>');
 		}
-		$(pCL).find('a#nav-character-notepad').parent('li')
-			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
-				'character-quicklinkmanager" href="index.php?cmd=notepad&' +
-				'blank=1&subcmd=quicklinkmanager">Quick Links</a></li>')
-			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
-				'character-createmap" href="index.php?cmd=notepad&blank=1&' +
-				'subcmd=createmap">Create Maps</a></li>');
+		// $(pCL).find('a#nav-character-notepad').parent('li')
+			// .after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
+				// 'character-quicklinkmanager" href="index.php?cmd=notepad&' +
+				// 'blank=1&subcmd=quicklinkmanager">Quick Links</a></li>')
+			// .after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
+				// 'character-createmap" href="index.php?cmd=notepad&blank=1&' +
+				// 'subcmd=createmap">Create Maps</a></li>');
 		//guild
 		$(pCL).find('a#nav-guild-storehouse-inventory').parent('li')
 			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
