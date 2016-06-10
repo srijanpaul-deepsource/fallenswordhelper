@@ -4,11 +4,11 @@
 
 window.FSH = window.FSH || {};
 
-// GM_ApiBrowserCheck
-// @author        GIJoe
-// @license       http://creativecommons.org/licenses/by-nc-sa/3.0/
-// Global variables
 (function GM_ApiBrowserCheck() {
+	// GM_ApiBrowserCheck
+	// @author        GIJoe
+	// @license       http://creativecommons.org/licenses/by-nc-sa/3.0/
+	// Global variables
 	var gvar = {};
 	var GMSTORAGE_PATH = 'GM_';
 	// You can change it to avoid conflict with others scripts
@@ -128,10 +128,9 @@ window.FSH = window.FSH || {};
 		};
 	}
 })();
-//window.FSH.GM_ApiBrowserCheck();
 
-// FSH.System.functions
 FSH.System = {
+	// FSH.System.functions
 
 	init: function() {
 		FSH.System.server = document.location.protocol + '//' +
@@ -653,7 +652,7 @@ FSH.Data = {
 		'xBWvEAxMdOlXhc/QYVAqg8dnITedS9IG8tldYUeTfJVFrjrW3FC1oVsErfSgEWsgZSo' +
 		'/JxW6xT+qwBR2Uc/PN7T+yzRewsE50wAAAAAElFTkSuQmCC',
 
-/* jshint -W101 */ // Line is too long. (W101)
+	/* jshint -W101 */ // Line is too long. (W101)
 
 	buffList: [
 		{name: 'Rage',                stamina: 10, 'duration': 90,   minCastLevel: 1,    treeId: 0, skillId: 0,   buff: '+0.2% base attack per point.', nicks: 'rage'},
@@ -789,7 +788,7 @@ FSH.Data = {
 		{name: 'Invigorate',          stamina: 40, 'duration': 90,   minCastLevel: 3000, treeId: 2, skillId: 169, buff: '+0.01% per skill level added to your attack, defence, armor, HP and damage for each piece of equipped gear that is epic.', nicks: 'invigorate'}
 	],
 
-/* jshint +W101 */ // Line is too long. (W101)
+	/* jshint +W101 */ // Line is too long. (W101)
 
 	guildMessages: {
 		guildSelfMessage: {'color':'green',
@@ -887,8 +886,8 @@ FSH.Data = {
 		enableBioCompressor: true,
 		maxCompressedCharacters: 250,
 		maxCompressedLines: 10,
-		hideArenaPrizes: '',
-		autoSortArenaList: false,
+		// hideArenaPrizes: '',
+		// autoSortArenaList: false,
 
 		currentGoldSentTotal: 0,
 		keepBuffLog: false,
@@ -934,7 +933,7 @@ FSH.Data = {
 		enableQuickDrink: true,
 		enhanceOnlineDots: true,
 		hideBuffSelected: false,
-		enableFastWalk: false,
+		// enableFastWalk: false,
 		hideHelperMenu: false,
 		keepHelperMenuOnScreen: true,
 		quickLinksTopPx: 22,
@@ -982,7 +981,7 @@ FSH.Data = {
 		alliestotal: 0,
 		enemiestotal: 0,
 		footprints: false,
-		showFastWalkIconOnWorld: false,
+		// showFastWalkIconOnWorld: false,
 		hideNonPlayerGuildLogMessages: true,
 		listOfAllies: '',
 		listOfEnemies: '',
@@ -1145,8 +1144,8 @@ FSH.Data = {
 		'sendClasses',
 		'itemRecipient',
 		'currentGoldSentTotal',
-		'hideArenaPrizes',
-		'autoSortArenaList',
+		// 'hideArenaPrizes',
+		// 'autoSortArenaList',
 		'enableAllyOnlineList',
 		'enableEnemyOnlineList',
 		'allyEnemyOnlineRefreshTime',
@@ -1177,8 +1176,8 @@ FSH.Data = {
 		'enableQuickDrink',
 		'enhanceOnlineDots',
 		'hideBuffSelected',
-		'enableFastWalk',
-		'showFastWalkIconOnWorld',
+		// 'enableFastWalk',
+		// 'showFastWalkIconOnWorld',
 		'hideHelperMenu',
 		'keepHelperMenuOnScreen',
 		'showNextQuestSteps'//,
@@ -1831,7 +1830,6 @@ FSH.Layout = {
 		'&nbsp;Max lvl:&nbsp;<input id="fshMaxLvl" size="5">&nbsp;&nbsp;' +
 		'<input id="fshReset" class="custombutton" type="button" ' +
 		'value="Reset"></span></td></tr></tbody></table>',
-
 
 };
 
@@ -2592,7 +2590,7 @@ FSH.guildAdvisor = { // jQuery
 
 	injectAdvisor: function() { // Native
 		FSH.Helper.appendHead({
-			js: [FSH.dataTablesLoc],
+			js: [FSH.resources.dataTablesLoc],
 			callback: FSH.guildAdvisor.dataTablesLoaded
 		});
 	},
@@ -3265,7 +3263,7 @@ FSH.inventory = { // jQuery
 	injectInventoryManagerNew: function() { // jQuery
 		FSH.inventory.doSpinner();
 		FSH.Helper.appendHead({
-			js: [FSH.dataTablesLoc],
+			js: [FSH.resources.dataTablesLoc],
 			callback: FSH.inventory.syncInvMan
 		});
 	},
@@ -3341,33 +3339,6 @@ FSH.inventory = { // jQuery
 			});
 		//
 
-		var cur = FSH.Helper.inventory.player_id ?
-			FSH.Helper.inventory.player_id :
-			FSH.Helper.inventory.current_player_id;
-		FSH.Helper.inventory.items.forEach(function(data) {
-			var t = data.player_id === -1 ? 4 : 1;
-			var p = FSH.Helper.inventory.player_id ?
-				FSH.Helper.inventory.player_id :
-				data.player_id !== -1 ? data.player_id :
-				FSH.Helper.inventory.guild_id;
-			var bold = data.equipped ? '<b>' + data.item_name + '</b>' :
-				data.item_name;
-			var setName = data.stats && data.stats.set_name !== '' ?
-				' (<span class="fshLink setName" set="' + data.stats.set_name +
-				'">set</span>)' : '';
-			data.fsh_name = '<span class="fshInvItem tip-dynamic ' +
-				FSH.Data.rarity[data.rarity].class + '" ' +
-				'data-tipped="fetchitem.php?item_id=' + data.item_id +
-				'&inv_id=' + data.inv_id + '&t=' + t + '&p=' + p +
-				'&currentPlayerId=' + cur + '"' + '>' +
-				bold + '</span>' + setName;
-
-			if (parseInt(data.max_durability, 10) > 0) {
-				data.durPerc = Math.ceil(data.durability / data.max_durability * 100);
-			}
-
-		});
-
 	},
 
 	headers: function() { // jQuery
@@ -3395,7 +3366,9 @@ FSH.inventory = { // jQuery
 			lengthMenu: [[50, 100, 150, 200, -1], [50, 100, 150, 200, 'All']],
 			columnDefs: [{targets: '_all', defaultContent: ''}],
 			columns: [
-				{title: 'Name', data: 'fsh_name'},
+				{title: 'Name', data: 'item_name',
+					render: FSH.inventory.nameRender
+				},
 				{title: 'Level', data: 'stats.min_level'},
 				{title: 'Where', data: FSH.inventory.whereData,
 					render: {
@@ -3411,7 +3384,7 @@ FSH.inventory = { // jQuery
 				{title: 'Arm', data: 'stats.armor'},
 				{title: 'Dam', data: 'stats.damage'},
 				{title: 'HP', data: 'stats.hp'},
-				{title: 'Forge', data: 'forge'},
+				{title: 'Frg', data: 'forge'},
 				{title: 'Craft', data: 'craft',
 					render: {
 						'_': function(craft) {
@@ -3422,7 +3395,8 @@ FSH.inventory = { // jQuery
 						}
 					}
 				},
-				{title: 'Dur%', data: 'durPerc'},
+				{title: 'Du%', data: 'durability',
+					render: FSH.inventory.durabilityRender},
 				{title: 'BP',
 					data: FSH.inventory.whereData,
 					render: FSH.inventory.bpRender
@@ -3455,7 +3429,6 @@ FSH.inventory = { // jQuery
 			stateDuration: 0
 		});
 		table.column(12).visible('current_player_id' in FSH.Helper.inventory);
-		table.column(13).visible('current_player_id' in FSH.Helper.inventory);
 		table.column(17).visible('player_id' in FSH.Helper.inventory &&
 			FSH.inventory.showQuickDropLinks);
 		table.column(18).visible('player_id' in FSH.Helper.inventory &&
@@ -3471,13 +3444,46 @@ FSH.inventory = { // jQuery
 			colour = data.player_id === -1 ? 'fshNavy' : 'fshMaroon';
 		}
 		$(row).addClass(colour);
+		// $('td', row).first().addClass(FSH.Data.rarity[data.rarity].class);
+	},
+
+	nameRender: function(data, type, row) { // Native
+		if (type !== 'display') {return data;}
+
+		var cur = FSH.Helper.inventory.player_id ?
+			FSH.Helper.inventory.player_id :
+			FSH.Helper.inventory.current_player_id;
+
+		var t = row.player_id === -1 ? 4 : 1;
+		var p = FSH.Helper.inventory.player_id ?
+			FSH.Helper.inventory.player_id :
+			row.player_id !== -1 ? row.player_id :
+			FSH.Helper.inventory.guild_id;
+		var bold = row.equipped ? '<b>' + data + '</b>' : data;
+		var setName = row.stats && row.stats.set_name !== '' ?
+			' (<span class="fshLink setName" set="' + row.stats.set_name +
+			'">set</span>)' : '';
+		return '<a href="index.php?cmd=auctionhouse&search_text=' + data +
+			'" class="fshInvItem tip-dynamic ' +
+			FSH.Data.rarity[row.rarity].class + '" ' +
+			'data-tipped="fetchitem.php?item_id=' + row.item_id +
+			'&inv_id=' + row.inv_id + '&t=' + t + '&p=' + p +
+			'&currentPlayerId=' + cur + '"' + '>' +
+			bold + '</a>' + setName;
+
+	},
+
+	durabilityRender: function(data, type, row) {
+		if (parseInt(row.max_durability, 10) > 0) {
+			return Math.ceil(row.durability / row.max_durability * 100);
+		}
 	},
 
 	whereData: function(row) { // Native
 		return row.folder_id || row.player_id;
 	},
 
-	whereRender: function(_data, _type, row) { // Native
+	whereRender: function(data, type, row) { // Native
 		if (row.folder_id) {
 			return row.equipped ? -2 : parseInt(row.folder_id, 10);
 		}
@@ -3485,7 +3491,7 @@ FSH.inventory = { // jQuery
 			FSH.Helper.membrList[row.player_id].username;
 	},
 
-	whereRenderDisplay: function(_data, _type, row) { // Native
+	whereRenderDisplay: function(data, type, row) { // Native
 
 		if (row.player_id) {
 			return row.player_id === -1 ? 'GS' :
@@ -3510,9 +3516,10 @@ FSH.inventory = { // jQuery
 
 	},
 
-	bpRender: function(_where, _type, row) { // Native
+	bpRender: function(where, type, row) { // Native
 		if (row.folder_id || row.player_id ===
 			FSH.Helper.inventory.current_player_id) {return;}
+		if (type !== 'display') {return 'BP';}
 		if (row.player_id === -1) {
 			return '<span class="fshLink takeItem" invid="' + row.inv_id +
 				'" action="take">BP</span>';
@@ -3522,18 +3529,20 @@ FSH.inventory = { // jQuery
 			'" mode="0" action="recall">BP</span>';
 	},
 
-	gsRender: function(_where, _type, row) { // Native
-		if (row.player_id && row.player_id !== -1) {
-			return '<span class="fshLink recallItem" invid="' + row.inv_id +
-				'" playerid="' + row.player_id +
-				'" mode="1" action="recall">GS</span>';
+	gsRender: function(_data, type, row) { // Native
+		if (row.player_id && row.player_id !== -1 ||
+			row.folder_id && row.guild_tag !== '-1') {
+			return type === 'display' ? '<span class="fshLink recallItem" invid="' +
+				row.inv_id + '" playerid="' +
+				(row.player_id || FSH.Helper.inventory.player_id) +
+				'" mode="1" action="recall">GS</span>' : 'GS';
 		}
 	},
 
-	wuRender: function(type, _type, row) { // Native
+	wuRender: function(data, _type, row) { // Native
 		var action = {'0': 'Wear', '1': 'Wear', '2': 'Wear', '3': 'Wear',
 			'4': 'Wear', '5': 'Wear', '6': 'Wear', '7': 'Wear', '8': 'Wear',
-			'10': 'Use', '11': 'Use', '15': 'Use'}[type];
+			'10': 'Use', '11': 'Use', '15': 'Use'}[data];
 		if (action === 'Wear') {
 			action = FSH.inventory.wearRender(row);
 		} else if (action === 'Use') {
@@ -3580,7 +3589,7 @@ FSH.inventory = { // jQuery
 		}
 	},
 
-	dropRender: function(_data, type, row) {
+	dropRender: function(data, type, row) { // Native
 		if (row.guild_tag !== '-1' || row.equipped) {return;}
 		if (type !== 'display') {return 'Drop';}
 		return '<span class="dropItem tip-static dropLink" data-tipped=' +
@@ -3588,7 +3597,7 @@ FSH.inventory = { // jQuery
 			' data-inv="' + row.inv_id + '">Drop</span>';
 	},
 
-	sendRender: function(_data, type, row) {
+	sendRender: function(data, type, row) { // Native
 		if (row.bound || row.equipped) {return;}
 		if (type !== 'display') {return 'Send';}
 		return '<span class="sendItem tip-static reportLink" data-tipped=' +
@@ -3667,7 +3676,7 @@ FSH.inventory = { // jQuery
 		$('table#fshInv').on('click', 'span.sendItem', FSH.inventory.sendItem);
 	},
 
-	refresh: function() {
+	refresh: function() { // Native
 		FSH.inventory.doSpinner();
 		FSH.inventory.syncInvMan();
 	},
@@ -3812,12 +3821,12 @@ FSH.inventory = { // jQuery
 		$('#fshInv').DataTable().draw(false);
 	},
 
-	moveItem: function() {
+	moveItem: function() { // jQuery
 		var self = $(this);
 		FSH.ajax.moveItem([self.data('inv')], self.val());
 	},
 
-	dropItem: function() {
+	dropItem: function() { // jQuery
 		var self = $(this).removeClass().qtip('hide');
 		FSH.ajax.dropItem([self.data('inv')]).done(function(data){
 			if (data.r === 1) {return;}
@@ -3825,7 +3834,7 @@ FSH.inventory = { // jQuery
 		});
 	},
 
-	sendItem: function() {
+	sendItem: function() { // jQuery
 		var self = $(this).removeClass().qtip('hide');
 		FSH.ajax.sendItem([self.data('inv')]).done(function(data){
 			if (data.r === 1) {return;}
@@ -4245,11 +4254,11 @@ FSH.profile = { // Legacy
 			if (playeridRE) {playerid = playeridRE[1];}
 		}
 		var idindex;
-//************** yuuzhan having fun
+		//************** yuuzhan having fun
 		$('img[oldtitle="yuuzhan\'s Avatar"]').click(function(){alert('Winner!');});
 		$('img[oldtitle="yuuzhan\'s Avatar"]')
 			.attr('src','http://evolutions.yvong.com/images/tumbler.gif');
-//**************
+		//**************
 		FSH.profile.profileInjectGuildRel();
 		if (FSH.System.getValue('enableBioCompressor')) {FSH.profile.compressBio();}
 		var isSelfRE = $('#backpack_tabs').length > 0;// /player_id=/.exec(document.location.search);//
@@ -5898,7 +5907,7 @@ FSH.onlinePlayers = { // Bad jQuery
 	injectOnlinePlayers: function(content) { // jQuery
 		FSH.Helper.context = content ? $(content) : $('div#pCC');
 		FSH.Helper.appendHead({
-			js: [FSH.dataTablesLoc],
+			js: [FSH.resources.dataTablesLoc],
 			callback: FSH.onlinePlayers.injectOnlinePlayersNew
 		});
 	},
@@ -6571,7 +6580,7 @@ FSH.settingsPage = { // Legacy
 		var buffs3                 = FSH.System.getValue('huntingBuffs3');
 		var buffs3Name             = FSH.System.getValue('huntingBuffs3Name');
 		var doNotKillList          = FSH.System.getValue('doNotKillList');
-		var hideArenaPrizes        = FSH.System.getValue('hideArenaPrizes');
+		// var hideArenaPrizes        = FSH.System.getValue('hideArenaPrizes');
 
 		var enableActiveBountyList = FSH.System.getValue('enableActiveBountyList');
 		var bountyListRefreshTime  = FSH.System.getValue('bountyListRefreshTime');
@@ -6735,12 +6744,12 @@ FSH.settingsPage = { // Legacy
 				':</td><td><input name="keepBuffLog" type="checkbox" value="on"' + (FSH.System.getValue('keepBuffLog')?' checked':'') + '></td></tr>' +
 			'<tr><td align="right">Enable Hunting Mode' + FSH.Layout.helpLink('Enable Hunting Mode', 'This disable menu and some visual features to speed up the FSH.Helper.') +
 				':</td><td><input name="huntingMode" type="checkbox" value="on"' + (FSH.System.getValue('huntingMode')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Enable Fast Walk' + FSH.Layout.helpLink('Enable Fast Walk', 'This functionality will allow the user to send multiple move commands, each subsequent one assuming that the previous one succeeded. ' +
-				'It does not check for blocked squares, not does it check to make sure that the move commands arrived at the server in the right order. Depending on the lag you experience, the user may have to pause slightly ' +
-				'between each move to make sure they reach the server in the right order.') +
-				':</td><td><input name="enableFastWalk" type="checkbox" value="on"' + (FSH.System.getValue('enableFastWalk')?' checked':'') + '>'+
-				' Show FastWalk icon on world' + FSH.Layout.helpLink('Show FastWalk icon on world', 'Should the FastWalk toggle icon show on the world map') +
-				':<input name="showFastWalkIconOnWorld" type="checkbox" value="on"' + (FSH.System.getValue('showFastWalkIconOnWorld')?' checked':'') + '></td></tr>' +
+			// '<tr><td align="right">Enable Fast Walk' + FSH.Layout.helpLink('Enable Fast Walk', 'This functionality will allow the user to send multiple move commands, each subsequent one assuming that the previous one succeeded. ' +
+				// 'It does not check for blocked squares, not does it check to make sure that the move commands arrived at the server in the right order. Depending on the lag you experience, the user may have to pause slightly ' +
+				// 'between each move to make sure they reach the server in the right order.') +
+				// ':</td><td><input name="enableFastWalk" type="checkbox" value="on"' + (FSH.System.getValue('enableFastWalk')?' checked':'') + '>'+
+				// ' Show FastWalk icon on world' + FSH.Layout.helpLink('Show FastWalk icon on world', 'Should the FastWalk toggle icon show on the world map') +
+				// ':<input name="showFastWalkIconOnWorld" type="checkbox" value="on"' + (FSH.System.getValue('showFastWalkIconOnWorld')?' checked':'') + '></td></tr>' +
 			//Log screen prefs
 			'<tr><th colspan="2" align="left"><b>Log screen preferences</b></th></tr>' +
 			'<tr><td align="right">Cleanup Guild Log' + FSH.Layout.helpLink('Dim Non Player Guild Log Messages', 'Any log messages not related to the ' +
@@ -6811,12 +6820,12 @@ FSH.settingsPage = { // Legacy
 			'<tr><td align="right">Enable Quick Drink' + FSH.Layout.helpLink('Enable Quick Drink On Profile', 'This enables the quick drink functionality on the profile page.') +
 				':</td><td><input name="enableQuickDrink" type="checkbox" value="on"' + (FSH.System.getValue('enableQuickDrink')?' checked':'') + '></td></tr>' +
 			//Arena prefs
-			'<tr><th colspan="2" align="left"><b>Arena preferences</b></th></tr>' +
-			'<tr><td align="right">Auto Sort Arena List' + FSH.Layout.helpLink('Auto Sort Arena List', 'This will automatically sort the arena list based on your last preference for sort.') +
-				':</td><td><input name="autoSortArenaList" type="checkbox" value="on"' + (FSH.System.getValue('autoSortArenaList')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Hide Arena Prizes' + FSH.Layout.helpLink('Hide Arena Prizes', 'List of the itemIds of arena prizes that should not display on the arena screen ' +
-				'separated by commas. To find the itemId you will have to view the source of the page or mouseover the item on the arena page.') +
-				':</td><td colspan="3"><input name="hideArenaPrizes" size="60" value="'+ hideArenaPrizes + '" /></td></tr>' +
+			// '<tr><th colspan="2" align="left"><b>Arena preferences</b></th></tr>' +
+			// '<tr><td align="right">Auto Sort Arena List' + FSH.Layout.helpLink('Auto Sort Arena List', 'This will automatically sort the arena list based on your last preference for sort.') +
+				// ':</td><td><input name="autoSortArenaList" type="checkbox" value="on"' + (FSH.System.getValue('autoSortArenaList')?' checked':'') + '></td></tr>' +
+			// '<tr><td align="right">Hide Arena Prizes' + FSH.Layout.helpLink('Hide Arena Prizes', 'List of the itemIds of arena prizes that should not display on the arena screen ' +
+				// 'separated by commas. To find the itemId you will have to view the source of the page or mouseover the item on the arena page.') +
+				// ':</td><td colspan="3"><input name="hideArenaPrizes" size="60" value="'+ hideArenaPrizes + '" /></td></tr>' +
 			//Bounty hunting prefs
 			'<tr><th colspan="2" align="left"><b>Bounty hunting preferences</b></th></tr>' +
 			'<tr><td align= "right">' + FSH.Layout.networkIcon + 'Show Active Bounties' + FSH.Layout.helpLink('Show Active Bounties', 'This will show your active bounties ' +
@@ -8852,7 +8861,8 @@ FSH.activeWantedBounties = { // Legacy
 				}
 				output += '<a style="color:#A0CFEC;font-size:10px;"href="j' +
 
-'avascript:openQuickMsgDialog(\'' + wantedList.bounty[i].target + '\');' +
+					'avascript:openQuickMsgDialog(\'' + wantedList.bounty[i].target +
+					'\');' +
 
 					'">[m]</a> &nbsp;<a class="tip-static" data-tipped=' +
 					mouseOverText +
@@ -11568,9 +11578,8 @@ FSH.oldArena = { // Legacy
 			nextButton.parentNode.insertBefore(finishButton, nextButton.nextSibling);
 		}
 
-
-// Why are we storing completed arenas?
-/*
+		// Why are we storing completed arenas?
+		/*
 
 		var arenaTable = FSH.System.findNode('//table[@width=620]/tbody/tr/td[contains(.,"Reward")]/table');
 
@@ -11620,7 +11629,7 @@ FSH.oldArena = { // Legacy
 		}
 		FSH.System.setValueJSON('arenaMatches', arenaMatches);
 
-*/
+		*/
 
 	},
 
@@ -11727,7 +11736,7 @@ FSH.arena = { // jQuery
 
 	inject: function() { // Native
 		FSH.Helper.appendHead({
-			js: [FSH.dataTablesLoc],
+			js: [FSH.resources.dataTablesLoc],
 			callback: FSH.arena.dataTablesLoaded
 		});
 	},
@@ -11980,7 +11989,6 @@ FSH.combatLog = { // Native
 			location.reload();
 		}
 	},
-
 
 };
 

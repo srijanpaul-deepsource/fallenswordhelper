@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1514b2
+// @version        1514b3
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -22,7 +22,14 @@ var fshMain = function() {
 'use strict';
 
 window.FSH = window.FSH || {};
-FSH.dataTablesLoc = 'https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js';
+
+FSH.resources = {
+	calfSystemJs: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.js'],
+	calfSystemCss: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.css',
+	localForage: 'https://cdn.jsdelivr.net/localforage/1.4.2/localforage.min.js',
+	dataTablesLoc: 'https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js',
+	jQuery: 'https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js'
+};
 
 if (typeof GM_info === 'undefined') {
 	FSH.version = 'undefined';
@@ -1008,7 +1015,7 @@ FSH.Helper = {
 		}
 
 		var imgSource;
-		var altText;
+		// var altText;
 		if (mapName && mapNameText) {
 			mapName.innerHTML += ' <a href="http://guide.fallensword.com/index.php?cmd=realms&subcmd=view&realm_id=' + realmId + '" target="_blank">' +
 				'<img border=0 title="Search map in Ultimate FSG" width=10 height=10 src="'+ FSH.System.imageServer + '/temple/1.gif"/></a>';
@@ -1029,18 +1036,20 @@ FSH.Helper = {
 				document.getElementById('toggleSoundLink').addEventListener('click', FSH.Helper.toggleSound, true);
 
 			}
-			if (FSH.System.getValue('showFastWalkIconOnWorld')) {
-				var enableFastWalk = FSH.System.getValue('enableFastWalk');
-				imgSource = enableFastWalk === true ? FSH.Data.runIcon : FSH.Data.stopIcon;
-				altText = enableFastWalk === true ? 'FastWalk mode is ON' : 'FastWalk mode is OFF';
-				mapName.innerHTML += ' <a href=# id="Helper:ToggleFastWalkMode"><img title="' + altText + '" src="' + imgSource + '" border=0 width=10 height=10/></a>';
-				document.getElementById('Helper:ToggleFastWalkMode').addEventListener('click',
-					function() {
-						FSH.System.setValue('enableFastWalk',
-							!FSH.System.getValue('enableFastWalk'));
-						location.reload();
-					},true);
-			}
+
+			// if (FSH.System.getValue('showFastWalkIconOnWorld')) {
+				// var enableFastWalk = FSH.System.getValue('enableFastWalk');
+				// imgSource = enableFastWalk === true ? FSH.Data.runIcon : FSH.Data.stopIcon;
+				// altText = enableFastWalk === true ? 'FastWalk mode is ON' : 'FastWalk mode is OFF';
+				// mapName.innerHTML += ' <a href=# id="Helper:ToggleFastWalkMode"><img title="' + altText + '" src="' + imgSource + '" border=0 width=10 height=10/></a>';
+				// document.getElementById('Helper:ToggleFastWalkMode').addEventListener('click',
+					// function() {
+						// FSH.System.setValue('enableFastWalk',
+							// !FSH.System.getValue('enableFastWalk'));
+						// location.reload();
+					// },true);
+			// }
+
 			document.getElementById('Helper:ToggleHuntingMode').addEventListener('click',
 				function() {
 					FSH.System.setValue('huntingMode',
@@ -1525,34 +1534,34 @@ FSH.Helper = {
 		}
 	},
 
-	moveMe: function(dx, dy) {
-		var xCoord;
-		var yCoord;
-		var pos=FSH.Helper.position();
-		var enableFastWalk = FSH.System.getValue('enableFastWalk');
-		if (pos) {
-			if (pos.type === 'normal') {
+	// moveMe: function(dx, dy) {
+		// var xCoord;
+		// var yCoord;
+		// var pos=FSH.Helper.position();
+		// var enableFastWalk = FSH.System.getValue('enableFastWalk');
+		// if (pos) {
+			// if (pos.type === 'normal') {
 				//if fast walk is enabled then use the stored location, otherwise look it up
-				xCoord = enableFastWalk?FSH.Helper.xLocation:pos.X;
-				yCoord = enableFastWalk?FSH.Helper.yLocation:pos.Y;
-				location.href = 'index.php?cmd=world&subcmd=move&x=' + (xCoord+dx) + '&y=' + (yCoord+dy);
-				FSH.Helper.xLocation+=dx;
-				FSH.Helper.yLocation+=dy;
-			}
-			if (pos.type === 'worldmap') {
+				// xCoord = enableFastWalk?FSH.Helper.xLocation:pos.X;
+				// yCoord = enableFastWalk?FSH.Helper.yLocation:pos.Y;
+				// location.href = 'index.php?cmd=world&subcmd=move&x=' + (xCoord+dx) + '&y=' + (yCoord+dy);
+				// FSH.Helper.xLocation+=dx;
+				// FSH.Helper.yLocation+=dy;
+			// }
+			// if (pos.type === 'worldmap') {
 				//if fast walk is enabled then use the stored location, otherwise look it up
-				xCoord = enableFastWalk?FSH.Helper.xLocation:pos.X;
-				yCoord = enableFastWalk?FSH.Helper.yLocation:pos.Y;
-				FSH.System.xmlhttp('index.php?cmd=world&subcmd=move&x=' +
-					(xCoord+dx) + '&y=' + (yCoord+dy), function() {
-						location.href = FSH.System.server +
-							'index.php?cmd=world&subcmd=map';});
-				FSH.Helper.xLocation+=dx;
-				FSH.Helper.yLocation+=dy;
+				// xCoord = enableFastWalk?FSH.Helper.xLocation:pos.X;
+				// yCoord = enableFastWalk?FSH.Helper.yLocation:pos.Y;
+				// FSH.System.xmlhttp('index.php?cmd=world&subcmd=move&x=' +
+					// (xCoord+dx) + '&y=' + (yCoord+dy), function() {
+						// location.href = FSH.System.server +
+							// 'index.php?cmd=world&subcmd=map';});
+				// FSH.Helper.xLocation+=dx;
+				// FSH.Helper.yLocation+=dy;
 
-			}
-		}
-	},
+			// }
+		// }
+	// },
 
 	killMonsterAt: function(index) {
 		var linkObj = FSH.Helper.getMonster(index);
@@ -1579,30 +1588,30 @@ FSH.Helper = {
 		s = evt.keyCode;
 
 		switch (r) {
-		case 113: // nw [q]
-			FSH.Helper.moveMe(-1,-1);
-			break;
-		case 119: // n [w]
-			FSH.Helper.moveMe(0,-1);
-			break;
-		case 101: // ne [e]
-			FSH.Helper.moveMe(1,-1);
-			break;
-		case 97: // w [a]
-			FSH.Helper.moveMe(-1,0);
-			break;
-		case 100: // e [d]
-			FSH.Helper.moveMe(1,0);
-			break;
-		case 122: // sw [z]
-			FSH.Helper.moveMe(-1,1);
-			break;
-		case 120: // s [x]
-			FSH.Helper.moveMe(0,1);
-			break;
-		case 99: // se [c]
-			FSH.Helper.moveMe(1,1);
-			break;
+		// case 113: // nw [q]
+			// FSH.Helper.moveMe(-1,-1);
+			// break;
+		// case 119: // n [w]
+			// FSH.Helper.moveMe(0,-1);
+			// break;
+		// case 101: // ne [e]
+			// FSH.Helper.moveMe(1,-1);
+			// break;
+		// case 97: // w [a]
+			// FSH.Helper.moveMe(-1,0);
+			// break;
+		// case 100: // e [d]
+			// FSH.Helper.moveMe(1,0);
+			// break;
+		// case 122: // sw [z]
+			// FSH.Helper.moveMe(-1,1);
+			// break;
+		// case 120: // s [x]
+			// FSH.Helper.moveMe(0,1);
+			// break;
+		// case 99: // se [c]
+			// FSH.Helper.moveMe(1,1);
+			// break;
 		case 114: // repair [r]
 			//do not use repair link for new map
 			if ($('#worldPage').length === 0) {
@@ -1700,26 +1709,26 @@ FSH.Helper = {
 			break;
 		case 0: // special key
 			switch (s) {
-			case 37: // w
-				FSH.Helper.moveMe(-1,0);
-				evt.preventDefault();
-				evt.stopPropagation();
-				break;
-			case 38: // n
-				FSH.Helper.moveMe(0,-1);
-				evt.preventDefault();
-				evt.stopPropagation();
-				break;
-			case 39: // e
-				FSH.Helper.moveMe(1,0);
-				evt.preventDefault();
-				evt.stopPropagation();
-				break;
-			case 40: // s
-				FSH.Helper.moveMe(0,1);
-				evt.preventDefault();
-				evt.stopPropagation();
-				break;
+			// case 37: // w
+				// FSH.Helper.moveMe(-1,0);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				// break;
+			// case 38: // n
+				// FSH.Helper.moveMe(0,-1);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				// break;
+			// case 39: // e
+				// FSH.Helper.moveMe(1,0);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				// break;
+			// case 40: // s
+				// FSH.Helper.moveMe(0,1);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				// break;
 			case 33:
 				if (FSH.System.findNode('//div[@id="reportsLog"]')) {
 					FSH.Helper.scrollUpCombatLog();
@@ -2759,13 +2768,13 @@ FSH.Helper = {
 
 (function loadScripts () {
 	var o = {
-		css: ['https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.css'],
-		js:  ['https://cdn.jsdelivr.net/localforage/1.2.10/localforage.min.js',
-			  'https://fallenswordhelper.github.io/fallenswordhelper/resources/1514/calfSystem.js'],
+		css: [FSH.resources.calfSystemCss],
+		js:  [FSH.resources.localForage,
+					FSH.resources.calfSystemJs],
 		callback: FSH.Helper.onPageLoad
 	};
 	if (typeof window.jQuery === 'undefined') {
-		o.js.unshift('https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js');
+		o.js.unshift(FSH.resources.jQuery);
 	}
 	FSH.Helper.appendHead(o);
 })();
