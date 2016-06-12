@@ -5143,6 +5143,7 @@ FSH.logs = { // Legacy
 				}
 				continue;
 			}
+			console.log('aRow:',aRow);
 			if (!aRow.cells[0].innerHTML) {console.log('No innerHTML/continue');continue;}
 			var firstCell = aRow.cells[0];
 			//Valid Types: General, Chat, Guild
@@ -5210,9 +5211,9 @@ FSH.logs = { // Legacy
 			//add PvP combat log summary
 			if (messageType === 'Combat') {
 				console.log('messageType', messageType);
-				console.log('aRow.cells[2]', aRow.cells[2]);
-				console.log('aRow.cells[2].innerHTML', aRow.cells[2].innerHTML);
-				console.log('aRow.cells[2].innerHTML.search(\'combat_id=\')', aRow.cells[2].innerHTML.search('combat_id='));
+				// console.log('aRow.cells[2]', aRow.cells[2]);
+				// console.log('aRow.cells[2].innerHTML', aRow.cells[2].innerHTML);
+				// console.log('aRow.cells[2].innerHTML.search(\'combat_id=\')', aRow.cells[2].innerHTML.search('combat_id='));
 			}
 			if (messageType === 'Combat' &&
 				aRow.cells[2] &&
