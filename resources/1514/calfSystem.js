@@ -1198,16 +1198,6 @@ FSH.Data = {
 		'Ring', 'Amulet', 'Rune', 'Quest Item', 'Potion', 'Component',
 		'Resource', 'Recipe', 'Container', 'Composed', 'Frag Stash'],
 
-	rarityColour: [
-		'#ffffff', // Common
-		'#0099ff', // Rare '#40FFFF'
-		'#ff33ff', // Unique
-		'#ffff66', // Legendary '#F6ED00'
-		'#ff3333', // Super Elite
-		'#6633ff', // Crystalline
-		'#009900'  // Epic '#00FF00'
-	],
-
 	rarity: [
 		{colour: '#ffffff', class: 'fshCommon'},
 		{colour: '#0099ff', class: 'fshRare'},
