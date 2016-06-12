@@ -1275,6 +1275,7 @@ FSH.Data = {
 			'groups': {
 				'viewstats': {'-': {'-': 'groups.injectGroupStats'}},
 				'joinallgroupsundersize': {'-': {'-': 'groups.injectGroups'}},
+				'joinall': {'-': {'-': 'groups.injectGroups'}},
 				'-': {'-': {'-': 'groups.injectGroups'}}},
 			'manage': {'-': {'-': {'-': 'guild.injectGuild'}}},
 			'structures': {'-': {'-': {'-': 'guild.injectGuild'}}},
@@ -1447,10 +1448,10 @@ FSH.Layout = {
 					'character-monsterlog" href="index.php?cmd=notepad&blank' +
 					'=1&subcmd=monsterlog">Creature Logs</a></li>');
 		}
-		// $(pCL).find('a#nav-character-notepad').parent('li')
-			// .after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
-				// 'character-quicklinkmanager" href="index.php?cmd=notepad&' +
-				// 'blank=1&subcmd=quicklinkmanager">Quick Links</a></li>')
+		$(pCL).find('a#nav-character-notepad').parent('li')
+			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
+				'character-quicklinkmanager" href="index.php?cmd=notepad&' +
+				'blank=1&subcmd=quicklinkmanager">Quick Links</a></li>')
 			// .after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 				// 'character-createmap" href="index.php?cmd=notepad&blank=1&' +
 				// 'subcmd=createmap">Create Maps</a></li>');
@@ -10447,7 +10448,7 @@ FSH.oldInvMan = { // Hybrid - Bad
 	},
 
 	setItemFilterDefault: function() { // Native - Bad
-// TODO Move this
+		// TODO Move this
 		FSH.Helper.itemFilters = [
 			{'id':'showHelmetTypeItems', 'type':'Helmet'},
 			{'id':'showAmorTypeItems', 'type':'Armor'},

@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1514b4
+// @version        1514b5
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -32,7 +32,7 @@ FSH.resources = {
 };
 
 if (typeof GM_info === 'undefined') {
-	FSH.version = 'undefined';
+	FSH.version = '1514b5';
 } else {
 	FSH.version = GM_info.script.version;
 }
@@ -105,7 +105,6 @@ FSH.Helper = {
 		var infoMessage = FSH.Layout.infoBox(responseText);
 		document.getElementById('buy_result').innerHTML += '<br />' + infoMessage;
 	},
-
 
 	position: function() {
 		var result = {};
