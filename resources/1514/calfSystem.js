@@ -5143,11 +5143,11 @@ FSH.logs = { // Legacy
 				}
 				continue;
 			}
-			if (!aRow.cells[0].innerHTML) {continue;}
+			if (!aRow.cells[0].innerHTML) {console.log('No innerHTML/continue');continue;}
 			var firstCell = aRow.cells[0];
 			//Valid Types: General, Chat, Guild
 			messageType = firstCell.firstChild.getAttribute('oldtitle');
-			if (!messageType) {return;}
+			if (!messageType) {console.log('No messageType/return');return;}
 			var colorPlayerName = false;
 			var isGuildMate = false;
 			if (messageType === 'Chat') {
