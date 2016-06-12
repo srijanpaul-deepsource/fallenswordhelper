@@ -1451,7 +1451,7 @@ FSH.Layout = {
 		$(pCL).find('a#nav-character-notepad').parent('li')
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 				'character-quicklinkmanager" href="index.php?cmd=notepad&' +
-				'blank=1&subcmd=quicklinkmanager">Quick Links</a></li>')
+				'blank=1&subcmd=quicklinkmanager">Quick Links</a></li>');
 			// .after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 				// 'character-createmap" href="index.php?cmd=notepad&blank=1&' +
 				// 'subcmd=createmap">Create Maps</a></li>');
@@ -5209,10 +5209,10 @@ FSH.logs = { // Legacy
 
 			//add PvP combat log summary
 			if (messageType === 'Combat') {
-				console.log('messageType', messageType)
-				console.log('aRow.cells[2]', aRow.cells[2])
-				console.log('aRow.cells[2].innerHTML', aRow.cells[2].innerHTML)
-				console.log('aRow.cells[2].innerHTML.search(\'combat_id=\')', aRow.cells[2].innerHTML.search('combat_id='))
+				console.log('messageType', messageType);
+				console.log('aRow.cells[2]', aRow.cells[2]);
+				console.log('aRow.cells[2].innerHTML', aRow.cells[2].innerHTML);
+				console.log('aRow.cells[2].innerHTML.search(\'combat_id=\')', aRow.cells[2].innerHTML.search('combat_id='));
 			}
 			if (messageType === 'Combat' &&
 				aRow.cells[2] &&
