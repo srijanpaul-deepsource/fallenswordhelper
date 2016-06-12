@@ -5051,9 +5051,9 @@ FSH.logs = { // Legacy
 		var localDateMilli = Date.now();
 		var gmtOffsetMinutes = (new Date()).getTimezoneOffset();
 		var gmtOffsetMilli = gmtOffsetMinutes * 60 * 1000;
-		var newRow = chatTable.insertRow(1);
-		newRow.insertCell(0);
-		for (var i = 2; i < chatTable.rows.length; i += 2) {
+		// var newRow = chatTable.insertRow(1);
+		// newRow.insertCell(0);
+		for (var i = 1; i < chatTable.rows.length; i += 2) {
 			var aRow = chatTable.rows[i];
 			var addBuffTag = true;
 			if (aRow.cells[0].innerHTML) {
@@ -5132,23 +5132,30 @@ FSH.logs = { // Legacy
 			return obj.username;});
 		var showPvPSummaryInLog = FSH.System.getValue('showPvPSummaryInLog');
 		var messageType;
-		for (i=0;i<logTable.rows.length;i += 2) {
+
+		var messageHeader = logTable.rows[0].cells[2];
+		if (messageHeader) {
+			messageHeader.innerHTML +='&nbsp;&nbsp;<span style="' +
+				'color:white;">(Guild mates show up in <span style="' +
+				'color:green;">green</span>)</span>';
+		}
+
+		for (i=1;i<logTable.rows.length;i += 2) {
 			var aRow = logTable.rows[i];
-			if (i === 0 ) {
-				var messageNameCell = aRow.cells[2];
-				if (messageNameCell) {
-					messageNameCell.innerHTML += '&nbsp;&nbsp;<span style="' +
-						'color:white;">(Guild mates show up in <span style="' +
-						'color:green;">green</span>)</span>';
-				}
-				continue;
-			}
-			console.log('aRow:',aRow);
-			if (!aRow.cells[0].innerHTML) {console.log('No innerHTML/continue');continue;}
+			// if (i === 0 ) {
+				// var messageNameCell = aRow.cells[2];
+				// if (messageNameCell) {
+					// messageNameCell.innerHTML += '&nbsp;&nbsp;<span style="' +
+						// 'color:white;">(Guild mates show up in <span style="' +
+						// 'color:green;">green</span>)</span>';
+				// }
+				// continue;
+			// }
+			if (!aRow.cells[0].innerHTML) {continue;}
 			var firstCell = aRow.cells[0];
 			//Valid Types: General, Chat, Guild
 			messageType = firstCell.firstChild.getAttribute('oldtitle');
-			if (!messageType) {console.log('No messageType/return');return;}
+			if (!messageType) {return;}
 			var colorPlayerName = false;
 			var isGuildMate = false;
 			if (messageType === 'Chat') {
@@ -5209,12 +5216,6 @@ FSH.logs = { // Legacy
 			}
 
 			//add PvP combat log summary
-			if (messageType === 'Combat') {
-				console.log('messageType', messageType);
-				// console.log('aRow.cells[2]', aRow.cells[2]);
-				// console.log('aRow.cells[2].innerHTML', aRow.cells[2].innerHTML);
-				// console.log('aRow.cells[2].innerHTML.search(\'combat_id=\')', aRow.cells[2].innerHTML.search('combat_id='));
-			}
 			if (messageType === 'Combat' &&
 				aRow.cells[2] &&
 				showPvPSummaryInLog &&
@@ -6609,8 +6610,10 @@ FSH.settingsPage = { // Legacy
 				(100 - storage) + '%)</span>' +
 			'</td></tr>' +
 			'<tr><td colspan="2" align=center>' +
-			'<span style="font-weight:bold;">Visit the <a href="https://github.com/fallenswordhelper/fallenswordhelper">Fallen Sword Helper web site</a> ' +
-			'for any suggestions, requests or bug reports</span></td></tr>' +
+				'<span style="font-weight:bold;">Visit the ' +
+				'<a href="https://github.com/fallenswordhelper/fallenswordhelper">' +
+				'Fallen Sword Helper web site</a> ' +
+				'for any suggestions, requests or bug reports</span></td></tr>' +
 			//General Prefs
 			'<tr><th colspan="2" align="left"><b>General preferences (apply to most screens)</b></th></tr>' +
 			'<tr><td align="right">Enable Guild Info Widgets' + FSH.Layout.helpLink('Enable Guild Info Widgets', 'Enabling this option will enable the Guild Info Widgets (coloring on the Guild Info panel)') +
