@@ -134,9 +134,9 @@ div#fshQuickLinks {
 .fshWhite     {color: white;}
 
 .fshCommon    {color: white;}
-.fshRare      {color: DodgerBlue;}
+.fshRare      {color: #3366ff;}
 .fshUnique    {color: #cc33ff;}
-.fshLegendary {color: #cccc33;}
+.fshLegendary {color: #cccc00;}
 .fshSuper     {color: #ff0000;}
 .fshCrystal   {color: #6633ff;}
 .fshEpic      {color: #009933;}
