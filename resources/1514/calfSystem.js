@@ -3439,7 +3439,7 @@ FSH.inventory = { // jQuery
 	createdRow: function(row, data) { // jQuery
 		var colour;
 		if (data.folder_id) {
-			colour = data.equipped ? 'fshGreen' : 'fshBlue';
+			colour = data.equipped ? 'fshGreen' : 'fshNavy';
 		}
 		if (data.player_id) {
 			colour = data.player_id === -1 ? 'fshNavy' : 'fshMaroon';
