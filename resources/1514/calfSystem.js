@@ -2605,6 +2605,7 @@ FSH.guildAdvisor = { // jQuery
 	injectAdvisorNew: function(m) { // jQuery
 		var list = $('#pCC table[cellpadding="1"]');
 		if (list.length !== 1) {return;}
+		list.attr('id', 'fshAdvisor');
 		var tfoot = $('<tfoot/>').append($('tr', list).last());
 		$('td', tfoot).first().removeAttr('class').attr('colspan', 3)
 			.attr('style', 'text-align: right;');
@@ -11767,7 +11768,7 @@ FSH.arena = { // jQuery
 		var myRows = theTables.children('tbody').children('tr');
 		myRows.each(FSH.arena.orderData);
 
-		theTables.find('tr').addClass('fshArena');
+		//theTables.find('tr').addClass('fshArena');
 
 		FSH.ajax.setForage('fsh_arena', FSH.arena.opts);
 
