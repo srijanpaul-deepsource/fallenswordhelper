@@ -6022,8 +6022,8 @@ FSH.onlinePlayers = { // Bad jQuery
 			'Max lvl:<input value="' + FSH.System.getValue('onlinePlayerMaxLvl') +
 				'" size=5 id="fshMaxLvl" /> ' +
 			'<input id="fshReset" type="button" value="Reset"/>' +
-			// '</div><table id="fshInv" class="stripe hover"></table>');
-			'</div><table id="fshInv" class="hover"></table>');
+			'</div><table id="fshInv" class="allow stripe hover"></table>');
+			// '</div><table id="fshInv" class="hover"></table>');
 	},
 
 	doOnlinePlayerEventHandlers: function(table) { // jQuery
