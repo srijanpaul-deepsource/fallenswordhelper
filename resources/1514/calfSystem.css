@@ -347,10 +347,6 @@ table.dataTable tbody tr:not(.fshArena) {
   background-color: #e2b960;
 }
 
-#fshAdvisor.dataTable tbody tr {
-  background-color: #e2b960;
-}
-
 */
 
 table.dataTable.allow tbody tr {
@@ -393,10 +389,6 @@ table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {
   background-color: #e7c473;
 }
 
-#fshAdvisor.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {
-  background-color: #e7c473;
-}
-
 */
 
 table.dataTable.allow.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {
@@ -405,23 +397,9 @@ table.dataTable.allow.stripe tbody tr.odd, table.dataTable.display tbody tr.odd 
 table.dataTable.stripe tbody tr.odd.selected, table.dataTable.display tbody tr.odd.selected {
   background-color: #abb9d3;
 }
-
-/*
-
 table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
   background-color: whitesmoke;
 }
-
-#fshAdvisor.dataTable.hover tbody tr:hover, #fshAdvisor.dataTable.display tbody tr:hover {
-  background-color: whitesmoke;
-}
-
-*/
-
-table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
-  background-color: whitesmoke;
-}
-
 table.dataTable.hover tbody tr:hover.selected, table.dataTable.display tbody tr:hover.selected {
   background-color: #a9b7d1;
 }
