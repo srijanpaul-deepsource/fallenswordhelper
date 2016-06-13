@@ -5028,7 +5028,8 @@ FSH.logs = { // Legacy
 		var jChatTable = $('#pCC td.header').eq(0).closest('table');
 		jChatTable.css({tableLayout: 'fixed', wordWrap: 'break-word'});
 		if (logScreen === 'Chat') {
-			jChatTable.find('tr').eq(0).after('<tr style="height: 2px"><td></td></tr>');
+			jChatTable.find('tr').eq(0)
+				.after('<tr style="height: 2px"><td></td></tr>');
 		}
 
 
@@ -5039,8 +5040,13 @@ FSH.logs = { // Legacy
 			localLastCheckMilli = Date.now();
 		}
 		var chatTable = FSH.System.findNode('//table[@class="width_full"]'); // Guild Log
-		if (!chatTable) {chatTable = FSH.System.findNode('//table[tbody/tr/td[.="Message"]]');} // Outbox & Guild Chat
-		if (!chatTable) {chatTable = FSH.System.findNode('//table[tbody/tr/td/span[contains(.,"Currently showing:")]]');} //personal log
+		if (!chatTable) {
+			chatTable = FSH.System.findNode('//table[tbody/tr/td[.="Message"]]'); // Outbox & Guild Chat
+		}
+		if (!chatTable) {
+			chatTable = FSH.System.findNode('//table[tbody/tr/td/span[' +
+				'contains(.,"Currently showing:")]]'); //personal log
+		}
 		if (!chatTable) {return;}
 
 		var localDateMilli = Date.now();
@@ -5366,63 +5372,58 @@ FSH.logs = { // Legacy
 	},
 
 	addGuildLogWidgets: function() { // Legacy
-		var node=FSH.System.findNode('//font[@size=3]/b[contains(.,"s Log")]/..');
-		if (node) {
-			node.innerHTML += ' [ <a href="index.php?cmd=notepad&blank=1&' +
-			'subcmd=guildlog">Guild Log Summary</a> ]';
-		}
-		if (!FSH.System.getValue('hideNonPlayerGuildLogMessages')) {return;}
+
+	if (!FSH.System.getValue('hideNonPlayerGuildLogMessages')) {return;}
 		var playerId = FSH.Layout.playerId();
 		var logTable = FSH.System.findNode('//table[tbody/tr/td[.="Message"]]');
-		var hideNextRows = 0;
-		for (var i=0;i<logTable.rows.length;i += 1) {
+
+		var messageNameCell = logTable.rows[0].firstChild.nextSibling.nextSibling
+			.nextSibling;
+		if (messageNameCell) {
+			messageNameCell.innerHTML += '&nbsp;&nbsp;<font style="' +
+				'color:white;">(Guild Log messages not involving ' +
+				'self are dimmed!)</font>';
+		}
+
+		for (var i=1;i<logTable.rows.length;i += 2) {
 			var aRow = logTable.rows[i];
 			var firstPlayerID = 0;
 			var secondPlayerID = 0;
-			if (i !== 0) {
-				if (hideNextRows>0) {
-					//aRow.style.display = 'none';
-					hideNextRows -= 1;
-				}
-				if (aRow.cells[0].innerHTML) {
-					var messageHTML = aRow.cells[2].innerHTML;
-					var doublerPlayerMessageRE = /member\s<a\shref="index.php\?cmd=profile\&amp;player_id=(\d+)/;
-					var secondPlayer = doublerPlayerMessageRE.exec(messageHTML);
-					var singlePlayerMessageRE = /<a\shref="index.php\?cmd=profile\&amp;player_id=(\d+)/;
-					var firstPlayer = singlePlayerMessageRE.exec(messageHTML);
-					if (secondPlayer) {
-						firstPlayerID = firstPlayer[1]*1;
-						secondPlayerID = secondPlayer[1]*1;
-					}
-					if (firstPlayer && !secondPlayer) {
-						firstPlayerID = firstPlayer[1]*1;
-					}
-					if (firstPlayer && firstPlayerID !== playerId && secondPlayerID !== playerId) {
-						//aRow.style.display = 'none';
-						aRow.style.fontSize = 'x-small';
-						aRow.style.color = 'gray';
-						hideNextRows = 3;
-					}
-					if (aRow.cells[2].textContent.charAt(0) === '\'' || aRow.cells[2].textContent.search('has invited the player') !== -1) {
-						var message = aRow.cells[2].innerHTML;
-						var firstQuote = message.indexOf('\'');
-						var firstPart = '';
-						firstPart = message.substring(0,firstQuote);
-						var secondQuote = message.indexOf('\'',firstQuote+1);
-						var targetPlayerName = message.substring(firstQuote+1,secondQuote);
-						aRow.cells[2].innerHTML = firstPart + '\'' +
-							'<a href="index.php?cmd=findplayer&search_active=1&search_level_max=&search_level_min=&search_username=' + targetPlayerName + '&search_show_first=1">' + targetPlayerName + '</a>' +
-							message.substring(secondQuote, message.length);
-					}
-				}
+			if (!aRow.cells[0].innerHTML) {continue;}
+
+			var messageHTML = aRow.cells[2].innerHTML;
+			var doublerPlayerMessageRE =
+				/member\s<a\shref="index.php\?cmd=profile\&amp;player_id=(\d+)/;
+			var secondPlayer = doublerPlayerMessageRE.exec(messageHTML);
+			var singlePlayerMessageRE =
+				/<a\shref="index.php\?cmd=profile\&amp;player_id=(\d+)/;
+			var firstPlayer = singlePlayerMessageRE.exec(messageHTML);
+			if (secondPlayer) {
+				firstPlayerID = firstPlayer[1]*1;
+				secondPlayerID = secondPlayer[1]*1;
 			}
-			else {
-				var messageNameCell = aRow.firstChild.nextSibling.nextSibling.nextSibling;
-				if (messageNameCell) {
-					messageNameCell.innerHTML += '&nbsp;&nbsp;<font style="' +
-						'color:white;">(Guild Log messages not involving ' +
-						'self are dimmed!)</font>';
-				}
+			if (firstPlayer && !secondPlayer) {
+				firstPlayerID = firstPlayer[1]*1;
+			}
+			if (firstPlayer && firstPlayerID !== playerId &&
+				secondPlayerID !== playerId) {
+				$(aRow).find('td').removeClass('row').css('font-size', 'xx-small');
+				aRow.style.color = 'gray';
+			}
+
+			if (aRow.cells[2].textContent.charAt(0) === '\'' ||
+				aRow.cells[2].textContent.search('has invited the player') !== -1) {
+				var message = aRow.cells[2].innerHTML;
+				var firstQuote = message.indexOf('\'');
+				var firstPart = '';
+				firstPart = message.substring(0,firstQuote);
+				var secondQuote = message.indexOf('\'',firstQuote+1);
+				var targetPlayerName = message.substring(firstQuote+1,secondQuote);
+				aRow.cells[2].innerHTML = firstPart + '\'' +
+					'<a href="index.php?cmd=findplayer&search_active=1&' +
+					'search_level_max=&search_level_min=&search_username=' +
+					targetPlayerName + '&search_show_first=1">' + targetPlayerName +
+					'</a>' + message.substring(secondQuote, message.length);
 			}
 
 		}
