@@ -11758,7 +11758,6 @@ FSH.arena = { // jQuery
 		var tabs = $('div#arenaTypeTabs');
 		var theTables = $('table[width="635"]', tabs);
 		//theTables.addClass('stripe hover');
-		theTables.addClass('hover');
 		theTables.each(FSH.arena.redoHead);
 		var myRows = theTables.children('tbody').children('tr');
 		myRows.each(FSH.arena.orderData);
