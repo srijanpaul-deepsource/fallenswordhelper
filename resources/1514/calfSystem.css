@@ -418,7 +418,7 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
 
 */
 
-table.dataTable.hover tbody tr:hover, #fshAdvisor.dataTable.display tbody tr:hover {
+table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
   background-color: whitesmoke;
 }
 
