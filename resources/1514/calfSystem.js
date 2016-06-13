@@ -2638,7 +2638,6 @@ FSH.guildAdvisor = { // jQuery
 	injectAdvisorWeekly: function(m) { // jQuery
 		var list = $('#pCC table[cellpadding="1"]');
 		if (list.length !== 1) {return;}
-		list.attr('id', 'fshAdvisor');
 		list.html('<img src = "' + FSH.System.imageServer +
 			'/world/actionLoadingSpinner.gif" style = "float: left;">' +
 			'&nbsp;Retrieving daily data ...');
@@ -2735,7 +2734,8 @@ FSH.guildAdvisor = { // jQuery
 	},
 
 	displayAdvisor: function(list, o, data) { // jQuery
-		// $(list).addClass('stripe hover');
+		list.attr('id', 'fshAdvisor');
+		$(list).addClass('stripe hover');
 		$(list).addClass('hover');
 		$(list).html('<tfoot id="advTFoot"><tr><td style="text-align: ' +
 			'right;" colspan="3">Total: </td><td><u>' +
