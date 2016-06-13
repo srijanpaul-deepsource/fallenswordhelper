@@ -2610,8 +2610,8 @@ FSH.guildAdvisor = { // jQuery
 		$('td', tfoot).first().removeAttr('class').attr('colspan', 3)
 			.attr('style', 'text-align: right;');
 		$('b', tfoot).contents().unwrap();
-		// list.addClass('stripe hover');
-		list.addClass('hover');
+		list.addClass('stripe hover');
+		// list.addClass('hover');
 		$('tr', list).first().remove();
 		$('td', list).removeAttr('bgcolor');
 		$('font', list).contents().unwrap();
