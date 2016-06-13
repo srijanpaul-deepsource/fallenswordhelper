@@ -2638,6 +2638,7 @@ FSH.guildAdvisor = { // jQuery
 	injectAdvisorWeekly: function(m) { // jQuery
 		var list = $('#pCC table[cellpadding="1"]');
 		if (list.length !== 1) {return;}
+		list.attr('id', 'fshAdvisor');
 		list.html('<img src = "' + FSH.System.imageServer +
 			'/world/actionLoadingSpinner.gif" style = "float: left;">' +
 			'&nbsp;Retrieving daily data ...');
