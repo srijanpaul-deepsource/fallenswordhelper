@@ -11763,7 +11763,8 @@ FSH.arena = { // jQuery
 		var myRows = theTables.children('tbody').children('tr');
 		myRows.each(FSH.arena.orderData);
 
-		//theTables.find('tr').css('background', 'transparent');
+		var sheets = document.styleSheets;
+		console.log('sheets', sheets);
 
 		FSH.ajax.setForage('fsh_arena', FSH.arena.opts);
 
