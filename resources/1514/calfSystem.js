@@ -2610,8 +2610,8 @@ FSH.guildAdvisor = { // jQuery
 		$('td', tfoot).first().removeAttr('class').attr('colspan', 3)
 			.attr('style', 'text-align: right;');
 		$('b', tfoot).contents().unwrap();
-		list.addClass('allow stripe hover');
-		// list.addClass('hover');
+		// list.addClass('allow stripe hover');
+		list.addClass('hover');
 		$('tr', list).first().remove();
 		$('td', list).removeAttr('bgcolor');
 		$('font', list).contents().unwrap();
@@ -2735,8 +2735,8 @@ FSH.guildAdvisor = { // jQuery
 
 	displayAdvisor: function(list, o, data) { // jQuery
 		// list.attr('id', 'fshAdvisor');
-		$(list).addClass('allow stripe hover');
-		// $(list).addClass('hover');
+		// $(list).addClass('allow stripe hover');
+		$(list).addClass('hover');
 		$(list).html('<tfoot id="advTFoot"><tr><td style="text-align: ' +
 			'right;" colspan="3">Total: </td><td><u>' +
 			FSH.System.addCommas(o['Total:'].deposit) + '</u></td><td><u>' +
