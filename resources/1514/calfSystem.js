@@ -11758,12 +11758,13 @@ FSH.arena = { // jQuery
 		var tabs = $('div#arenaTypeTabs');
 		var theTables = $('table[width="635"]', tabs);
 		//theTables.addClass('stripe hover');
+		theTables.addClass('hover');
 		theTables.css('font-size', '12px');
 		theTables.each(FSH.arena.redoHead);
 		var myRows = theTables.children('tbody').children('tr');
 		myRows.each(FSH.arena.orderData);
 
-		theTables.find('tr').css('background', 'transparent');;
+		theTables.find('tr').css('background', 'transparent');
 
 		FSH.ajax.setForage('fsh_arena', FSH.arena.opts);
 
