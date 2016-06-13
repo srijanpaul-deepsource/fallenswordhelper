@@ -5024,26 +5024,29 @@ FSH.logs = { // Legacy
 	},
 
 	addLogColoring: function(logScreen, dateColumn) { // Legacy
+
+		var jChatTable = $('#pCC td.header').eq(0).closest('table');
+		jChatTable.css({tableLayout: 'fixed', wordWrap: 'break-word'});
+		if (logScreen === 'Chat') {
+			jChatTable.find('tr').eq(0).after('<tr style="height: 2px"><td></td></tr>');
+		}
+
+
 		if (!FSH.System.getValue('enableLogColoring')) {return;}
 		var lastCheckScreen = 'last' + logScreen + 'Check';
 		var localLastCheckMilli = FSH.System.getValue(lastCheckScreen);
 		if (!localLastCheckMilli) {
 			localLastCheckMilli = Date.now();
 		}
-		var chatTable = FSH.System.findNode('//table[@class="width_full"]');
-		if (!chatTable) {chatTable = FSH.System.findNode('//table[tbody/tr/td[.="Message"]]');}
+		var chatTable = FSH.System.findNode('//table[@class="width_full"]'); // Guild Log
+		if (!chatTable) {chatTable = FSH.System.findNode('//table[tbody/tr/td[.="Message"]]');} // Outbox & Guild Chat
 		if (!chatTable) {chatTable = FSH.System.findNode('//table[tbody/tr/td/span[contains(.,"Currently showing:")]]');} //personal log
 		if (!chatTable) {return;}
-
-		chatTable.style.tableLayout = 'fixed';
-		chatTable.style.wordWrap = 'break-word';
 
 		var localDateMilli = Date.now();
 		var gmtOffsetMinutes = (new Date()).getTimezoneOffset();
 		var gmtOffsetMilli = gmtOffsetMinutes * 60 * 1000;
-		// var newRow = chatTable.insertRow(1);
-		// newRow.insertCell(0);
-		for (var i = 1; i < chatTable.rows.length; i += 2) {
+		for (var i = logScreen === 'Chat' ? 2 : 1; i < chatTable.rows.length; i += logScreen === 'Chat' ? 4 : 2) {
 			var aRow = chatTable.rows[i];
 			var addBuffTag = true;
 			if (aRow.cells[0].innerHTML) {
