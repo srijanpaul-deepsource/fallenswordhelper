@@ -6822,7 +6822,7 @@ FSH.settingsPage = { // Legacy
 				':</td><td colspan="3"><input name="buyBuffsGreeting" size="60" value="'+ FSH.System.getValue('buyBuffsGreeting') + '" /></td></tr>' +
 			'<tr><td align="right">Show Stat Bonus Total' + FSH.Layout.helpLink('Show Stat Bonus Total', 'This will show a total of the item stats when you mouseover an item on the profile screen.') +
 				':</td><td><input name="showStatBonusTotal" type="checkbox" value="on"' + (FSH.System.getValue('showStatBonusTotal')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Enable Quick Drink' + FSH.Layout.helpLink('Enable Quick Drink On Profile', 'This enables the quick drink functionality on the profile page.') +
+			'<tr><td align="right">Enable Quick Drink/Wear' + FSH.Layout.helpLink('Enable Quick Drink/Wear On Profile', 'This enables the quick drink/wear functionality on the profile page.') +
 				':</td><td><input name="enableQuickDrink" type="checkbox" value="on"' + (FSH.System.getValue('enableQuickDrink')?' checked':'') + '></td></tr>' +
 			//Arena prefs
 			// '<tr><th colspan="2" align="left"><b>Arena preferences</b></th></tr>' +
