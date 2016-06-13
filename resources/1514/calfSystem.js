@@ -2605,12 +2605,12 @@ FSH.guildAdvisor = { // jQuery
 	injectAdvisorNew: function(m) { // jQuery
 		var list = $('#pCC table[cellpadding="1"]');
 		if (list.length !== 1) {return;}
-		list.attr('id', 'fshAdvisor');
+		//list.attr('id', 'fshAdvisor');
 		var tfoot = $('<tfoot/>').append($('tr', list).last());
 		$('td', tfoot).first().removeAttr('class').attr('colspan', 3)
 			.attr('style', 'text-align: right;');
 		$('b', tfoot).contents().unwrap();
-		list.addClass('stripe hover');
+		list.addClass('allow stripe hover');
 		// list.addClass('hover');
 		$('tr', list).first().remove();
 		$('td', list).removeAttr('bgcolor');
@@ -2734,9 +2734,9 @@ FSH.guildAdvisor = { // jQuery
 	},
 
 	displayAdvisor: function(list, o, data) { // jQuery
-		list.attr('id', 'fshAdvisor');
-		$(list).addClass('stripe hover');
-		$(list).addClass('hover');
+		// list.attr('id', 'fshAdvisor');
+		$(list).addClass('allow stripe hover');
+		// $(list).addClass('hover');
 		$(list).html('<tfoot id="advTFoot"><tr><td style="text-align: ' +
 			'right;" colspan="3">Total: </td><td><u>' +
 			FSH.System.addCommas(o['Total:'].deposit) + '</u></td><td><u>' +
