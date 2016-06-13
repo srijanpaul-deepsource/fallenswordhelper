@@ -2609,7 +2609,8 @@ FSH.guildAdvisor = { // jQuery
 		$('td', tfoot).first().removeAttr('class').attr('colspan', 3)
 			.attr('style', 'text-align: right;');
 		$('b', tfoot).contents().unwrap();
-		list.addClass('stripe hover');
+		// list.addClass('stripe hover');
+		list.addClass('hover');
 		$('tr', list).first().remove();
 		$('td', list).removeAttr('bgcolor');
 		$('font', list).contents().unwrap();
@@ -2732,7 +2733,8 @@ FSH.guildAdvisor = { // jQuery
 	},
 
 	displayAdvisor: function(list, o, data) { // jQuery
-		$(list).addClass('stripe hover');
+		// $(list).addClass('stripe hover');
+		$(list).addClass('hover');
 		$(list).html('<tfoot id="advTFoot"><tr><td style="text-align: ' +
 			'right;" colspan="3">Total: </td><td><u>' +
 			FSH.System.addCommas(o['Total:'].deposit) + '</u></td><td><u>' +
@@ -3349,7 +3351,8 @@ FSH.inventory = { // jQuery
 	},
 
 	doTable: function() { // jQuery
-		$('#pCC').append('<table id="fshInv" class="stripe hover"></table>');
+		// $('#pCC').append('<table id="fshInv" class="stripe hover"></table>');
+		$('#pCC').append('<table id="fshInv" class="hover"></table>');
 		var table = $('#fshInv').DataTable({
 			data: FSH.Helper.inventory.items,
 			autoWidth: false,
@@ -6017,7 +6020,8 @@ FSH.onlinePlayers = { // Bad jQuery
 			'Max lvl:<input value="' + FSH.System.getValue('onlinePlayerMaxLvl') +
 				'" size=5 id="fshMaxLvl" /> ' +
 			'<input id="fshReset" type="button" value="Reset"/>' +
-			'</div><table id="fshInv" class="stripe hover"></table>');
+			// '</div><table id="fshInv" class="stripe hover"></table>');
+			'</div><table id="fshInv" class="hover"></table>');
 	},
 
 	doOnlinePlayerEventHandlers: function(table) { // jQuery
