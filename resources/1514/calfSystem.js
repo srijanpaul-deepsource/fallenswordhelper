@@ -3734,7 +3734,7 @@ FSH.inventory = { // jQuery
 		td.eq(12).empty();
 		td.eq(13).empty();
 		td.eq(14).empty();
-		$('#fshInv').DataTable().row(tr).remove();
+		//$('#fshInv').DataTable().row(tr).remove();
 		tr.css('text-decoration', 'line-through');
 	},
 
