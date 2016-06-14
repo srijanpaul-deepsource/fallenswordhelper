@@ -1626,7 +1626,8 @@ FSH.Layout = {
 		'/temple/1.gif" class="tip-static" data-tipped="Pray to Osverin" ' +
 		'style="cursor: pointer"></td>' +
 		'<td rowspan="2"><a href="index.php?cmd=temple" ' +
-		'class="notification-content">Bow down to the gods</a></td></tr>' +
+		'class="notification-content" style="position: static">' +
+		'Bow down to the gods</a></td></tr>' +
 		'<tr><td style="padding: 1px"><img src="' + FSH.System.imageServer +
 		'/temple/2.gif" class="tip-static" data-tipped="Pray to Gurgriss" ' +
 		'style="cursor: pointer"></td>' +
