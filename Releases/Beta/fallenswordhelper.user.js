@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1514b6
+// @version        1514b7
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -32,7 +32,7 @@ FSH.resources = {
 };
 
 if (typeof GM_info === 'undefined') {
-	FSH.version = '1514b6';
+	FSH.version = '1514b7';
 } else {
 	FSH.version = GM_info.script.version;
 }
@@ -197,16 +197,14 @@ FSH.Helper = {
 		}
 	},
 
-	oldRemoveBuffs: function() {
+	oldRemoveBuffs: function() { // Legacy - Old Map
 		var buffName;
-		//code to remove buffs but stay on the same screen
 		var currentBuffs = FSH.System.findNodes('//a[contains(@href,"index.php?' +
 			'cmd=profile&subcmd=removeskill&skill_id=")]');
 		var buffHash={};
 		if (!currentBuffs) {return buffHash;}
 		for (var i=0;i<currentBuffs.length;i += 1) {
 			var currentBuff = currentBuffs[i];
-			var buffHref = currentBuff.getAttribute('href');
 			var buffTest = /remove\sthe\s([ a-zA-Z]+)\sskill/
 				.exec(currentBuff.getAttribute('onclick'));
 			if (buffTest) {
@@ -218,18 +216,6 @@ FSH.Helper = {
 				} else {console.log('Error getting buff');}
 			}
 			buffHash[buffName]=true;
-			var imageHTML = currentBuff.innerHTML;
-			var buffCell = currentBuff.parentNode;
-			var buffHTML = buffCell.innerHTML;
-			var lastPart = buffHTML
-				.substring(buffHTML.indexOf('</a>')+4, buffHTML.length);
-			var newCellContents = '<span id="Helper:removeSkill' + i + 
-				'" style="cursor:pointer;" buffName="' + buffName + 
-				'" buffHref="' + buffHref + '">' + imageHTML +
-				'</span>' + lastPart;
-			buffCell.innerHTML = newCellContents;
-			buffCell.firstChild
-				.addEventListener('click', FSH.Helper.removeSkill, true);
 		}
 		return buffHash;
 	},
@@ -237,12 +223,8 @@ FSH.Helper = {
 	checkBuffs: function() { // Legacy - Old Map
 		var onmouseover;
 		var impsRemaining;
-		var textToTest;
-		var impsRemainingRE;
 		var counterAttackLevel;
 		var doublerLevel;
-
-		var buffHash = FSH.Helper.oldRemoveBuffs();
 
 		//extra world screen text
 		var replacementText = '<td background="' + FSH.System.imageServer +
@@ -258,23 +240,23 @@ FSH.Helper = {
 			var re=/(\d+) HP remaining/;
 			impsRemaining = 0;
 			if (hasShieldImp) {
-				textToTest = $(hasShieldImp).data('tipped');
-				impsRemainingRE = re.exec(textToTest);
+				var textToTest = $(hasShieldImp).data('tipped');
+				var impsRemainingRE = re.exec(textToTest);
 				impsRemaining = impsRemainingRE[1];
 			}
 			var applyImpWarningColor = ' style="color:green; ' +
 				'font-size:medium;"';
 			if (impsRemaining===2){
-				applyImpWarningColor = ' style="color:Orangered; font-size:' +
-					'medium; font-weight:bold;"';
+				applyImpWarningColor = ' style="color:Orangered; ' +
+					'font-size:medium; font-weight:bold;"';
 			}
 			if (impsRemaining===1){
-				applyImpWarningColor = ' style="color:Orangered; font-size:' +
-					'large; font-weight:bold"';
+				applyImpWarningColor = ' style="color:Orangered; ' +
+					'font-size:large; font-weight:bold"';
 			}
 			if (impsRemaining===0){
-				applyImpWarningColor = ' style="color:red; font-size:large;' +
-					' font-weight:bold"';
+				applyImpWarningColor = ' style="color:red; ' +
+					'font-size:large; font-weight:bold"';
 			}
 			replacementText += '<tr><td' + applyImpWarningColor +
 				'>Shield Imps Remaining: ' +  impsRemaining +
@@ -334,6 +316,9 @@ FSH.Helper = {
 			}
 			var buffAry=buffs.split(',');
 			var missingBuffs = [];
+
+			var buffHash = FSH.Helper.oldRemoveBuffs();
+
 			for (var i=0;i<buffAry.length;i += 1) {
 				if (!buffHash[buffAry[i].trim()]) {
 					missingBuffs.push(buffAry[i]);
@@ -441,16 +426,6 @@ FSH.Helper = {
 		}
 	},
 
-	removeSkill: function(evt) {
-		var buffName = evt.target.parentNode.getAttribute('buffName');
-		var buffHref = evt.target.parentNode.getAttribute('buffHref');
-		if (confirm('Are you sure you wish to remove the ' + buffName +
-			' skill?')) {
-			FSH.System.xmlhttp(buffHref,
-				function() {location.href = 'index.php?cmd=world';});
-		}
-	},
-
 	toggleSound: function() {
 		if (FSH.System.getValue('playNewMessageSound'))
 		{
@@ -550,74 +525,6 @@ FSH.Helper = {
 		}
 	},
 
-	injectWorldNewMap: function(data){
-		var img;
-		if(data.player){
-			FSH.Helper.xLocation = data.player.location.x;
-			FSH.Helper.yLocation = data.player.location.y;
-			//<dd id='HelperSendTotal'>' + FSH.System.getValue("currentGoldSentTotal").toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") + '</dd>
-			if(FSH.System.getValue('sendGoldonWorld')){
-				$('#HelperSendTotal').html(FSH.System.getValue('currentGoldSentTotal').toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,'));
-				if(parseInt(data.player.gold, 10) > FSH.System.getValue('goldAmount')){
-					$('#statbar-gold').css('background-color','red');
-				}else{
-					$('#statbar-gold').css('background-color','inherit');
-				}
-			}
-			/*if (buttonRow && FSH.System.getValue('sendGoldonWorld')){
-				currentGoldSentTotal = FSH.System.addCommas(FSH.System.getValue('currentGoldSentTotal'));
-				var recipient_text = 'Send ' + FSH.System.getValue('goldAmount') + ' gold to ' + FSH.System.getValue('goldRecipient') +
-					'. Current gold sent total is ' + currentGoldSentTotal;
-				buttonRow.innerHTML += '<td valign="top" width="5"></td>' +
-					'<td valign="top"><img style="cursor:pointer" id="Helper:SendGold" src="' + FSH.System.imageServer +
-					'/skin/gold_button.gif" title= "' + recipient_text + '" border="1" />';
-			}
-			if (buttonRow && FSH.System.getValue('sendGoldonWorld')){
-				//document.getElementById('Helper:PortalToStart').addEventListener('click', FSH.Helper.portalToStartArea, true);
-				document.getElementById('Helper:SendGold').addEventListener('click', FSH.Helper.sendGoldToPlayer, true);
-			}*/
-		}
-		if (data.realm && data.realm.name) {
-			var worldName = $('h1#worldName');
-			worldName.html(data.realm.name); //HACK - incase of switchign between master realm and realm they dont replace teh realm name
-			worldName.append(' <a href="http://guide.fallensword.com/index.php?cmd=realms&subcmd=view&realm_id=' + data.realm.id + '" target="_blank">' +
-				'<img border=0 title="Search map in Ultimate FSG" width=10 height=10 src="'+ FSH.System.imageServer + '/temple/1.gif"/></a>');
-			worldName.append(' <a href="http://wiki.fallensword.com/index.php/Special:Search?search=' + data.realm.name + '&go=Go" target="_blank">' +
-				'<img border=0 title="Search map in Wiki" width=10 height=10 src="/favicon.ico"/></a>');
-			if (FSH.System.getValue('showSpeakerOnWorld')) {
-				img = FSH.System.getValue('playNewMessageSound') === true ?
-					FSH.Data.soundMuteImage :
-					FSH.Data.soundImage;
-				worldName.append('<a href="#" id="toggleSoundLink">'+img+'</a>');
-				document.getElementById('toggleSoundLink').addEventListener('click',
-				function() {
-				//alert($('a#HelperToggleHuntingMode').html());
-					if(FSH.System.getValue('playNewMessageSound') === false){
-						$('a#toggleSoundLink').html(FSH.Data.soundMuteImage);
-					}else{
-						$('a#toggleSoundLink').html(FSH.Data.soundImage);
-					}
-					FSH.System.setValue('playNewMessageSound',!FSH.System.getValue('playNewMessageSound'));
-				},true);
-			}
-			var huntingMode = FSH.Helper.huntingMode;
-			img = huntingMode === true ? FSH.Data.huntingOnImage : FSH.Data.huntingOffImage;
-			worldName.append(' <a href=# id="HelperToggleHuntingMode">' + img + '</a>');
-			
-			document.getElementById('HelperToggleHuntingMode').addEventListener('click',
-				function() {
-				//alert($('a#HelperToggleHuntingMode').html());
-					if (!FSH.Helper.huntingMode) {
-						$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOnImage);
-					} else {
-						$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOffImage);
-					}
-					FSH.Helper.huntingMode = !FSH.Helper.huntingMode;
-					FSH.System.setValue('huntingMode', FSH.Helper.huntingMode);
-				},true);
-		}
-	},
-
 	injectWorld: function() {
 		//-1 = world page
 		//0 = quest responce
@@ -637,260 +544,11 @@ FSH.Helper = {
 		//17 = login
 		//18 = username not found
 		if ($('#worldPage').length > 0) { // new map
-			FSH.Helper.newMapSubscribes();
+			FSH.newMap.subscribes();
 		} else {
 			//not new map.
 			FSH.Helper.injectOldMap();
 		}
-	},
-
-	injectSendGoldOnWorld: function() {
-		$('#statbar-gold-tooltip-general').append(
-			'<dt class="stat-gold-sendTo">Send To:</dt><dd id="' +
-			'HelperSendTo">' + FSH.System.getValue('goldRecipient') +
-			'</dd>' + 
-			'<dt class="stat-gold-sendAmt">Amount:</dt><dd id="' +
-			'HelperSendAmt">' + FSH.System.getValue('goldAmount')
-				.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') + '</dd>' +
-			'<dt class="stat-gold-sendTo">Send?</dt><dd><input id="' +
-			'HelperSendGold" value="Send!" class="custombutton" ' +
-			'type="submit"><input type="hidden" id="xc" value="' +
-			// FSH.System.getValue('goldConfirm') + '"</dd>' + 
-			'"</dd>' +
-			'<dt class="stat-gold-sendTotal">Total Sent:</dt><dd ' +
-			'id="HelperSendTotal">' +
-			FSH.System.getValue('currentGoldSentTotal').toString()
-				.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') + '</dd>');
-		$('input#HelperSendGold').click(FSH.Helper.doSendGold);
-	},
-
-	doSendGold: function() {
-		var sendTo = $('#HelperSendTo').html();
-		var sendAmt = $('#HelperSendAmt').html()
-			.replace(/[^\d]/g,'');
-		// var xcNum = $('#xc').val();
-		var sendHref = FSH.System.server + 'index.php?cmd=trade&' +
-			'subcmd=sendgold&xc=' + window.ajaxXC + '&target_username=' +
-			sendTo +'&gold_amount='+ sendAmt;
-		$.ajax({
-			url: sendHref,
-			success: function( data ) {
-				//alert($(data).find();
-				var info = FSH.Layout.infoBox(data);
-				if (info === 'You successfully sent gold!' ||
-					info === '') {
-					//currentGoldSentTotal += FSH.System.intValue(callback.amount);
-					//info = 'You successfully sent ' + callback.amount + ' gold to ' + callback.recipient + '! Current total sent is '+currentGoldSentTotal+' gold.';
-					FSH.System.setValue('currentGoldSentTotal',
-						parseInt(
-							FSH.System.getValue('currentGoldSentTotal'), 10) +
-						parseInt(FSH.System.getValue('goldAmount'), 10));
-					window.GameData.fetch(387);
-				}
-			}
-		});
-	},
-
-	readyViewCreature: function() { // Hybrid - New Map
-		$('div#creatureEvaluator').html('');
-		$('div#creatureEvaluatorGroup').html('');
-
-		FSH.System.xmlhttp('index.php?cmd=profile',
-			FSH.Helper.getCreaturePlayerData,
-			{	'groupExists': false,
-				'groupAttackValue': 0,
-				'groupDefenseValue': 0,
-				'groupArmorValue': 0,
-				'groupDamageValue': 0,
-				'groupHPValue': 0,
-				'groupEvaluation': false
-			}
-		);
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups',
-			FSH.Helper.checkIfGroupExists);
-
-		$('div#addRemoveCreatureToDoNotKillList').html('');
-//console.log($('#dialog-viewcreature').find('h2.name').text());
-		if ($('div#addRemoveCreatureToDoNotKillList').length === 0) {
-			var doNotKillElement = '<div id="addRemoveCreatureToDo' +
-				'NotKillList"" class="description" style="cursor:' +
-				'pointer;text-decoration:underline;color:blue;"></div>';
-			$(doNotKillElement).insertAfter($('#dialog-viewcreature')
-				.find('p.description'));
-		}
-		var creatureName = $('#dialog-viewcreature').find('h2.name')
-			.text();
-		$('div#addRemoveCreatureToDoNotKillList')
-			.attr('creatureName',creatureName);
-		var extraText = 'Add to the do not kill list';
-		if (FSH.Helper.doNotKillList.indexOf(creatureName) !== -1) {
-			extraText = 'Remove from do not kill list';}
-		$('div#addRemoveCreatureToDoNotKillList').html(extraText);
-		document.getElementById('addRemoveCreatureToDoNotKillList')
-			.addEventListener('click',
-				FSH.Helper.addRemoveCreatureToDoNotKillList, true);
-	},
-
-	afterUpdateActionList: function() {
-		// color the critters in the do no kill list blue
-		$('ul#actionList div.header').each(function() {
-			if (FSH.Helper.doNotKillList.indexOf($(this).find('a.icon')
-				.data('name')) !== -1) {
-				$(this).css('color','blue');
-			}
-		});
-		// then intercept the action call 
-		var gameData = window.GameData;
-		var hcs = window.HCS;
-		var oldDoAction = gameData.doAction;
-		gameData.doAction = function(actionCode, fetchFlags, data) {
-			if (actionCode === hcs.DEFINES.ACTION.CREATURE_COMBAT) {
-				// Do custom stuff e.g. do not kill list
-				var creatureIcon = $('ul#actionList div.header')
-					.eq(data.passback).find('a.icon');
-				if (FSH.Helper.doNotKillList.indexOf(
-						creatureIcon.data('name')) !== -1) {
-					creatureIcon.removeClass('loading');
-					return;
-				}
-			}
-			// Call standard action
-			oldDoAction(actionCode, fetchFlags, data);
-		}; 
-	},
-
-	dataEventsPlayerBuffs: function(e, data) {
-		// check shield imp is still active
-		var shieldImpVal = 0;
-		var ddVal=0;
-		var l = data.b.length;
-		for(var i = 0; i < l; i += 1) {
-			var buff = data.b[i];
-			if (buff.id === 55) {
-				shieldImpVal = buff.stack;
-			} else if (buff.id === 50) {
-				ddVal = buff.level;
-			}
-			if (ddVal > 0 && shieldImpVal > 0) {break;}
-		}
-
-		//~ if(ddVal>0){
-			var imp = $('#actionlist-shield-imp');
-			if(shieldImpVal === 0){
-				imp.css('background-color','red');
-			}else if(shieldImpVal===2){
-				imp.css('background-color','yellow');
-			}else if(shieldImpVal===1){
-				imp.css('background-color','orange');
-			}else{
-				imp.css('background-color','inherit');
-			}
-		//~ }
-	},
-
-	combatResponse: function(e, data) {
-		var l;
-		var i;
-		// If bad response do nothing.
-		if (!FSH.Helper.keepLogs || data.response.response !== 0) {return;}
-		var combatData = {};
-		combatData.combat = $.extend(true, {}, data.response.data); //make a deep copy
-		//delete some values that are not needed to trim down size of log.
-		delete combatData.combat.attacker.img_url;
-		delete combatData.combat.defender.img_url;
-		delete combatData.combat.is_conflict;
-		delete combatData.combat.is_bounty;
-		delete combatData.combat.pvp_rating_change;
-		delete combatData.combat.pvp_prestige_gain;
-		if (combatData.combat.inventory_id) {
-			combatData.combat.drop = combatData.combat.item.id;
-		}
-		delete combatData.combat.inventory_id;
-		delete combatData.combat.item;
-
-		combatData.player={};
-		combatData.player.buffs={};
-		combatData.player.enhancements={};
-		l = data.player.buffs.length;
-		for(i=0; i<l; i += 1) //loop through buffs, only need to keep CA and Doubler
-		{//54 = ca, 26 = doubler
-			var buff = data.player.buffs[i];
-			if(buff.id === 54 || buff.id === 26)
-			{
-				combatData.player.buffs[buff.id] = parseInt(buff.level, 10);
-			}
-		}
-		var notSave = '|Breaker|Protection|Master Thief|Protect Gold|Disarm|Duelist|Thievery|Master Blacksmith|Master Crafter|Fury Caster|Master Inventor|Sustain|';//Taking the Not Save in case they add new enhancements.
-		if (data.player.enhancements)
-		{
-			l = data.player.enhancements.length;
-			for(i=0; i<l; i += 1) //loop through enhancements
-			{//54 = ca, 26 = doubler
-				var enh = data.player.enhancements[i];
-				if (notSave.indexOf('|'+enh.name+'|')===-1){
-					combatData.player.enhancements[enh.name]=enh.value;
-				}
-			}
-		}
-		//combatData.player.enhancements = data.player.enhancements;
-		//combatData.player.buffs = data.player.buffs;
-		var now = new Date();
-		combatData.time = FSH.System.formatDateTime(now);
-		FSH.Helper.appendSavedLog(',' + JSON.stringify(combatData));
-	},
-
-	newMapSubscribes: function() {
-		// subscribe to view creature events on the new map.
-		//current send total
-		//send to
-		//send amount
-		//deposit?
-		if (FSH.System.getValue('sendGoldonWorld')) {
-			FSH.Helper.injectSendGoldOnWorld();
-		}
-		//Subscribes:
-		FSH.Helper.doNotKillList = FSH.System.getValue('doNotKillList');
-		$.subscribe('ready.view-creature', FSH.Helper.readyViewCreature);
-
-		// add do-not-kill list functionality
-		$.subscribe('after-update.actionlist',
-			FSH.Helper.afterUpdateActionList);
-
-		$.subscribe(window.DATA_EVENTS.PLAYER_BUFFS.ANY,
-			FSH.Helper.dataEventsPlayerBuffs);
-
-		$.subscribe('keydown.controls', function(e, key){
-			switch(key)
-			{
-				case 'ACT_REPAIR': window.GameData.fetch(387);
-				break;
-			}
-		});
-
-		FSH.Helper.keepLogs = FSH.System.getValue('keepLogs');
-		$.subscribe('2-success.action-response', FSH.Helper.combatResponse);
-		//on world
-
-		if (window.initialGameData) {//HCS initial data
-			setTimeout(function(){
-				FSH.Helper.injectWorldNewMap(window.initialGameData);
-			}, 400);
-		}
-		$.subscribe('-1-success.action-response 5-success.action-response',
-			function(e, data) { //change of information
-				setTimeout(function() {
-					FSH.Helper.injectWorldNewMap(data);
-				}, 400);
-			}
-		);
-
-		//somewhere near here will be multi buy on shop
-		//$.subscribe('prompt.worldDialogShop', function(e, data){
-			//self._createShop(self.shop.items);
-		//	$('span[class="price"]').after('<span class="numTake">test</span>');
-		//});
-
-		//document.getElementById('Helper:SendGold').addEventListener('click', FSH.Helper.sendGoldToPlayer, true);
 	},
 
 	injectOldMap: function() {
@@ -901,12 +559,6 @@ FSH.Helper = {
 			}
 		} catch (err) {
 			//just eat it and move on
-		}
-		var currentLocation = $('h3#world-realm-name');
-		if (currentLocation.length > 0) {
-			var locationRE = /\((\d+), (\d+)\)/.exec(currentLocation.text());
-			FSH.Helper.xLocation = parseInt(locationRE[1],10);
-			FSH.Helper.yLocation = parseInt(locationRE[2],10);
 		}
 
 		FSH.Helper.mapThis();
@@ -1532,35 +1184,6 @@ FSH.Helper = {
 			//~ $T.show($(target));
 		}
 	},
-
-	// moveMe: function(dx, dy) {
-		// var xCoord;
-		// var yCoord;
-		// var pos=FSH.Helper.position();
-		// var enableFastWalk = FSH.System.getValue('enableFastWalk');
-		// if (pos) {
-			// if (pos.type === 'normal') {
-				//if fast walk is enabled then use the stored location, otherwise look it up
-				// xCoord = enableFastWalk?FSH.Helper.xLocation:pos.X;
-				// yCoord = enableFastWalk?FSH.Helper.yLocation:pos.Y;
-				// location.href = 'index.php?cmd=world&subcmd=move&x=' + (xCoord+dx) + '&y=' + (yCoord+dy);
-				// FSH.Helper.xLocation+=dx;
-				// FSH.Helper.yLocation+=dy;
-			// }
-			// if (pos.type === 'worldmap') {
-				//if fast walk is enabled then use the stored location, otherwise look it up
-				// xCoord = enableFastWalk?FSH.Helper.xLocation:pos.X;
-				// yCoord = enableFastWalk?FSH.Helper.yLocation:pos.Y;
-				// FSH.System.xmlhttp('index.php?cmd=world&subcmd=move&x=' +
-					// (xCoord+dx) + '&y=' + (yCoord+dy), function() {
-						// location.href = FSH.System.server +
-							// 'index.php?cmd=world&subcmd=map';});
-				// FSH.Helper.xLocation+=dx;
-				// FSH.Helper.yLocation+=dy;
-
-			// }
-		// }
-	// },
 
 	killMonsterAt: function(index) {
 		var linkObj = FSH.Helper.getMonster(index);

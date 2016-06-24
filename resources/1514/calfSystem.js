@@ -267,8 +267,8 @@ FSH.System = {
 	},
 
 	saveValueForm: function(name) {
-		var formElement = FSH.System.findNode('//input[@name="' + name + '"]',
-			this);
+		var formElement =
+			FSH.System.findNode('//input[@name="' + name + '"]', this);
 		if (formElement.getAttribute('type') === 'checkbox') {
 			FSH.System.setValue(name, formElement.checked);
 		} else if (formElement.getAttribute('type') === 'radio') {
@@ -456,7 +456,8 @@ FSH.System = {
 		if (funcName.length === 1) {
 			return FSH.Helper[funcName[0]];
 		} else if (funcName.length === 2) {
-			return FSH[funcName[0]][funcName[1]];
+			return FSH[funcName[0]] ?
+				FSH[funcName[0]][funcName[1]] : FSH[funcName[0]];
 		}
 	},
 
@@ -1078,6 +1079,13 @@ FSH.Data = {
 		arenaMatches: '[]',
 		CombatLog: '',
 
+		hideChampionsGroup: false,
+		hideElitesGroup: false,
+		hideSEGroup: false,
+		hideTitanGroup: false,
+		hideLegendaryGroup: false,
+		disableDeactivatePrompts: false,
+
 	},
 
 	saveBoxes: [
@@ -1180,7 +1188,14 @@ FSH.Data = {
 		// 'showFastWalkIconOnWorld',
 		'hideHelperMenu',
 		'keepHelperMenuOnScreen',
-		'showNextQuestSteps'//,
+		'showNextQuestSteps',
+		'hideChampionsGroup',
+		'hideElitesGroup',
+		'hideSEGroup',
+		'hideTitanGroup',
+		'hideLegendaryGroup',
+		'disableDeactivatePrompts'//,
+
 	],
 
 	craft: {
@@ -1320,7 +1335,8 @@ FSH.Data = {
 			'1': {'-': 'notification.parseGoldUpgrades'}}}},
 		trade: {
 			'-': {'-': {'-': {'-': 'trade.injectTrade'}}},
-			'createsecure': {'-': {'-': {'-': 'trade.injectTrade'}}}},
+			'createsecure': {'-': {'-': {'-': 'trade.injectTrade'}}},
+			'docreatesecure': {'-': {'-': {'-': 'trade.injectTrade'}}}},
 		titan: {'-': {'-': {'-': {'-': 'scoutTower.injectTitan'}}}},
 		toprated: {
 			'xp': {'-': {'-': {'-': 'toprated.injectTopRated'}}},
@@ -2117,9 +2133,7 @@ FSH.ajax = { // jQuery
 			url: 'index.php',
 			data: {'cmd': 'profile', 'subcmd': 'fetchinv'},
 			dataType: 'json'
-		}).done(function(data) {
-				console.log('srcData:', data.items[data.items.length - 1]);
-			});
+		});
 	},
 
 	equipItem: function(backpackInvId) {
@@ -2137,10 +2151,6 @@ FSH.ajax = { // jQuery
 
 	dialog: function(data) {
 		if (data.r === 0) {return;}
-		$('#dialog_msg').dialog({
-			title: 'Information',
-			buttons: [{ text: 'Ok', click: function(){$(this).dialog('close');} }]
-		});
 		$('#dialog_msg').html(data.m).dialog('open');
 	},
 
@@ -2194,6 +2204,18 @@ FSH.ajax = { // jQuery
 			}
 		}).pipe(FSH.ajax.htmlResult)
 			.done(FSH.ajax.dialog);
+	},
+
+	debuff: function(buffId) {
+		return $.ajax({
+			url: 'fetchdata.php',
+			data: {
+				'a': '22',
+				'd': '0',
+				'id': buffId
+			},
+			dataType: 'json'
+		});
 	},
 
 };
@@ -2342,8 +2364,8 @@ FSH.notification = { // jQuery
 	displayDisconnectedFromGodsMessage: function() { //jquery
 		$('ul#notifications').prepend(FSH.Layout.godsNotification);
 		$('#helperPrayToGods').on('click', 'img', function() {
-			var index = $(this).attr('src').replace(/\D/g, '');
 			$('#helperPrayToGods').off('click', 'img');
+			var index = $(this).qtip('hide').attr('src').replace(/\D/g, '');
 			$.post(
 				FSH.System.server + 'index.php',
 				'cmd=temple&subcmd=pray&type=' + index,
@@ -2606,12 +2628,11 @@ FSH.guildAdvisor = { // jQuery
 	injectAdvisorNew: function(m) { // jQuery
 		var list = $('#pCC table[cellpadding="1"]');
 		if (list.length !== 1) {return;}
-		//list.attr('id', 'fshAdvisor');
 		var tfoot = $('<tfoot/>').append($('tr', list).last());
 		$('td', tfoot).first().removeAttr('class').attr('colspan', 3)
 			.attr('style', 'text-align: right;');
 		$('b', tfoot).contents().unwrap();
-		// list.addClass('allow stripe hover');
+		list.css('font-size', 'x-small');
 		list.addClass('hover');
 		$('tr', list).first().remove();
 		$('td', list).removeAttr('bgcolor');
@@ -2735,8 +2756,7 @@ FSH.guildAdvisor = { // jQuery
 	},
 
 	displayAdvisor: function(list, o, data) { // jQuery
-		// list.attr('id', 'fshAdvisor');
-		// $(list).addClass('allow stripe hover');
+		list.css('font-size', 'x-small');
 		$(list).addClass('hover');
 		$(list).html('<tfoot id="advTFoot"><tr><td style="text-align: ' +
 			'right;" colspan="3">Total: </td><td><u>' +
@@ -3354,14 +3374,15 @@ FSH.inventory = { // jQuery
 	},
 
 	doTable: function() { // jQuery
-		// $('#pCC').append('<table id="fshInv" class="stripe hover"></table>');
-		$('#pCC').append('<table id="fshInv" class="hover"></table>');
+		$('#pCC').append('<table id="fshInv" class="hover" style="font-size: x-small;"></table>');
 		var table = $('#fshInv').DataTable({
 			data: FSH.Helper.inventory.items,
 			autoWidth: false,
 			pageLength: 50,
 			lengthMenu: [[50, 100, 150, 200, -1], [50, 100, 150, 200, 'All']],
-			columnDefs: [{targets: '_all', defaultContent: ''}],
+			columnDefs: [{targets: '_all', defaultContent: ''},
+				{targets: [1, 4, 5, 6, 7, 8, 9, 10, 12, 13],
+					orderSequence: ['desc', 'asc']}],
 			columns: [
 				{title: 'Name', data: 'item_name',
 					render: FSH.inventory.nameRender
@@ -3740,7 +3761,6 @@ FSH.inventory = { // jQuery
 		td.eq(12).empty();
 		td.eq(13).empty();
 		td.eq(14).empty();
-		//$('#fshInv').DataTable().row(tr).remove();
 		tr.css('text-decoration', 'line-through');
 	},
 
@@ -3808,13 +3828,13 @@ FSH.inventory = { // jQuery
 		$('#fshInv').DataTable().draw(false);
 	},
 
-	changeLvls: function() { // jQuery
-		FSH.inventory.options.fshMinLvl = parseInt($('#fshMinLvl').val(), 10);
-		FSH.inventory.options.fshMaxLvl = parseInt($('#fshMaxLvl').val(), 10);
-		if (!isNaN(FSH.inventory.options.fshMinLvl) &&
-			!isNaN(FSH.inventory.fshMaxLvl)) {
-			FSH.ajax.setForage('fsh_inventory', FSH.inventory.options);
-		}
+	changeLvls: function() { // 
+		var minLvl = parseInt($('#fshMinLvl').val(), 10);
+		var maxLvl = parseInt($('#fshMaxLvl').val(), 10);
+		if (isNaN(minLvl) || isNaN(maxLvl)) {return;}
+		FSH.inventory.options.fshMinLvl = minLvl;
+		FSH.inventory.options.fshMaxLvl = maxLvl;
+		FSH.ajax.setForage('fsh_inventory', FSH.inventory.options);
 		$('#fshInv').DataTable().draw(false);
 	},
 
@@ -4258,7 +4278,7 @@ FSH.profile = { // Legacy
 		//**************
 		FSH.profile.profileInjectGuildRel();
 		if (FSH.System.getValue('enableBioCompressor')) {FSH.profile.compressBio();}
-		var isSelfRE = $('#backpack_tabs').length > 0;// /player_id=/.exec(document.location.search);//
+		var isSelfRE = $('#backpack_tabs').length > 0;
 		if (player) {
 			if (!playerid) {
 				playerid = player.innerHTML;
@@ -4282,8 +4302,9 @@ FSH.profile = { // Legacy
 
 		if (isSelfRE) { // self inventory
 
+			FSH.profile.fastDebuff();
+
 			FSH.profile.profileParseAllyEnemy();
-			//~ FSH.profile.profileInjectFastWear();
 			if (FSH.System.getValue('enableQuickDrink')) {
 				FSH.profile.injectFastWear();
 			}
@@ -5004,6 +5025,31 @@ FSH.profile = { // Legacy
 				}
 			}
 		}
+	},
+
+	fastDebuff: function() { // jQuery
+		var profileRightColumn = $('#profileRightColumn');
+		profileRightColumn.on('click',
+			'a[href^="index.php?cmd=profile&subcmd=removeskill"]',
+			FSH.profile.interceptDebuff);
+		if (!FSH.System.getValue('disableDeactivatePrompts')) {return;}
+		var buffs = $('a[href^="index.php?cmd=profile&subcmd=removeskill"]',
+			profileRightColumn);
+		buffs.removeAttr('onclick');
+	},
+
+	interceptDebuff: function(e) {
+		e.preventDefault();
+		var self = $(this);
+		var buffId = self.attr('href').match(/(\d+)$/)[1];
+		FSH.ajax.debuff(buffId)
+			.done(function(data) {
+				if (data.response.response === 0) {
+					self.closest('td').empty();
+				} else {
+					$('#dialog_msg').html(data.response.msg).dialog('open');
+				}
+			});
 	},
 
 };
@@ -6024,7 +6070,6 @@ FSH.onlinePlayers = { // Bad jQuery
 				'" size=5 id="fshMaxLvl" /> ' +
 			'<input id="fshReset" type="button" value="Reset"/>' +
 			'</div><table id="fshInv" class="allow stripe hover"></table>');
-			// '</div><table id="fshInv" class="hover"></table>');
 	},
 
 	doOnlinePlayerEventHandlers: function(table) { // jQuery
@@ -6617,13 +6662,15 @@ FSH.settingsPage = { // Legacy
 				'for any suggestions, requests or bug reports</span></td></tr>' +
 			//General Prefs
 			'<tr><th colspan="2" align="left"><b>General preferences (apply to most screens)</b></th></tr>' +
+
 			'<tr><td align="right">Enable Guild Info Widgets' + FSH.Layout.helpLink('Enable Guild Info Widgets', 'Enabling this option will enable the Guild Info Widgets (coloring on the Guild Info panel)') +
 				':</td><td><input name="enableGuildInfoWidgets" type="checkbox" value="on"' + (FSH.System.getValue('enableGuildInfoWidgets')?' checked':'') +
 				'>  Hide Message&gt;<input name="hideGuildInfoMessage" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoMessage')?' checked':'') +
 				'>  Hide Buff&gt;<input name="hideGuildInfoBuff" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoBuff')?' checked':'') +
 				'>  Hide ST&gt;<input name="hideGuildInfoSecureTrade" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoSecureTrade')?' checked':'') +
 				'>  Hide Trade&gt;<input name="hideGuildInfoTrade" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoTrade')?' checked':'') +
-				'></td></tr>'  +
+				'></td></tr>' +
+
 			'<tr><td align="right">Move Guild Info List' + FSH.Layout.helpLink('Move Guild Info List', 'This will Move the Guild Info List higher on the bar on the right') +
 				':</td><td><input name="moveGuildList" type="checkbox" value="on"' + (FSH.System.getValue('moveGuildList')?' checked':'') + '>' +
 				'</td></tr>' +
@@ -6689,6 +6736,28 @@ FSH.settingsPage = { // Legacy
 				':</td><td><input name="detailedConflictInfo" type="checkbox" value="on"' + (FSH.System.getValue('detailedConflictInfo')?' checked':'') + '></td></tr>' +
 			//World Screen
 			'<tr><th colspan="2" align="left"><b>World screen/Hunting preferences</b></th></tr>' +
+
+			'<tr><td align="right">Hide Create Group Button' +
+				FSH.Layout.helpLink('Hide Create Group Button',
+				'Enabling this option will hide the Create Group button') +
+				':</td><td>' +
+				'<input name="hideChampionsGroup" ' + 'type="checkbox" value="on"' +
+					(FSH.System.getValue('hideChampionsGroup') ? ' checked' : '') + '>' +
+				'&nbsp;Champions&nbsp;&nbsp;' +
+				'<input name="hideElitesGroup" type="checkbox" ' + 'value="on"' +
+					(FSH.System.getValue('hideElitesGroup') ? ' checked' : '') + '>' +
+				'&nbsp;Elites&nbsp;&nbsp;' +
+				'<input name="hideSEGroup" type="checkbox" ' + 'value="on"' +
+					(FSH.System.getValue('hideSEGroup') ? ' checked' : '') + '>' +
+				'&nbsp;Super Elite&nbsp;&nbsp;' +
+				'<input name="hideTitanGroup" type="checkbox" value="on"' +
+					(FSH.System.getValue('hideTitanGroup') ? ' checked' : '') + '>' +
+				'&nbsp;Titan&nbsp;&nbsp;' +
+				'<input name="hideLegendaryGroup" type="checkbox" ' + 'value="on"' +
+					(FSH.System.getValue('hideLegendaryGroup') ? ' checked' : '') + '>' +
+				'&nbsp;Legendary' +
+				'</td></tr>' +
+
 			'<tr><td align="right">Quick Kill ' + FSH.Layout.helpLink('Quick Kill', 'This will kill monsters without opening a new page') +
 				':</td><td><input name="quickKill" type="checkbox" value="on"' + (FSH.System.getValue('quickKill')?' checked':'') + '>' +
 				'</td></tr>' +
@@ -6829,8 +6898,22 @@ FSH.settingsPage = { // Legacy
 				':</td><td colspan="3"><input name="buyBuffsGreeting" size="60" value="'+ FSH.System.getValue('buyBuffsGreeting') + '" /></td></tr>' +
 			'<tr><td align="right">Show Stat Bonus Total' + FSH.Layout.helpLink('Show Stat Bonus Total', 'This will show a total of the item stats when you mouseover an item on the profile screen.') +
 				':</td><td><input name="showStatBonusTotal" type="checkbox" value="on"' + (FSH.System.getValue('showStatBonusTotal')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Enable Quick Drink/Wear' + FSH.Layout.helpLink('Enable Quick Drink/Wear On Profile', 'This enables the quick drink/wear functionality on the profile page.') +
-				':</td><td><input name="enableQuickDrink" type="checkbox" value="on"' + (FSH.System.getValue('enableQuickDrink')?' checked':'') + '></td></tr>' +
+
+			'<tr><td align="right">Enable Quick Drink/Wear' +
+				FSH.Layout.helpLink('Enable Quick Drink/Wear On Profile', 'This ' +
+					'enables the quick drink/wear functionality on the profile page.') +
+				':</td><td><input name="enableQuickDrink" type="checkbox" value="on"' +
+				(FSH.System.getValue('enableQuickDrink') ? ' checked' : '') +
+				'></td></tr>' +
+
+			'<tr><td align="right">Disable Deactivate Prompts' +
+				FSH.Layout.helpLink('Disable Deactivate Prompts', 'This disables the ' +
+					'prompts for deactivating buffs on the profile page.') +
+				':</td><td><input name="disableDeactivatePrompts" type="checkbox" ' +
+				'value="on"' +
+				(FSH.System.getValue('disableDeactivatePrompts') ? ' checked' : '') +
+				'></td></tr>' +
+
 			//Arena prefs
 			// '<tr><th colspan="2" align="left"><b>Arena preferences</b></th></tr>' +
 			// '<tr><td align="right">Auto Sort Arena List' + FSH.Layout.helpLink('Auto Sort Arena List', 'This will automatically sort the arena list based on your last preference for sort.') +
@@ -6998,7 +7081,7 @@ FSH.settingsPage = { // Legacy
 		FSH.Data.saveBoxes.forEach(FSH.System.saveValueForm, oForm);
 
 		window.alert('FS Helper Settings Saved');
-		location.reload();
+		window.location = 'index.php?cmd=settings';
 		return false;
 	},
 
@@ -7127,10 +7210,23 @@ FSH.ga = { // jQuery
 
 FSH.environment = { // Legacy
 
+	navMenu: function() {
+		var myNav = $('#nav').data('nav');
+		if (!myNav) {return;}
+		var oldSave = myNav._saveState;
+		myNav._saveState = function(id) {
+			var myHeight = $('li.nav-level-0', '#nav').eq(id).find('ul').height();
+			if (myHeight === 0) {id = -1;}
+			oldSave.call(myNav, id);
+		};
+	},
+
 	// main event dispatcher
 	dispatch: function() { // jQuery
 
 		FSH.ga.setup();
+
+		FSH.environment.navMenu();
 
 		var cmd;
 		var subcmd;
@@ -8979,145 +9075,129 @@ FSH.scoutTower = { // Legacy
 
 };
 
-FSH.trade = { // Legacy
+FSH.trade = { // jQuery
 
-	injectTrade: function() { // Hybrid
+	injectTrade: function() { // jQuery
+
+		var multiple = $('<tr id="fshSelectMultiple"></tr>');
+		var myTd = $('<td colspan=6></td>');
+
+		myTd.prepend('Select:&ensp;<span id="itemid-1" ' +
+			'class="fshCheckAll fshLink fshNoWrap">All Items</span> &ensp;' +
+			'<span id="itemid-2" ' +
+			'class="fshCheckAll fshLink fshNoWrap">All Resources</span>');
+
+		var sendClasses = FSH.System.getValue('sendClasses');
+		var itemList = JSON.parse('[' + sendClasses + ']');
+
+		for (var i = 0; i < itemList.length; i += 1) {
+			myTd.append(' &ensp;<span id="itemid' + itemList[i][1] +'" class="' +
+				'fshCheckAll fshLink fshNoWrap">' +
+				itemList[i][0] + '</span>');
+		}
+
+		myTd.append(' &ensp;How&nbsp;many:<input id="fshSendHowMany" type="text" ' +
+			'class="custominput" value="all" size=3 />');
+
+		multiple.append(myTd);
+		multiple.on('click', '.fshCheckAll', FSH.trade.toggleCheckAllPlants);
+
 		$('table[id="item-list"]')
 			.closest('tr')
-			.before('<tr id="Helper:selectMultiple"></tr>')
-			.before('<tr id="Helper:folderSelect"></tr>')
-			.before('<tr id="Helper:showSTs"></tr>');
-		var sendClasses = FSH.System.getValue('sendClasses');
-		var itemList = JSON.parse('[' + sendClasses.replace(/'/g, '"') + ']');
-		var output = '';
-		var allResRE='';
-		var i;
-		for (i=0;i<itemList.length;i += 1) {
-			output += '<span plantRE="' + itemList[i][1] +'" style="cursor:' +
-				'pointer; text-decoration:underline;"' + 'id="Helper:checkAll' +
-				i + '">' + itemList[i][0] + '</span> &ensp;';
-			allResRE+=itemList[i][1]+'|';
-		}
-		output='Select: &ensp;<span style="cursor:pointer; text-decoration:' +
-			'underline;" plantRE=".*" id="Helper:checkAll' + i +
-			'">All Items</span> &ensp; <span plantRE="' +
-			allResRE.substr(0,allResRE.length-1) + '" style="cursor:pointer; ' +
-			'text-decoration:underline;"id="Helper:checkAll' + (i + 1) +
-			'">All Resources</span> &ensp;' + output;
-		output += 'Select <input id="Helper:SendHowMany" type="text" ' +
-			'class="custominput" value="all" size=3 />';
-		$('tr[id="Helper:selectMultiple"]')
-			.append('<td colspan=6>' + output + '</td>');
-		for (i=0;i<itemList.length+1;i += 1) {
-			document
-				.getElementById('Helper:checkAll'+i)
-				.addEventListener(
-					'click',
-					FSH.trade.toggleCheckAllPlants,
-					true
-				);
-		}
-		$.getJSON('?cmd=export&subcmd=inventory', FSH.trade.processTrade);
+			.before(multiple);
+
+		FSH.ajax.inventory(true).done(FSH.trade.processTrade);
 	},
 
-	toggleCheckAllPlants: function(evt) { // Legacy
-		var plantRE = new RegExp(evt.target.getAttribute('plantRE'));
-		var tradeType = evt.target.getAttribute('tradetype');
-		var allItems = FSH.System.findNodes('//input[@type="checkbox" and @name="sendItemList[]"]');
-		var selectST= $('input[id="Helper:useItemsInSt"]').is(':checked');
-		var limit = parseInt($('input[id="Helper:SendHowMany"]').attr('value').replace(/[^0-9]/g,''), 10);
-		
-		if (allItems) {
-			var itemsLen = allItems.length;
-			if(tradeType==='secure') {itemsLen=Math.min(100,itemsLen);}
-			if(limit>0){itemsLen=Math.min(limit,itemsLen);}
-			for (var i = 0; i < allItems.length; i += 1){
-				var theImgNode = allItems[i].parentNode.parentNode.previousSibling.firstChild.firstChild.firstChild;
-				if(plantRE.exec(theImgNode.getAttribute('src'))) {
-					if(/3px solid red/.exec(theImgNode.parentNode.parentNode.style.border) && !selectST) //item in an ST, skip it
-						{continue;}//alert('asdf');
-					if (allItems[i].checked) {
-						allItems[i].checked = false;
-					} else {allItems[i].checked = true;}
-					if((itemsLen -=1) === 0) {i=allItems.length+1;}
-				}
-			}
-		}
-	},
+	processTrade: function(data) { // jQuery
 
-	processTrade: function(data) { // Bad jQuery
-		FSH.Helper.inventory = data;
-		for(var i=0;i<FSH.Helper.inventory.items.length;i += 1){
-			if(FSH.Helper.inventory.items[i].is_in_st){
-				$('input[value="'+FSH.Helper.inventory.items[i].inv_id+'"]').closest('tr').prev().find('td[background="' +
-						FSH.System.imageServer + '/inventory/2x3.gif"]').css('border','3px solid red');
+		var itemTables = $('#item-list table');
+		// Highlight items in ST
+		data.items.forEach(function(item){
+			var thisCheck = itemTables.find('input[value="' + item.inv_id + '"]');
+			var thisItem = itemTables.has(thisCheck);
+			thisCheck.addClass('itemid' + item.item_id + ' itemtype' + item.type);
+			thisItem.addClass('folderid' + item.folder_id);
+			if (item.is_in_st) {
+				thisItem.find('td').eq(0).css('border','3px solid red');
+				thisCheck.addClass('isInST');
+			} else {
+				thisItem.css('margin','2.4px');
 			}
-		}
-		//append main folder
-		var folders='<input type="hidden" id="Helper:CurrentFolder" value=0 /><span id="FolderID0" fid=0 style="cursor:pointer; ' +
-					'text-decoration:underline;">All</span> <span id="FolderID-1" fid="-1" style="cursor:pointer; ' +
-					'text-decoration:underline;">Main</span> ';
-		for (var key in FSH.Helper.inventory.folders){//FSH.Helper.inventory.folders[key]
-			if (!FSH.Helper.inventory.folders.hasOwnProperty(key)) { continue; }
-			folders+='<span id="FolderID'+key+'" fid='+key+' style="cursor:pointer; text-decoration:underline;">'+
-						FSH.Helper.inventory.folders[key]+'</span> ';
-		}
-		$('tr[id="Helper:folderSelect"]').append('<td colspan=6>'+folders+'</td>');//retrieving folder names...
-		$('span[id*="FolderID"]').click(function(){
-			$('input[id="Helper:CurrentFolder"]').attr('value',$(this).attr('fid'));
-			FSH.trade.insertItemsToTrade();
 		});
-		$('tr[id="Helper:showSTs"]').append('<td align="center" colspan=6><label id="Helper:useItemsInStCont"><input type="checkbox" id="Helper:useItemsInSt" checked /> Select items in ST</label></td>');
+
+		var folders = $('<tr id="fshFolderSelect"></tr>');
+		var folderTr = $('<td colspan=6></td>');
+		//append main folder
+		folderTr.append('<span id="folderid0" class="fshLink" fid=0>All</span>' +
+			' &ensp;<span id="folderid-1" class="fshLink" fid="-1">Main</span>');
+		Object.keys(data.folders).forEach(function(key) {
+			folderTr.append(' &ensp;<span id="folderid' + key +
+				'" class="fshLink fshNoWrap" fid=' + key + '>' +
+				data.folders[key] + '</span> ');
+		});
+		folders.append(folderTr);
+		folders.on('click', 'span[id^="folderid"]', FSH.trade.hideFolder);
+
+		var showST = $('<tr id="fshShowSTs"></tr>')
+			.append('<td align="center" colspan=6>' +
+				'<label><input type="checkbox" id="itemsInSt" checked> ' +
+				'Select items in ST</label></td>');
+
+		$('tr#fshSelectMultiple').after(showST).after(folders);
+
+		},
+
+	toggleCheckAllPlants: function() { // jQuery
+		var self = $(this);
+		var itemid = self.attr('id');
+		var itemList = $('#item-list, #item-div');
+		var items = $('input:visible', itemList);
+		var howMany = parseInt($('#fshSendHowMany').attr('value'), 10);
+		var itemsInSt = document.getElementById('itemsInSt').checked;
+
+		items.prop('checked', false);
+
+		if (!itemsInSt) {items = items.not('.isInST');}
+		if (!isNaN(howMany)) {
+			if (FSH.subcmd !== '-') {howMany = Math.min(100, howMany);}
+			items = items.slice(0, howMany);
+		}
+
+		if (itemid === 'itemid-1') {
+				items.prop('checked', true);
+			return;
+		}
+
+		if (itemid === 'itemid-2') {
+			items.filter('.itemtype12').prop( 'checked', true );
+			return;
+		}
+
+		items.filter('.' + itemid).prop( 'checked', true );
+
 	},
 
-	insertItemsToTrade: function(){ // jQuery
-		var insertAt;
-		//remove the HCS table... building it myself
-		var itemTable=$('<table></table>');
-		var items=0;
-		var fromFolder=$('input[id="Helper:CurrentFolder"]').val();
-		var shouldDisplay;
-		var style;
-		for(var i=0;i<FSH.Helper.inventory.items.length;i += 1){
-			shouldDisplay=true;
-			if (fromFolder !== 0 &&
-				FSH.Helper.inventory.items[i].folder_id !== fromFolder) {
-				shouldDisplay=false;
-			}
-			if(FSH.Helper.inventory.items[i].equipped) { shouldDisplay=false;}
-			if(shouldDisplay){
-				if (items % 6 === 0) {
-					insertAt = $('<tr></tr>');
-					itemTable.append(insertAt);
-					for(var x=0;x<6;x += 1){
-						insertAt.append('<td align="center" id="Helper:itemTD'+(items+x)+'"></td>');
-					}
-				}
-				style='';
-				if(FSH.Helper.inventory.items[i].is_in_st){
-					style=' style="border: 3px solid red"';
-				}
+	hideFolder: function() { // jQuery
+		var self = $(this);
+		var folderid = self.attr('id');
 
-				itemTable
-					.find('td[id="Helper:itemTD' + items + '"]')
-					.append('<table border=0 cellpadding="0" cellspacing="0"' +
-					'><tr><td background="' + FSH.System.imageServer +
-					'/inventory/2x3.gif" width="60" height="90" ' + style +
-					'><center><img src="' + FSH.System.imageServer + '/items/' +
-					FSH.Helper.inventory.items[i].item_id + '.gif" class="tip-' +
-					'dynamic" data-tipped="fetchitem.php?item_id=' +
-					FSH.Helper.inventory.items[i].item_id + '&inv_id=' +
-					FSH.Helper.inventory.items[i].inv_id + '&t=1&p=' +
-					FSH.Helper.inventory.player_id + '&currentPlayerId=' +
-					FSH.Helper.inventory.player_id + '" border=0></center></td>' +
-					'</tr><tr><td align="center"><input type="checkbox" ' +
-					'value="' + FSH.Helper.inventory.items[i].inv_id +
-					'" name="sendItemList[]" ></td></tr></table>');
-				items+= 1;
-			}
+		var itemList = $('#item-list');
+		if (itemList.length === 1) {
+			itemList.wrap('<div id="item-div"></div>');
+			$('#item-div').width(427).append(
+				$('table', itemList).css('display', 'inline-block'));
+			itemList.remove();
 		}
-		$('table[id="item-list"]').children().remove();
-		$('table[id="item-list"]').append(itemTable.html());
+
+		var items = $('#item-div table');
+		items.find(':checked').prop('checked', false);
+		if (folderid === 'folderid0') {
+			items.show();
+			return;
+		}
+		items.show().not('.' + folderid).hide();
+
 	},
 
 };
@@ -11589,60 +11669,6 @@ FSH.oldArena = { // Legacy
 			finishButton.setAttribute('value', '>>');
 			nextButton.parentNode.insertBefore(finishButton, nextButton.nextSibling);
 		}
-
-		// Why are we storing completed arenas?
-		/*
-
-		var arenaTable = FSH.System.findNode('//table[@width=620]/tbody/tr/td[contains(.,"Reward")]/table');
-
-		// var arenaMoves = FSH.System.getValueJSON('arenaMoves');
-		var oldArenaMatches = FSH.System.getValueJSON('arenaMatches');
-		var arenaMatches;
-		var aMatch;
-		if (!oldArenaMatches) {
-			arenaMatches = [];
-		} else {
-			while (oldArenaMatches.length>1000)
-			{
-				oldArenaMatches.shift();
-			}
-			arenaMatches = oldArenaMatches;
-		}
-		var matchFound = false;
-
-		for (var i=1; i<arenaTable.rows.length-1; i += 1){
-			var row = arenaTable.rows[i];
-			matchFound = false;
-			aMatch = {};
-			var arenaIDRE = /#\s(\d+)/;
-			var arenaID = arenaIDRE.exec(row.cells[0].textContent)[1]*1;
-			if (oldArenaMatches){
-				for (var k=0; k<oldArenaMatches.length; k += 1){
-					if (oldArenaMatches[k].arenaID === arenaID) {
-						matchFound = true;
-						break;
-					}
-				}
-			}
-			if (!matchFound) {
-				aMatch.arenaID = arenaID;
-				aMatch.arenaJoinCostHTML = row.cells[2].innerHTML;
-				aMatch.arenaSpecialsHTML = row.cells[4].innerHTML;
-				if (row.cells[4].innerHTML.search('/pvp/specials_1.gif') !== -1) {
-					aMatch.arenaSpecials = true;
-				} else {
-					aMatch.arenaSpecials = false;
-				}
-				aMatch.arenaHellForgeHTML = row.cells[5].innerHTML;
-				aMatch.arenaMaxEquipHTML = row.cells[6].innerHTML;
-				aMatch.arenaRewardHTML = row.cells[7].innerHTML;
-				arenaMatches.push(aMatch);
-			}
-		}
-		FSH.System.setValueJSON('arenaMatches', arenaMatches);
-
-		*/
-
 	},
 
 	injectArenaSetupMove: function() { // Legacy
@@ -11764,13 +11790,9 @@ FSH.arena = { // jQuery
 		FSH.arena.opts.id = {};
 		var tabs = $('div#arenaTypeTabs');
 		var theTables = $('table[width="635"]', tabs);
-		//theTables.addClass('stripe hover');
-		theTables.css('font-size', '12px');
 		theTables.each(FSH.arena.redoHead);
 		var myRows = theTables.children('tbody').children('tr');
 		myRows.each(FSH.arena.orderData);
-
-		//theTables.find('tr').addClass('fshArena');
 
 		FSH.ajax.setForage('fsh_arena', FSH.arena.opts);
 
@@ -12005,6 +12027,403 @@ FSH.combatLog = { // Native
 			location.reload();
 		}
 	},
+
+};
+
+FSH.newMap = { // Hybrid
+
+	debugEvents: function() {
+
+		var oldTrigger = $.fn.trigger;
+		jQuery.fn.extend({
+			trigger: function(event) {
+				if (typeof event === 'string' &&
+					event !== 'update.time' &&
+					event !== 'update.defines' &&
+					event !== 'ready.hcs-element' &&
+					event !== 'ready.hcs-worldRealm' &&
+					event !== 'ready.worldManager' &&
+					event !== 'show.mapTooltip' &&
+					event !== 'refresh.mapTooltip' &&
+					event !== 'hide.mapTooltip' &&
+					event !== 'blur' &&
+					event !== 'dragstart.mapCanvas' &&
+					event !== 'click.mapCanvas' &&
+					event !== 'dragend.mapCanvas' &&
+					event !== 'move-attempt.player' &&
+					event !== 'move-attempt-2.player' &&
+					event !== 'move.player' &&
+					event !== 'move-stop.player' &&
+					event !== 'move-end.player' &&
+					event !== 'minimize.actionlist' &&
+					event !== 'stamina.stats-player' &&
+					event !== 'location.stats-player' &&
+					event !== 'stats.player' &&
+					event !== 'notifications.player' &&
+					event !== 'update.player' &&
+					event !== 'update.realm' &&
+					event !== 'keydown.controls' &&
+					event !== 'keyup.controls' &&
+					event !== 'keypress.controls' &&
+					event !== 'focus') {
+					console.debug('Triggered', event, 'arguments', arguments);
+				}
+				var trigReturn = oldTrigger.apply(this,arguments);
+				return trigReturn;
+			}
+		});
+
+	},
+
+
+	subscribes: function() { // jQuery
+
+		FSH.newMap.debugEvents();
+
+		if (FSH.System.getValue('sendGoldonWorld')) {
+			FSH.newMap.injectSendGoldOnWorld();
+		}
+
+		//Subscribes:
+		FSH.Helper.doNotKillList = FSH.System.getValue('doNotKillList');
+
+		// subscribe to view creature events on the new map.
+		// 1-success.action-response
+		$.subscribe('1-success.action-response', function(e, data) {
+			console.log('data', data);
+		});
+		$.subscribe('ready.view-creature', FSH.newMap.readyViewCreature);
+		// $.subscribe('1-success.action-response', FSH.newMap.readyViewCreature);
+
+		// Hide Create Group button
+		FSH.newMap.hideGroupButton();
+
+		// add do-not-kill list functionality
+		$.subscribe('after-update.actionlist', FSH.newMap.afterUpdateActionList);
+
+		// then intercept the action call 
+		FSH.newMap.interceptDoAction();
+
+		$.subscribe(window.DATA_EVENTS.PLAYER_BUFFS.ANY,
+			FSH.newMap.dataEventsPlayerBuffs);
+
+		$.subscribe('keydown.controls', function(e, key){
+			switch(key)
+			{
+				case 'ACT_REPAIR': GameData.fetch(387);
+				break;
+			}
+		});
+
+		//FSH.Helper.keepLogs = FSH.System.getValue('keepLogs');
+		if (FSH.System.getValue('keepLogs')) {
+			$.subscribe('2-success.action-response', FSH.newMap.combatResponse);
+		}
+		//on world
+
+		if (window.initialGameData) {//HCS initial data
+			setTimeout(function(){
+				FSH.newMap.injectWorldNewMap(window.initialGameData);
+				FSH.newMap.dataEventsPlayerBuffs(null,
+					{b: window.initialGameData.player.buffs});
+			}, 400);
+		}
+		$.subscribe('-1-success.action-response 5-success.action-response',
+			function(e, data) { //change of information
+				setTimeout(function() {
+					FSH.newMap.injectWorldNewMap(data);
+				}, 400);
+			}
+		);
+
+		/*
+		// somewhere near here will be multi buy on shop
+		$.subscribe('prompt.worldDialogShop', function(e, data){
+			self._createShop(self.shop.items);
+			$('span[class="price"]').after('<span class="numTake">test</span>');
+		});
+		document.getElementById('Helper:SendGold')
+			.addEventListener('click', FSH.Helper.sendGoldToPlayer, true);
+		*/
+
+	},
+
+	injectSendGoldOnWorld: function() { // jQuery
+		$('#statbar-gold-tooltip-general').append(
+			'<dt class="stat-gold-sendTo">Send To:</dt>' +
+			'<dd id="HelperSendTo">' + FSH.System.getValue('goldRecipient') + '</dd>' + 
+			'<dt class="stat-gold-sendAmt">Amount:</dt>' +
+			'<dd id="HelperSendAmt">' + FSH.System.getValue('goldAmount').replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') + '</dd>' +
+			'<dt class="stat-gold-sendTo">Send?</dt>' +
+			'<dd><input id="HelperSendGold" value="Send!" class="custombutton" type="submit"><input type="hidden" id="xc" value=""</dd>' +
+			'<dt class="stat-gold-sendTotal">Total Sent:</dt>' +
+			'<dd id="HelperSendTotal">' +
+				FSH.System.getValue('currentGoldSentTotal')
+					.toString()
+					.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,') +
+				'</dd>');
+		$('input#HelperSendGold').click(FSH.newMap.doSendGold);
+	},
+
+	doSendGold: function() { // jQuery
+		// var sendTo = $('#HelperSendTo').html();
+		// var sendAmt = $('#HelperSendAmt').html().replace(/[^\d]/g,'');
+		// var sendHref = FSH.System.server + 'index.php?cmd=trade&' +
+			// 'subcmd=sendgold&xc=' + window.ajaxXC + '&target_username=' +
+			// sendTo +'&gold_amount='+ sendAmt;
+		$.ajax({
+			url: 'index.php',
+			data: {
+				cmd : 'trade',
+				subcmd: 'sendgold',
+				xc: window.ajaxXC,
+				target_username: $('#HelperSendTo').html(),
+				gold_amount: $('#HelperSendAmt').html().replace(/[^\d]/g,'')
+			}
+		}).done(function(data) {
+				var info = FSH.Layout.infoBox(data);
+				if (info === 'You successfully sent gold!' || info === '') {
+					FSH.System.setValue('currentGoldSentTotal',
+						parseInt(FSH.System.getValue('currentGoldSentTotal'), 10) +
+						parseInt(FSH.System.getValue('goldAmount'), 10));
+					GameData.fetch(387);
+				}
+			});
+	},
+
+	readyViewCreature: function() { // Hybrid - New Map
+		$('div#creatureEvaluator').html('');
+		$('div#creatureEvaluatorGroup').html('');
+
+		FSH.System.xmlhttp('index.php?cmd=profile',
+			FSH.Helper.getCreaturePlayerData,
+			{	'groupExists': false,
+				'groupAttackValue': 0,
+				'groupDefenseValue': 0,
+				'groupArmorValue': 0,
+				'groupDamageValue': 0,
+				'groupHPValue': 0,
+				'groupEvaluation': false
+			}
+		);
+		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups',
+			FSH.Helper.checkIfGroupExists);
+
+		$('div#addRemoveCreatureToDoNotKillList').html('');
+		//console.log($('#dialog-viewcreature').find('h2.name').text());
+		if ($('div#addRemoveCreatureToDoNotKillList').length === 0) {
+			var doNotKillElement = '<div id="addRemoveCreatureToDo' +
+				'NotKillList"" class="description" style="cursor:' +
+				'pointer;text-decoration:underline;color:blue;"></div>';
+			$(doNotKillElement).insertAfter($('#dialog-viewcreature')
+				.find('p.description'));
+		}
+		var creatureName = $('#dialog-viewcreature').find('h2.name')
+			.text();
+		$('div#addRemoveCreatureToDoNotKillList')
+			.attr('creatureName',creatureName);
+		var extraText = 'Add to the do not kill list';
+		if (FSH.Helper.doNotKillList.indexOf(creatureName) !== -1) {
+			extraText = 'Remove from do not kill list';}
+		$('div#addRemoveCreatureToDoNotKillList').html(extraText);
+		document.getElementById('addRemoveCreatureToDoNotKillList')
+			.addEventListener('click',
+				FSH.Helper.addRemoveCreatureToDoNotKillList, true);
+	},
+
+	hideGroupButton: function() { // jQuery
+		if (FSH.System.getValue('hideChampionsGroup')) {
+			$.subscribe('after-update.actionlist',
+				function() {$('li.creature-1 a.create-group').hide();});
+		}
+		if (FSH.System.getValue('hideElitesGroup')) {
+			$.subscribe('after-update.actionlist',
+				function() {$('li.creature-2 a.create-group').hide();});
+		}
+		if (FSH.System.getValue('hideSEGroup')) {
+			$.subscribe('after-update.actionlist',
+				function() {$('li.creature-3 a.create-group').hide();});
+		}
+		if (FSH.System.getValue('hideTitanGroup')) {
+			$.subscribe('after-update.actionlist',
+				function() {$('li.creature-4 a.create-group').hide();});
+		}
+		if (FSH.System.getValue('hideLegendaryGroup')) {
+			$.subscribe('after-update.actionlist',
+				function() {$('li.creature-5 a.create-group').hide();});
+		}
+	},
+
+	afterUpdateActionList: function() { // jQuery
+		// color the critters in the do no kill list blue
+		$('ul#actionList div.header').each(function() {
+			if (FSH.Helper.doNotKillList.indexOf($(this).find('a.icon')
+				.data('name')) !== -1) {
+				$(this).css('color','blue');
+			}
+		});
+	},
+
+	interceptDoAction: function() { // jQuery
+		var gameData = GameData;
+		var hcs = window.HCS;
+		var oldDoAction = gameData.doAction;
+		gameData.doAction = function(actionCode, fetchFlags, data) {
+			if (actionCode === hcs.DEFINES.ACTION.CREATURE_COMBAT) {
+				// Do custom stuff e.g. do not kill list
+				var creatureIcon = $('ul#actionList div.header')
+					.eq(data.passback).find('a.icon');
+				if (FSH.Helper.doNotKillList.indexOf(
+						creatureIcon.data('name')) !== -1) {
+					creatureIcon.removeClass('loading');
+					return;
+				}
+			}
+			// Call standard action
+			oldDoAction(actionCode, fetchFlags, data);
+		};
+	},
+
+	colorHash: { // Native
+		'0': 'red', // Should never see this.
+		'1': 'orange',
+		'2': 'yellow'
+	},
+
+	dataEventsPlayerBuffs: function() { // jQuery
+		var imp = $('#actionlist-shield-imp');
+		if (imp.length === 1) {
+			imp.css('background-color',
+				FSH.newMap.colorHash[imp.text()] || '#ad8043');
+		}
+	},
+
+	combatResponse: function(e, data) { // jQuery - Bad
+		// TODO this is too slow
+		// send the response to localforage
+		// and deal with it later
+		// If bad response do nothing.
+		// if (!FSH.Helper.keepLogs || data.response.response !== 0) {return;}
+		if (data.response.response !== 0) {return;}
+		var l;
+		var i;
+		var combatData = {};
+		combatData.combat = $.extend(true, {}, data.response.data); //make a deep copy
+		//delete some values that are not needed to trim down size of log.
+		delete combatData.combat.attacker.img_url;
+		delete combatData.combat.defender.img_url;
+		delete combatData.combat.is_conflict;
+		delete combatData.combat.is_bounty;
+		delete combatData.combat.pvp_rating_change;
+		delete combatData.combat.pvp_prestige_gain;
+		if (combatData.combat.inventory_id) {
+			combatData.combat.drop = combatData.combat.item.id;
+		}
+		delete combatData.combat.inventory_id;
+		delete combatData.combat.item;
+
+		combatData.player={};
+		combatData.player.buffs={};
+		combatData.player.enhancements={};
+		l = data.player.buffs.length;
+		for(i=0; i<l; i += 1) //loop through buffs, only need to keep CA and Doubler
+		{//54 = ca, 26 = doubler
+			var buff = data.player.buffs[i];
+			if(buff.id === 54 || buff.id === 26)
+			{
+				combatData.player.buffs[buff.id] = parseInt(buff.level, 10);
+			}
+		}
+		var notSave = '|Breaker|Protection|Master Thief|Protect Gold|Disarm|Duelist|Thievery|Master Blacksmith|Master Crafter|Fury Caster|Master Inventor|Sustain|';//Taking the Not Save in case they add new enhancements.
+		if (data.player.enhancements)
+		{
+			l = data.player.enhancements.length;
+			for(i=0; i<l; i += 1) //loop through enhancements
+			{//54 = ca, 26 = doubler
+				var enh = data.player.enhancements[i];
+				if (notSave.indexOf('|'+enh.name+'|')===-1){
+					combatData.player.enhancements[enh.name]=enh.value;
+				}
+			}
+		}
+		//combatData.player.enhancements = data.player.enhancements;
+		//combatData.player.buffs = data.player.buffs;
+		var now = new Date();
+		combatData.time = FSH.System.formatDateTime(now);
+		FSH.Helper.appendSavedLog(',' + JSON.stringify(combatData));
+	},
+
+	injectWorldNewMap: function(data){ // jQuery - Ugly
+
+	var img;
+		if (data.player) {
+			// FSH.Helper.xLocation = data.player.location.x;
+			// FSH.Helper.yLocation = data.player.location.y;
+			//<dd id='HelperSendTotal'>' + FSH.System.getValue("currentGoldSentTotal").toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") + '</dd>
+			if (FSH.System.getValue('sendGoldonWorld')) {
+				$('#HelperSendTotal')
+					.html(FSH.System.getValue('currentGoldSentTotal')
+					.toString()
+					.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,'));
+				if (parseInt(data.player.gold, 10) >
+					FSH.System.getValue('goldAmount')){
+					$('#statbar-gold').css('background-color','red');
+				}else{
+					$('#statbar-gold').css('background-color','inherit');
+				}
+			}
+		}
+		if (data.realm && data.realm.name) {
+			var worldName = $('h1#worldName');
+			worldName.html(data.realm.name); //HACK - incase of switchign between master realm and realm they dont replace teh realm name
+			worldName.append(' <a href="http://guide.fallensword.com/index.php' +
+				'?cmd=realms&subcmd=view&realm_id=' + data.realm.id +
+				'" target="_blank"><img border=0 title="Search map in Ultimate FSG" ' +
+				'width=10 height=10 src="' + FSH.System.imageServer +
+				'/temple/1.gif"/></a> <a href="http://wiki.fallensword.com/' +
+				'index.php/Special:Search?search=' + data.realm.name +
+				'&go=Go" target="_blank"><img border=0 title="Search map in Wiki" ' +
+				'width=10 height=10 src="/favicon.ico"/></a>');
+
+			if (FSH.System.getValue('showSpeakerOnWorld')) {
+				img = FSH.System.getValue('playNewMessageSound') === true ?
+					FSH.Data.soundMuteImage :
+					FSH.Data.soundImage;
+				worldName.append('<a href="#" id="toggleSoundLink">' + img + '</a>');
+				document.getElementById('toggleSoundLink').addEventListener('click',
+					function() {
+						if (FSH.System.getValue('playNewMessageSound') === false) {
+							$('a#toggleSoundLink').html(FSH.Data.soundMuteImage);
+						} else {
+							$('a#toggleSoundLink').html(FSH.Data.soundImage);
+						}
+						FSH.System.setValue('playNewMessageSound',
+							!FSH.System.getValue('playNewMessageSound'));
+					}, true);
+			}
+
+			var huntingMode = FSH.Helper.huntingMode;
+			img = huntingMode === true ? FSH.Data.huntingOnImage :
+				FSH.Data.huntingOffImage;
+			worldName.append(' <a href=# id="HelperToggleHuntingMode">' + img +
+				'</a>');
+
+			document.getElementById('HelperToggleHuntingMode')
+				.addEventListener('click',
+					function() {
+						if (!FSH.Helper.huntingMode) {
+							$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOnImage);
+						} else {
+							$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOffImage);
+						}
+						FSH.Helper.huntingMode = !FSH.Helper.huntingMode;
+						FSH.System.setValue('huntingMode', FSH.Helper.huntingMode);
+					}, true);
+		}
+	},
+
+
+
 
 };
 
