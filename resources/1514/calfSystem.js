@@ -1236,9 +1236,9 @@ FSH.Data = {
 			'repairall': {'-': {'-': {'1': 'injectWorld'}}}},
 		arena: {
 			'-': {'-': {'-': {'-': 'arena.inject'}}},
-			'completed': {'-': {'-': {'-': 'oldArena.storeCompletedArenas'}}},
+			'completed': {'-': {'-': {'-': 'arena.completedArenas'}}},
 			'pickmove': {'-': {'-': {'-': 'arena.storeMoves'}}},
-			'setup': {'-': {'-': {'-': 'oldArena.injectArenaSetupMove'}}}
+			'setup': {'-': {'-': {'-': 'arena.setupMoves'}}}
 			},
 		questbook: {
 			'-': {'-': {
@@ -1352,7 +1352,14 @@ FSH.Data = {
 		tempinv: {'-': {'-': {'-': {'-': 'mailbox.injectMailbox'}}}},
 		//attackplayer: {'-': {'-': {'-': {'-': 'attackPlayer.injectAttackPlayer'}}}},
 		findplayer: {'-': {'-': {'-': {'-': 'misc.injectFindPlayer'}}}},
-		quests: {'view': {'-': {'-': {'-': 'questBook.showAllQuestSteps'}}}}, //UFSG
+		quests: {'-': {'-': {'-': {'-': 'guide.allowBack'}}},
+			'view': {'-': {'-': {'-': 'questBook.showAllQuestSteps'}}}}, //UFSG
+		items: {'-': {'-': {'-': {'-': 'guide.allowBack'}}}}, //UFSG
+		creatures: {'-': {'-': {'-': {'-': 'guide.allowBack'}}}}, //UFSG
+		masterrealms: {'-': {'-': {'-': {'-': 'guide.allowBack'}}}}, //UFSG
+		realms: {'-': {'-': {'-': {'-': 'guide.allowBack'}}}}, //UFSG
+		relics: {'-': {'-': {'-': {'-': 'guide.allowBack'}}}}, //UFSG
+		shops: {'-': {'-': {'-': {'-': 'guide.allowBack'}}}}, //UFSG
 		scavenging: {'process': {'-': {'-': {'-': 'scavenging.injectScavenging'}}}}, // No longer in use???
 		temple: {'-': {'-': {'-': {'-': 'notification.parseTemplePage'}}}},
 		composing: {'-': {'-': {'-': {'-': 'composing.injectComposing'}}}},
@@ -2215,6 +2222,18 @@ FSH.ajax = { // jQuery
 				'id': buffId
 			},
 			dataType: 'json'
+		});
+	},
+
+	doPickMove: function(moveId, slotId) {
+		return $.ajax({
+			url: 'index.php',
+			data: {
+				'cmd': 'arena',
+				'subcmd': 'dopickmove',
+				'move_id': moveId,
+				'slot_id': slotId
+			}
 		});
 	},
 
@@ -3716,34 +3735,53 @@ FSH.inventory = { // jQuery
 		$('#fshInv_filter input').focus();
 	},
 
+	removeClass: function(self) {
+		self.closest('tr')
+			.find('.takeItem, .recallItem, .wearItem, .dropItem, .sendItem')
+			.removeClass().qtip('hide');
+	},
+
+	anotherSpinner: function(self) {
+		self.empty().append('<img src="' + FSH.System.imageServer +
+			'/world/actionLoadingSpinner.gif" width="11" height="11">');
+	},
+
 	wearItem: function() { // jQuery
-		var self = $(this).removeClass();
+		var self = $(this).closest('td');
+		FSH.inventory.removeClass(self);
 		FSH.ajax.equipItem(self.attr('invid')).done(function(data){
 			if (data.r === 1) {return;}
 			FSH.inventory.killRow(self);
 		});
+		FSH.inventory.anotherSpinner(self);
 	},
 
 	useItem: function() { // jQuery
-		var self = $(this).removeClass();
+		var self = $(this);
+		FSH.inventory.removeClass(self);
 		FSH.ajax.useItem(self.attr('invid')).done(function(data){
 			if (data.r === 1) {return;}
 			FSH.inventory.killRow(self);
 		});
+		FSH.inventory.anotherSpinner(self);
 	},
 
 	takeItem: function() { // jQuery
-		var self = $(this).removeClass();
-		return FSH.ajax.queueTakeItem(self.attr('invid'), self.attr('action'))
+		var self = $(this);
+		FSH.inventory.removeClass(self);
+		FSH.ajax.queueTakeItem(self.attr('invid'), self.attr('action'))
 			.done(function(data){
 				if (data.r === 1) {return;}
 				FSH.inventory.killRow(self);
 			});
+		FSH.inventory.anotherSpinner(self);
 	},
 
 	recallItem: function() { // jQuery
-		var self = $(this).removeClass();
-		return FSH.ajax.queueRecallItem({
+		var self = $(this);
+		FSH.inventory.removeClass(self);
+		FSH.ajax.queueRecallItem({
+		// FSH.ajax.recallItem({
 				invId: self.attr('invid'),
 				playerId: self.attr('playerid'),
 				mode: self.attr('mode'),
@@ -3752,6 +3790,7 @@ FSH.inventory = { // jQuery
 				if (data.r === 1) {return;}
 				FSH.inventory.killRow(self);
 			});
+		FSH.inventory.anotherSpinner(self);
 	},
 
 	killRow:function(self) { // jQuery
@@ -3844,19 +3883,23 @@ FSH.inventory = { // jQuery
 	},
 
 	dropItem: function() { // jQuery
-		var self = $(this).removeClass().qtip('hide');
+		var self = $(this);
+		FSH.inventory.removeClass(self);
 		FSH.ajax.dropItem([self.data('inv')]).done(function(data){
 			if (data.r === 1) {return;}
 			FSH.inventory.killRow(self);
 		});
+		FSH.inventory.anotherSpinner(self);
 	},
 
 	sendItem: function() { // jQuery
-		var self = $(this).removeClass().qtip('hide');
+		var self = $(this);
+		FSH.inventory.removeClass(self);
 		FSH.ajax.sendItem([self.data('inv')]).done(function(data){
 			if (data.r === 1) {return;}
 			FSH.inventory.killRow(self);
 		});
+		FSH.inventory.anotherSpinner(self);
 	},
 
 };
@@ -5463,19 +5506,26 @@ FSH.logs = { // Legacy
 				aRow.style.color = 'gray';
 			}
 
-			if (aRow.cells[2].textContent.charAt(0) === '\'' ||
-				aRow.cells[2].textContent.search('has invited the player') !== -1) {
+			var hasInvited = aRow.cells[2].textContent
+				.search('has invited the player') !== -1;
+
+			if (aRow.cells[2].textContent.charAt(0) === '\'' || hasInvited) {
 				var message = aRow.cells[2].innerHTML;
 				var firstQuote = message.indexOf('\'');
 				var firstPart = '';
 				firstPart = message.substring(0,firstQuote);
-				var secondQuote = message.indexOf('\'',firstQuote+1);
-				var targetPlayerName = message.substring(firstQuote+1,secondQuote);
+				var secondQuote = message.indexOf('\'', firstQuote + 1);
+				var targetPlayerName = message.substring(firstQuote + 1, secondQuote);
 				aRow.cells[2].innerHTML = firstPart + '\'' +
 					'<a href="index.php?cmd=findplayer&search_active=1&' +
 					'search_level_max=&search_level_min=&search_username=' +
 					targetPlayerName + '&search_show_first=1">' + targetPlayerName +
 					'</a>' + message.substring(secondQuote, message.length);
+				if (!hasInvited &&
+					targetPlayerName !== $('dt#statbar-character').text()) {
+					$(aRow).find('td').removeClass('row').css('font-size', 'xx-small');
+					aRow.style.color = 'gray';
+				}
 			}
 
 		}
@@ -11804,6 +11854,17 @@ FSH.arena = { // jQuery
 		$('div.dataTables_filter').hide();
 		tabs.on('click', 'td[class*="sorting"]', FSH.arena.sortHandler);
 
+		tabs.on('click', 'input.custombutton[type="submit"]', FSH.arena.dontPost);
+
+	},
+
+	dontPost: function(e) { // jQuery
+		e.preventDefault();
+		var self = $(this);
+		var pvpId = self.prev().val();
+		var subcmd = self.prev().prev().val();
+		window.location = 'index.php?cmd=arena&subcmd=' + subcmd +
+			'&pvp_id=' + pvpId;
 	},
 
 	redoHead: function() { // jQuery
@@ -11965,6 +12026,123 @@ FSH.arena = { // jQuery
 		$('div#arenaTypeTabs table[width="635"]').DataTable().draw();
 	},
 
+	setupMoves: function() { // jQuery
+		var node = $('#pCC b:contains("Setup Combat Moves")');
+		if (node.length !== 1) {return;}
+		node.addClass('fshLink fshGreen');
+		node.click(FSH.arena.selectMoves);
+	},
+
+	moveOptions:
+		'<td colspan=3 ' +
+		'style="padding-top: 2px;padding-bottom: 2px;">' +
+		'<select style="max-width: 50px;">' +
+		'<option value="x">Basic Attack</option>' +
+		'<option value="0">Block</option>' +
+		'<option value="1">Counter Attack</option>' +
+		'<option value="2">Critical Hit</option>' +
+		'<option value="3">Defend</option>' +
+		'<option value="4">Deflect</option>' +
+		'<option value="5">Dodge</option>' +
+		'<option value="6">Lunge</option>' +
+		'<option value="7">Power Attack</option>' +
+		'<option value="8">Spin Attack</option>' +
+		'<option value="9">Piercing Strike</option>' +
+		'<option value="10">Crush</option>' +
+		'<option value="11">Weaken</option>' +
+		'<option value="12">Ice Shard</option>' +
+		'<option value="13">Fire Blast</option>' +
+		'<option value="14">Poison</option>' +
+		'</select></td>',
+
+		oldMoves: [],
+
+	selectMoves: function() {
+		$(this).off();
+
+		var nodes =
+			$('#pCC a[href^="index.php?cmd=arena&subcmd=pickmove&slot_id="] img');
+		FSH.arena.nodes = nodes;
+		var table = nodes.eq(0).closest('table').parent().closest('table');
+
+		var row = $('<tr/>');
+		FSH.arena.selectRow = row;
+		row.append('<td/>');
+		nodes.each(function() {
+			var move = $(this).attr('src');
+			if (move.indexOf('bar_icon_holder.jpg') > 0) {
+				move = 'x';
+			} else {
+				move = move.match(/pvp\/(\d+).gif$/)[1];
+			}
+			FSH.arena.oldMoves.push(move);
+			var html = $(FSH.arena.moveOptions);
+			$('option[value=' + move + ']', html).prop('selected', true);
+			row.append(html);
+		});
+		table.append(row);
+
+		$('img[src$="pvp/bar_spacer.jpg"]', table)
+			.attr({'width': '15', 'height': '50'});
+
+		row = $('<tr><td colspan=32 align=center ' +
+			'style="padding-top: 2px;padding-bottom: 2px;">' +
+			'<input class="custombutton" value="Update" type="button">' +
+			'</td></tr>');
+		$('input', row).click(FSH.arena.updateMoves);
+		table.append(row);
+	},
+
+	updateMoves: function() {
+		var oldMoves = FSH.arena.oldMoves;
+		var newMoves = [];
+		$('select', FSH.arena.selectRow).each(function() {
+				newMoves.push($(this).val());
+		});
+		var prm = [];
+		newMoves.forEach(function(val, ind) {
+			if (val === oldMoves[ind]) {return;}
+			prm.push(FSH.ajax.doPickMove('x', ind));
+			FSH.arena.nodes.eq(ind).attr({
+				'src': FSH.System.imageServer + '/world/actionLoadingSpinner.gif',
+				'width': '25',
+				'height': '25'
+			});
+		});
+		$.when.apply($, prm).done(function() {
+			newMoves.forEach(function(val, ind) {
+				if (val === 'x' || val === oldMoves[ind]) {return;}
+				prm.push(FSH.ajax.doPickMove(val, ind));
+			});
+			$.when.apply($, prm).done(function() {
+				window.location = 'index.php?cmd=arena&subcmd=setup';
+				// console.log('Finished!');
+			});
+		});
+	},
+
+	completedArenas: function() { // Legacy
+		var prevButton = $('#pCC input[value="<"]');
+		var nextButton = $('#pCC input[value=">"]');
+		if (prevButton.length === 1) {
+			var startButton = $('<input value="<<" type="button">');
+			prevButton.before(startButton).before('&nbsp;');
+			startButton.click(function() {FSH.arena.gotoPage(1);});
+		}
+		if (nextButton.length === 1) {
+			var lastPage = $('#pCC input[value="Go"]').closest('td').prev().text()
+				.replace(/\D/g,'');
+			var finishButton = $('<input value=">>" type="button">');
+			nextButton.after(finishButton).after('&nbsp;');
+			finishButton.click(function() {FSH.arena.gotoPage(lastPage);});
+		}
+		$('#pCC input[value="View"]').click(FSH.arena.dontPost);
+	},
+
+	gotoPage: function(pageId) {
+		window.location = 'index.php?cmd=arena&subcmd=completed&page=' + pageId;
+	},
+
 };
 
 FSH.combatLog = { // Native
@@ -12074,7 +12252,6 @@ FSH.newMap = { // Hybrid
 		});
 
 	},
-
 
 	subscribes: function() { // jQuery
 
@@ -12422,8 +12599,21 @@ FSH.newMap = { // Hybrid
 		}
 	},
 
+};
 
+FSH.guide = {
 
+	allowBack: function () {
+		$('body').on('click', 'input[type="submit"]', function(e) {
+			e.preventDefault();
+			var url = 'index.php?';
+			$('input[type!="submit"], select').each(function() {
+				var self = $(this);
+				url += '&' + self.attr('name') + '=' + self.val();
+			});
+			window.location = url;
+		});
+	},
 
 };
 

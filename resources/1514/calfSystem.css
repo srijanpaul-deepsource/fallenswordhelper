@@ -205,7 +205,7 @@ div#quickbuff div.buff-block p label.fshDim span {
   background-position: -270px -80px;
 }
 
-select.moveItem {font-size: xx-small;}
+select.moveItem {font-size: xx-small; border: none; height: 11px;}
 
 table#fshBazaar {font-size: x-small;}
 table#fshBazaar span#warning {color: red; font-size: small}
