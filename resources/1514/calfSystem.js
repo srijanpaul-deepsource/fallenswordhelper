@@ -2457,8 +2457,11 @@ FSH.notification = { // jQuery
 FSH.guildReport = { // Legacy
 
 	injectReportPaint: function() { // jQuery
+		var container = $('div#pCC > table > tbody > tr > td').last();
+		var innerTable = $('table', container);//.detach();
 		FSH.ajax.getMembrList(false)
-			.done(FSH.guildReport.doReportPaint);
+			.done(function() {FSH.guildReport.reportHeader(innerTable);});
+		FSH.guildReport.doReportPaint(innerTable);
 	},
 
 	reportHeader: function(innerTable) { // jQuery
@@ -2476,9 +2479,7 @@ FSH.guildReport = { // Legacy
 		});
 	},
 
-	doReportPaint: function() { // jQuery
-		var container = $('div#pCC > table > tbody > tr > td').last();
-		var innerTable = $('table', container).detach();
+	doReportPaint: function(innerTable) { // jQuery
 		var rows = $('tr', innerTable);
 
 		var searchUser = FSH.System.getUrlParameter('user');
@@ -2486,8 +2487,10 @@ FSH.guildReport = { // Legacy
 			var userNode = $('b:contains("' + searchUser + '")', innerTable);
 			if (userNode.length > 0) {
 				userNode.closest('tr').prevAll().remove();
-				$('a[href*="_id=' + FSH.Helper.membrList[searchUser].id + '&"]',
-					innerTable).last().closest('tr').nextAll().remove();
+				var otherUsers = $('b', innerTable);
+				if (otherUsers.length > 1) {
+					otherUsers.eq(1).closest('tr').prev().nextAll().remove();
+				}
 			}
 		}
 
@@ -2500,7 +2503,6 @@ FSH.guildReport = { // Legacy
 			}).remove();
 		}
 
-		FSH.guildReport.reportHeader(innerTable);
 		FSH.guildReport.reportChild(innerTable);
 
 		innerTable.on('click', 'span.a-reply', function(evt) {
@@ -2512,7 +2514,7 @@ FSH.guildReport = { // Legacy
 		innerTable.on('click', '.equip',
 			FSH.common.equipProfileInventoryItem);
 
-		container.append(innerTable);
+		// container.append(innerTable);
 	},
 
 	reportChild: function(innerTable) { // jQuery
@@ -11689,116 +11691,6 @@ FSH.oldRelic = { // Legacy - Old map
 			defGuildBuffedDamageValue - terrorizeEffectValue));
 
 		processingStatus.html('Done.');
-	},
-
-};
-
-FSH.oldArena = { // Legacy
-
-	storeCompletedArenas: function() { // Legacy
-		//fix button class and add go to first and last
-		var prevButton = FSH.System.findNode('//input[@value="<"]');
-		var nextButton = FSH.System.findNode('//input[@value=">"]');
-		if (prevButton) {
-			prevButton.setAttribute('class', 'custombutton');
-			var startButton = document.createElement('input');
-			startButton.setAttribute('type', 'button');
-			startButton.setAttribute('onclick', prevButton.getAttribute('onclick').replace(/\&page=[0-9]*/, '&page=1'));
-			startButton.setAttribute('class', 'custombutton');
-			startButton.setAttribute('value', '<<');
-			prevButton.parentNode.insertBefore(startButton,prevButton);
-		}
-		if (nextButton) {
-			nextButton.setAttribute('class', 'custombutton');
-			var lastPageNode=FSH.System.findNode('//input[@value="Go"]/../preceding-sibling::td');
-			var lastPage = lastPageNode.textContent.replace(/\D/g,'');
-			var finishButton = document.createElement('input');
-			finishButton.setAttribute('type', 'button');
-			finishButton.setAttribute('onclick', nextButton.getAttribute('onclick').replace(/\&page=[0-9]*/, '&page=' + lastPage));
-			finishButton.setAttribute('class', 'custombutton');
-			finishButton.setAttribute('value', '>>');
-			nextButton.parentNode.insertBefore(finishButton, nextButton.nextSibling);
-		}
-	},
-
-	injectArenaSetupMove: function() { // Legacy
-		var node=FSH.System.findNode('//b[.="Setup Combat Moves"]');
-		if (!node) {return;}
-		node.style.textDecoration = 'underline';
-		node.style.color = 'green';
-		node.style.cursor= 'pointer';
-		node.addEventListener('click', FSH.oldArena.changeArenaMove, true);
-	},
-
-	changeArenaMove: function() { // Legacy
-		if (document.getElementById('updateMv')) {return;}
-		var nodes = FSH.System.findNodes('//a[contains(@href,"index.php?cmd=arena&subcmd=pickmove&slot_id=")]');
-		var table = nodes[0].parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
-		var imgs = FSH.System.findNodes('//img[contains(@src,"pvp/bar_spacer.jpg")]');
-
-		// selection row
-		var row=table.insertRow(-1);
-		var html='<td></td>';
-		var arr=['BL', 'CA','CH','DD','DF','DG', 'LG','PA','SA','PS','CR', 'WK'];
-		//         0     1    2    3    4    5     6    7    8    9   10    11
-		var i;
-		var select = '<option value=x>BA</option>';
-		for (i=0; i<arr.length; i += 1) {
-			select += '<option value='+i+'>'+arr[i]+'</option>';
-		}
-		for (i=0; i<nodes.length; i += 1) {
-			var s=select;
-			var m=nodes[i].firstChild.getAttribute('src');
-			if (m.indexOf('bar_icon_holder.jpg')>0) {
-				m='x';
-			} else {
-				m=m.match(/pvp\/(\d+).gif$/)[1];
-			}
-			html += '<td colspan=3><select id=mv'+i+'>'+s.replace('value='+m+'>','value='+m+' selected>')+'</select></td>';
-		}
-		row.innerHTML = html;
-
-		// img row
-		for (i=0; i<imgs.length; i += 1) {
-			imgs[i].width=15;
-			imgs[i].height=50;
-		}
-
-		// action row
-		row=table.insertRow(-1);
-		row.innerHTML='<td colspan=31 align=center><input id=updateMv type=button class=custombutton value=Update name=updateMoves></td>';
-		document.getElementById('updateMv').addEventListener('click', FSH.oldArena.updateMove, true);
-	},
-
-	updateMove: function(evt, moves) { // Legacy
-		var mv=[], oldmv=[];
-		for (var i=0; i<10; i += 1) {
-			mv.push(document.getElementById('mv'+i).value);
-		}
-		if (moves) {mv = moves;}
-		var nodes = FSH.System.findNodes('//a[contains(@href,"index.php?cmd=arena&subcmd=pickmove&slot_id=")]');
-		for (i=0; i<nodes.length; i += 1) {
-			var m=nodes[i].firstChild.getAttribute('src');
-			if (m.indexOf('bar_icon_holder.jpg')>0) {
-				m='x';
-			} else {
-				m=m.match(/pvp\/(\d+).gif$/)[1];
-			}
-			oldmv.push(m);
-		}
-		for (i=0; i<10; i += 1) {
-			if (mv[i] !== oldmv[i]) {
-				FSH.System.xmlhttp('index.php?cmd=arena&subcmd=dopickmove&move_id=x&slot_id='+i);
-			}
-		}
-		setTimeout(function() {
-			for (i=0; i<10; i += 1) {
-				if (mv[i] !== oldmv[i] && mv[i] !== 'x') {
-					FSH.System.xmlhttp('index.php?cmd=arena&subcmd=dopickmove&move_id='+mv[i]+'&slot_id='+i);
-				}
-			}
-			setTimeout(function() {location.reload();}, 500);
-		}, 500); // TODO OMG!
 	},
 
 };
