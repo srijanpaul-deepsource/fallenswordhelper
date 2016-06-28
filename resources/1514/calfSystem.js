@@ -1362,7 +1362,8 @@ FSH.Data = {
 		shops: {'-': {'-': {'-': {'-': 'guide.allowBack'}}}}, //UFSG
 		scavenging: {'process': {'-': {'-': {'-': 'scavenging.injectScavenging'}}}}, // No longer in use???
 		temple: {'-': {'-': {'-': {'-': 'notification.parseTemplePage'}}}},
-		composing: {'-': {'-': {'-': {'-': 'composing.injectComposing'}}}},
+		composing: {'-': {'-': {'-': {'-': 'composing.injectComposing'}}},
+			'create': {'-': {'-': {'-': 'composing.create'}}}},
 		'-': {'-': {'-': {'-': {'-': 'environment.unknownPage'}}}}
 	},
 
@@ -2286,6 +2287,7 @@ FSH.composing = { // jQuery
 	},
 
 	injectComposing: function() { //jquery
+
 		if ($('div#pCC').length !== 1) {return;}
 		if (FSH.Helper.enableComposingAlert) {
 			FSH.composing.parseComposing();}
@@ -2335,7 +2337,21 @@ FSH.composing = { // jQuery
 					//~ location.href = 'index.php?cmd=composing';
 				//~ }
 			});
-	}
+	},
+
+	create: function() {
+
+		$('#composing-add-skill').on('click', function() {
+			$('#composing-skill-level-input')
+				.val($('#composing-skill-level-max').text());
+		});
+
+		$('#composing-skill-select').on('change', function() {
+			$('#composing-skill-level-input')
+				.val($('#composing-skill-level-max').text());
+		});
+
+	},
 
 };
 
