@@ -1086,6 +1086,8 @@ FSH.Data = {
 		hideLegendaryGroup: false,
 		disableDeactivatePrompts: false,
 
+		monsterLog: '{}',
+
 	},
 
 	saveBoxes: [
@@ -1227,7 +1229,7 @@ FSH.Data = {
 		settings: {'-': {'-': {'-': {'-': 'settingsPage.injectSettings'}}}},
 		world: {
 			'-': {'-': {'-': {'-': 'injectWorld'}}},
-			'viewcreature': {'-': {'-': {'-': 'injectCreature'}}},
+			// 'viewcreature': {'-': {'-': {'-': 'injectCreature'}}}, // Old Map
 			'map': {'-': {'-': {'-': 'injectWorldMap'}}}},
 		news: {
 			'fsbox': {'-': {'-': {'-': 'news.newsFsbox'}}},
@@ -1236,6 +1238,7 @@ FSH.Data = {
 			'repairall': {'-': {'-': {'1': 'injectWorld'}}}},
 		arena: {
 			'-': {'-': {'-': {'-': 'arena.inject'}}},
+			'join': {'-': {'-': {'-': 'arena.inject'}}},
 			'completed': {'-': {'-': {'-': 'arena.completedArenas'}}},
 			'pickmove': {'-': {'-': {'-': 'arena.storeMoves'}}},
 			'setup': {'-': {'-': {'-': 'arena.setupMoves'}}}
@@ -2640,10 +2643,7 @@ FSH.guildReport = { // Legacy
 FSH.guildAdvisor = { // jQuery
 
 	injectAdvisor: function() { // Native
-		FSH.Helper.appendHead({
-			js: [FSH.resources.dataTablesLoc],
-			callback: FSH.guildAdvisor.dataTablesLoaded
-		});
+		FSH.guildAdvisor.dataTablesLoaded();
 	},
 
 	dataTablesLoaded: function() { // jQuery
@@ -3315,10 +3315,7 @@ FSH.inventory = { // jQuery
 
 	injectInventoryManagerNew: function() { // jQuery
 		FSH.inventory.doSpinner();
-		FSH.Helper.appendHead({
-			js: [FSH.resources.dataTablesLoc],
-			callback: FSH.inventory.syncInvMan
-		});
+		FSH.inventory.syncInvMan();
 	},
 
 	syncInvMan: function() { // jQuery
@@ -3428,7 +3425,8 @@ FSH.inventory = { // jQuery
 				{title: 'Where', data: FSH.inventory.whereData,
 					render: {
 						'_': FSH.inventory.whereRender,
-						'display': FSH.inventory.whereRenderDisplay
+						'display': FSH.inventory.whereRenderDisplay,
+						'filter': FSH.inventory.whereRenderFilter
 					}
 				},
 				{title: 'Type', data: 'type',
@@ -3445,9 +3443,8 @@ FSH.inventory = { // jQuery
 						'_': function(craft) {
 							return FSH.Data.craft[craft] ? FSH.Data.craft[craft].index : 0;
 						},
-						'display': function(craft) {
-							return FSH.Data.craft[craft] ? FSH.Data.craft[craft].abbr : '';
-						}
+						'display': FSH.inventory.craftRender,
+						'filter': FSH.inventory.craftRender
 					}
 				},
 				{title: 'Du%', data: 'durability',
@@ -3534,6 +3531,10 @@ FSH.inventory = { // jQuery
 		}
 	},
 
+	craftRender: function(craft) {
+		return FSH.Data.craft[craft] ? FSH.Data.craft[craft].abbr : '';
+	},
+
 	whereData: function(row) { // Native
 		return row.folder_id || row.player_id;
 	},
@@ -3547,16 +3548,13 @@ FSH.inventory = { // jQuery
 	},
 
 	whereRenderDisplay: function(data, type, row) { // Native
-
 		if (row.player_id) {
 			return row.player_id === -1 ? 'GS' :
 				'<a class="fshMaroon" href="index.php?cmd=profile&player_id=' +
 				row.player_id + '">' +
 				FSH.Helper.membrList[row.player_id].username + '</a>';
 		}
-
 		if (row.equipped) {return 'Worn';}
-
 		var folderSelect = '<select class="moveItem" data-inv="' + row.inv_id +
 			'">';
 		var keysArray = Object.keys(FSH.Helper.inventory.folders)
@@ -3568,7 +3566,15 @@ FSH.inventory = { // jQuery
 		});
 		folderSelect += '</select>';
 		return folderSelect;
+	},
 
+	whereRenderFilter: function(data, type, row) { // Native
+		if (row.player_id) {
+			return row.player_id === -1 ? 'GS' :
+				FSH.Helper.membrList[row.player_id].username;
+		}
+		if (row.equipped) {return 'Worn';}
+		return FSH.Helper.inventory.folders[row.folder_id];
 	},
 
 	bpRender: function(where, type, row) { // Native
@@ -3814,10 +3820,12 @@ FSH.inventory = { // jQuery
 	killRow:function(self) { // jQuery
 		var tr = self.closest('tr');
 		var td = $('td', tr);
-		td.eq(2).empty();
-		td.eq(12).empty();
-		td.eq(13).empty();
-		td.eq(14).empty();
+		td.eq(2).empty(); // Where
+		td.eq(12).empty(); // BP - GS
+		td.eq(13).empty(); // GS - W/U
+		td.eq(14).empty(); // W/U - Tag
+		td.eq(15).empty(); // Tag - Drop
+		td.eq(16).empty(); // ? - Send
 		tr.css('text-decoration', 'line-through');
 	},
 
@@ -6029,10 +6037,7 @@ FSH.onlinePlayers = { // Bad jQuery
 
 	injectOnlinePlayers: function(content) { // jQuery
 		FSH.Helper.context = content ? $(content) : $('div#pCC');
-		FSH.Helper.appendHead({
-			js: [FSH.resources.dataTablesLoc],
-			callback: FSH.onlinePlayers.injectOnlinePlayersNew
-		});
+		FSH.onlinePlayers.injectOnlinePlayersNew();
 	},
 
 	injectOnlinePlayersNew: function () { // jQuery
@@ -11730,40 +11735,35 @@ FSH.arena = { // jQuery
 		});
 	},
 
-	inject: function() { // Native
-		FSH.Helper.appendHead({
-			js: [FSH.resources.dataTablesLoc],
-			callback: FSH.arena.dataTablesLoaded
-		});
-	},
-
-	dataTablesLoaded: function() { // jQuery
+	inject: function() { // jQuery
+		FSH.arena.tabs = $('div#arenaTypeTabs');
+		console.log('FSH.arena.tabs', FSH.arena.tabs);
+		if (FSH.arena.tabs.length !== 1) {return;} // Join error screen
+		FSH.arena.theTables = $('table[width="635"]', FSH.arena.tabs);
 		FSH.ajax.getForage('fsh_arena').done(FSH.arena.process);
 	},
 
-	process: function(arena) { // jQuery
+	dataTablesLoaded: function() { // jQuery
+		FSH.arena.lvlFilter();
+		FSH.arena.theTables.DataTable(FSH.arena.tableOpts);
+		$('td[class*="sorting"]', FSH.arena.tabs).off('click');
+		$('div.dataTables_filter').hide();
+		FSH.arena.tabs.on('click', 'td[class*="sorting"]',
+			FSH.arena.sortHandler);
+		FSH.arena.tabs.on('click', 'input.custombutton[type="submit"]',
+			FSH.arena.dontPost);
+	},
 
+	process: function(arena) { // jQuery
+		FSH.arena.theTables.each(FSH.arena.redoHead);
 		FSH.arena.opts = arena || {};
 		FSH.arena.oldIds = FSH.arena.opts.id || {};
 		FSH.arena.opts.id = {};
-		var tabs = $('div#arenaTypeTabs');
-		var theTables = $('table[width="635"]', tabs);
-		theTables.each(FSH.arena.redoHead);
-		var myRows = theTables.children('tbody').children('tr');
+		var myRows = FSH.arena.theTables.children('tbody').children('tr');
 		myRows.each(FSH.arena.orderData);
-
-		FSH.ajax.setForage('fsh_arena', FSH.arena.opts);
-
 		FSH.arena.filterHeader();
-		FSH.arena.lvlFilter();
-
-		theTables.DataTable(FSH.arena.tableOpts);
-		$('td[class*="sorting"]', tabs).off('click');
-		$('div.dataTables_filter').hide();
-		tabs.on('click', 'td[class*="sorting"]', FSH.arena.sortHandler);
-
-		tabs.on('click', 'input.custombutton[type="submit"]', FSH.arena.dontPost);
-
+		FSH.ajax.setForage('fsh_arena', FSH.arena.opts);
+		FSH.arena.dataTablesLoaded();
 	},
 
 	dontPost: function(e) { // jQuery
@@ -12163,8 +12163,6 @@ FSH.newMap = { // Hybrid
 
 	subscribes: function() { // jQuery
 
-		FSH.newMap.debugEvents();
-
 		if (FSH.System.getValue('sendGoldonWorld')) {
 			FSH.newMap.injectSendGoldOnWorld();
 		}
@@ -12173,15 +12171,14 @@ FSH.newMap = { // Hybrid
 		FSH.Helper.doNotKillList = FSH.System.getValue('doNotKillList');
 
 		// subscribe to view creature events on the new map.
-		// 1-success.action-response
-		$.subscribe('1-success.action-response', function(e, data) {
-			console.log('data', data);
-		});
 		$.subscribe('ready.view-creature', FSH.newMap.readyViewCreature);
-		// $.subscribe('1-success.action-response', FSH.newMap.readyViewCreature);
 
 		// Hide Create Group button
 		FSH.newMap.hideGroupButton();
+
+		if (FSH.System.getValue('enableCreatureColoring')) {
+			$.subscribe('after-update.actionlist', FSH.newMap.colorMonsters);
+		}
 
 		// add do-not-kill list functionality
 		$.subscribe('after-update.actionlist', FSH.newMap.afterUpdateActionList);
@@ -12319,23 +12316,23 @@ FSH.newMap = { // Hybrid
 	hideGroupButton: function() { // jQuery
 		if (FSH.System.getValue('hideChampionsGroup')) {
 			$.subscribe('after-update.actionlist',
-				function() {$('li.creature-1 a.create-group').hide();});
+				function() {$('ul#actionList li.creature-1 a.create-group').hide();});
 		}
 		if (FSH.System.getValue('hideElitesGroup')) {
 			$.subscribe('after-update.actionlist',
-				function() {$('li.creature-2 a.create-group').hide();});
+				function() {$('ul#actionList li.creature-2 a.create-group').hide();});
 		}
 		if (FSH.System.getValue('hideSEGroup')) {
 			$.subscribe('after-update.actionlist',
-				function() {$('li.creature-3 a.create-group').hide();});
+				function() {$('ul#actionList li.creature-3 a.create-group').hide();});
 		}
 		if (FSH.System.getValue('hideTitanGroup')) {
 			$.subscribe('after-update.actionlist',
-				function() {$('li.creature-4 a.create-group').hide();});
+				function() {$('ul#actionList li.creature-4 a.create-group').hide();});
 		}
 		if (FSH.System.getValue('hideLegendaryGroup')) {
 			$.subscribe('after-update.actionlist',
-				function() {$('li.creature-5 a.create-group').hide();});
+				function() {$('ul#actionList li.creature-5 a.create-group').hide();});
 		}
 	},
 
@@ -12505,6 +12502,12 @@ FSH.newMap = { // Hybrid
 						FSH.System.setValue('huntingMode', FSH.Helper.huntingMode);
 					}, true);
 		}
+	},
+
+	colorMonsters: function() {
+		$('ul#actionList li.creature-1').css('color','green');
+		$('ul#actionList li.creature-2').css('color','yellow');
+		$('ul#actionList li.creature-3').css('color','red');
 	},
 
 };

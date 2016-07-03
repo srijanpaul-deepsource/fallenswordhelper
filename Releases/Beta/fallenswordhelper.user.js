@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1514b7
+// @version        1514b8
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -32,7 +32,7 @@ FSH.resources = {
 };
 
 if (typeof GM_info === 'undefined') {
-	FSH.version = '1514b7';
+	FSH.version = '1514b8_native';
 } else {
 	FSH.version = GM_info.script.version;
 }
@@ -591,7 +591,6 @@ FSH.Helper = {
 		}
 
 		if (buttonRow && FSH.System.getValue('sendGoldonWorld')){
-			//document.getElementById('Helper:PortalToStart').addEventListener('click', FSH.Helper.portalToStartArea, true);
 			document.getElementById('Helper:SendGold').addEventListener('click', FSH.Helper.sendGoldToPlayer, true);
 		}
 		if (buttonRow && !FSH.System.getValue('hideKrulPortal')) {
@@ -688,19 +687,6 @@ FSH.Helper = {
 
 			}
 
-			// if (FSH.System.getValue('showFastWalkIconOnWorld')) {
-				// var enableFastWalk = FSH.System.getValue('enableFastWalk');
-				// imgSource = enableFastWalk === true ? FSH.Data.runIcon : FSH.Data.stopIcon;
-				// altText = enableFastWalk === true ? 'FastWalk mode is ON' : 'FastWalk mode is OFF';
-				// mapName.innerHTML += ' <a href=# id="Helper:ToggleFastWalkMode"><img title="' + altText + '" src="' + imgSource + '" border=0 width=10 height=10/></a>';
-				// document.getElementById('Helper:ToggleFastWalkMode').addEventListener('click',
-					// function() {
-						// FSH.System.setValue('enableFastWalk',
-							// !FSH.System.getValue('enableFastWalk'));
-						// location.reload();
-					// },true);
-			// }
-
 			document.getElementById('Helper:ToggleHuntingMode').addEventListener('click',
 				function() {
 					FSH.System.setValue('huntingMode',
@@ -745,16 +731,8 @@ FSH.Helper = {
 	},
 
 	sendGoldToPlayer: function(){
-//		var injectHere = FSH.System.findNode('//div[table[@class="centered" and @style="width: 270px;"]]');
-//		if (!injectHere) {return;}
 		var recipient = FSH.System.getValue('goldRecipient');
 		var amount = FSH.System.getValue('goldAmount');
-		//FSH.System.xmlhttp('index.php?cmd=trade');
-		// var xcNum = FSH.System.getValue('goldConfirm');
-		// if (xcNum === '') {
-			// alert('You have to visit the trade page once to use the send gold functionality');
-			// return;
-		// }
 		var url = 'index.php?cmd=trade&subcmd=sendgold&xc=' + window.ajaxXC +
 			'&target_username=' + recipient +'&gold_amount='+ amount;
 		FSH.System.xmlhttp(url, FSH.Helper.goldToPlayerSent,
@@ -788,7 +766,6 @@ FSH.Helper = {
 			var theMap = FSH.System.getValueJSON('map');
 			var realm = FSH.System.findNode('//h3[@id="world-realm-name"]');
 			if ($('h3#world-realm-name').data('realm')) {
-				// var realmId = $('h3#world-realm-name').data('realm').id.trim();
 				levelName = $('h3#world-realm-name').data('realm').name.trim();
 			}
 			if (!levelName) {levelName=realm.innerHTML;}
@@ -855,30 +832,7 @@ FSH.Helper = {
 	},
 
 	prepareCheckMonster: function() {
-		FSH.Helper.colorMonsters();
 		FSH.Helper.getMonsterInfo();
-	},
-
-	colorMonsters: function() {
-		if (!FSH.System.getValue('enableCreatureColoring')) {return;}
-		var monsters = FSH.System.findNodes('//a[contains(@href,"cmd=combat") and not(contains(@href,"max_turns="))]');
-		if (!monsters) {return;}
-		for (var i=0; i<monsters.length; i += 1) {
-			var monster = monsters[i];
-			if (monster) {
-				// add monster color based on elite types
-				var monsterText = monster.parentNode.parentNode.parentNode.cells[1];
-				if (monsterText.textContent.match(/\(Champion\)/i)) {
-					monsterText.style.color = 'green';
-				}
-				if (monsterText.textContent.match(/\(Elite\)/i)) {
-					monsterText.style.color = 'yellow';
-				}
-				if (monsterText.textContent.match(/\(Super Elite\)/i)) {
-					monsterText.style.color = 'red';
-				}
-			}
-		}
 	},
 
 	getMonsterInfo: function() {
@@ -886,7 +840,7 @@ FSH.Helper = {
 		var monsters = FSH.System.findNodes('//a[contains(@href,"cmd=world&' +
 			'subcmd=viewcreature&creature_id=")]');
 		if (!monsters) {return;}
-		for (var i=0; i<monsters.length; i += 1) {
+		for (var i = 0; i < monsters.length; i += 1) {
 			var monster = monsters[i];
 			if (monster) {
 				if (FSH.System.getValue('showMonsterLog')) {
@@ -902,30 +856,28 @@ FSH.Helper = {
 	},
 
 	showTipCreatureInfo: function(evt) {
-		var monster=evt.target.parentNode;
-		if (monster.getAttribute('mouseovertext') !== undefined) {
-			evt.target.removeEventListener('mouseover', FSH.Helper.showTipCreatureInfo, true);
-			return;
-		}
-		FSH.System.xmlhttp(monster.getAttribute('href'), FSH.Helper.checkedMonster, {'monster':monster,'showTip':true});
+		var monster = evt.target.parentNode;
+			monster.removeEventListener('mouseover', FSH.Helper.showTipCreatureInfo, true);
+		FSH.System.xmlhttp(monster.getAttribute('href'),
+			FSH.Helper.checkedMonster, {'monster':monster,'showTip':true});
 	},
 
 	checkedMonster: function(responseText, callback) {
-		var creatureInfo=FSH.System.createDocument(responseText);
+		var creatureInfo = FSH.System.createDocument(responseText);
 		var statsNode = FSH.System.findNode('//table[@width="400"]', creatureInfo);
 		if (!statsNode) {return;} // FF2 error fix
 		var showMonsterLog = FSH.System.getValue('showMonsterLog');
 		//store the stats
-		var classNode = statsNode.rows[1].cells[1];
-		var levelNode = statsNode.rows[1].cells[3];
-		var attackNode = statsNode.rows[2].cells[1];
-		var defenseNode = statsNode.rows[2].cells[3];
-		var armorNode = statsNode.rows[3].cells[1];
-		var damageNode = statsNode.rows[3].cells[3];
+		var classNode     = statsNode.rows[1].cells[1];
+		var levelNode     = statsNode.rows[1].cells[3];
+		var attackNode    = statsNode.rows[2].cells[1];
+		var defenseNode   = statsNode.rows[2].cells[3];
+		var armorNode     = statsNode.rows[3].cells[1];
+		var damageNode    = statsNode.rows[3].cells[3];
 		var hitpointsNode = statsNode.rows[4].cells[1];
-		var goldNode = statsNode.rows[4].cells[3];
-		var hitpoints = parseInt(hitpointsNode.textContent.replace(/,/g,''),10);
-		var armorNumber = parseInt(armorNode.textContent.replace(/,/g,''),10);
+		var goldNode      = statsNode.rows[4].cells[3];
+		var hitpoints = parseInt(hitpointsNode.textContent.replace(/,/g,''), 10);
+		var armorNumber = parseInt(armorNode.textContent.replace(/,/g,''), 10);
 		var combatEvaluatorBias = FSH.System.getValue('combatEvaluatorBias');
 		// var attackVariable = 1.1053
 		var generalVariable = 1.1053;
@@ -940,12 +892,13 @@ FSH.Helper = {
 			generalVariable = 1.1053;
 			hpVariable = 1;
 		}
-		var oneHitNumber = Math.ceil(hitpoints*hpVariable+armorNumber*generalVariable);
+		var oneHitNumber = Math.ceil(hitpoints * hpVariable + armorNumber *
+			generalVariable);
 
 		var hideRestOfRows = false;
 		var collectEnchantments = true;
 		var enchantmentsList = [];
-		for (var i=0; i<statsNode.rows.length; i += 1) {
+		for (var i = 0; i < statsNode.rows.length; i += 1) {
 			var enchantment = {};
 			var firstCell = statsNode.rows[i].cells[0];
 			var thirdCell = statsNode.rows[i].cells[2];
@@ -974,12 +927,12 @@ FSH.Helper = {
 			if (showMonsterLog && i >= 7 && collectEnchantments) { //first enchantment row
 				var ThisRowFirstCell = statsNode.rows[i].cells[0];
 				if (ThisRowFirstCell.textContent !== '[no enhancements]') {
-					var SecondNextRowFirstCell = statsNode.rows[i+2].cells[0];
+					var SecondNextRowFirstCell = statsNode.rows[i + 2].cells[0];
 					if (SecondNextRowFirstCell.textContent === 'Description') {
 						collectEnchantments = false;
 					}
 					enchantment.name = statsNode.rows[i].cells[0].textContent;
-					enchantment.value = statsNode.rows[i].cells[1].textContent*1;
+					enchantment.value = statsNode.rows[i].cells[1].textContent * 1;
 					enchantmentsList.push(enchantment);
 				} else {
 					collectEnchantments = false;
@@ -987,15 +940,19 @@ FSH.Helper = {
 			}
 		}
 
-		var imageTable = FSH.System.findNode('//table[tbody/tr/td/img[contains(@src, "/creatures/")]]', creatureInfo);
+		var imageTable = FSH.System.findNode(
+			'//table[tbody/tr/td/img[contains(@src, "/creatures/")]]', creatureInfo);
 		var imageNode = imageTable.rows[0].cells[0].firstChild;
-		var nameNode = imageTable.rows[1].cells[0].firstChild;
+		var nameNode  = imageTable.rows[1].cells[0].firstChild;
 		var imageNodeSRC = imageNode.src.replace(/.jpg(.*)/,'.jpg');
 
 		if (showMonsterLog) {
-			FSH.monstorLog.pushMonsterInfo({'key0':nameNode.textContent, 'key1':imageNodeSRC, 'key2':classNode.textContent, 'key3':levelNode.textContent,
-				'key4':attackNode.textContent, 'key5':defenseNode.textContent, 'key6':armorNode.textContent, 'key7':damageNode.textContent,
-				'key8':hitpointsNode.textContent, 'key9':goldNode.textContent, 'key10':enchantmentsList});
+			FSH.monstorLog.pushMonsterInfo({'key0':nameNode.textContent,
+				'key1':imageNodeSRC, 'key2':classNode.textContent,
+				'key3':levelNode.textContent, 'key4':attackNode.textContent,
+				'key5':defenseNode.textContent, 'key6':armorNode.textContent,
+				'key7':damageNode.textContent, 'key8':hitpointsNode.textContent,
+				'key9':goldNode.textContent, 'key10':enchantmentsList});
 		}
 
 		levelNode.innerHTML += ' (your level:<span style="color:yellow">' +
@@ -1018,14 +975,10 @@ FSH.Helper = {
 			'</span>)' +
 			'(1H: <span style="color:red">' + oneHitNumber + '</span>)';
 
-		callback.monster.setAttribute('mouseOverText', '<table>' +
+		$('img', callback.monster).qtip('api').set('content.text', '<table>' +
 			'<tr><td valign=top>' + imageNode.parentNode.innerHTML + '</td>' +
 			'<td rowspan=2>' + statsNode.parentNode.innerHTML + '</td></tr>' +
 			'<tr><td align=center valign=top>' + nameNode.innerHTML + '</td></tr></table>');
-		//fix me
-		callback.monster.setAttribute('mouseOverWidth', '600');
-		callback.monster.addEventListener('mouseover', FSH.Helper.clientTip, true);
-		if (callback.showTip) {FSH.Helper.clientTip({'target':callback.monster});}
 	},
 
 	backpackUpdater: function(count){
@@ -1366,12 +1319,10 @@ FSH.Helper = {
 				}
 				break;
 			default:
-				// console.log('special key: ' +s);
 				break;
 			}
 			break;
 		default:
-			// console.log('standard key: ' +r);
 			break;
 		}
 		//return true;
@@ -1404,7 +1355,6 @@ FSH.Helper = {
 
 	getKillStreak: function(responseText) {
 		var doc=FSH.System.createDocument(responseText);
-		//Kill&nbsp;Streak:&nbsp;
 		var killStreakLocation = $(doc).find('td:contains("Streak:"):last').next();
 		var playerKillStreakValue;
 		if (killStreakLocation.length > 0) {
@@ -1424,49 +1374,6 @@ FSH.Helper = {
 		var deathDealerPercentageElement = FSH.System.findNode('//span[@findme="damagebonus"]');
 		deathDealerPercentageElement.innerHTML = deathDealerPercentage;
 		FSH.System.setValue('lastDeathDealerPercentage', deathDealerPercentage);
-	},
-
-	injectCreature: function() { // Legacy - Old Map
-		FSH.System.xmlhttp('index.php?cmd=profile',
-			FSH.Helper.getCreaturePlayerData,
-			{	'groupExists': false,
-				'groupAttackValue': 0,
-				'groupDefenseValue': 0,
-				'groupArmorValue': 0,
-				'groupDamageValue': 0,
-				'groupHPValue': 0,
-				'groupEvaluation': false
-			}
-		);
-		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=groups',
-			FSH.Helper.checkIfGroupExists);
-
-		var creatureName =
-			FSH.System.findNode('//td[@align="center"]/font[@size=3]/b');
-		var doNotKillList = FSH.System.getValue('doNotKillList');
-		if (creatureName) {
-			creatureName.innerHTML += ' <a href="http://guide.fallensword.com/' +
-				'index.php?cmd=creatures&search_name=' + creatureName.textContent +
-				'&search_level_min=&search_level_max=&search_class=-1" ' +
-				'target="_blank">' +
-				'<img border=0 title="Search creature in Ultimate FSG" width=10 ' +
-				'height=10 src="' + FSH.System.imageServer + '/temple/1.gif"/></a>' +
-				' <a href="http://wiki.fallensword.com/index.php/Special:Search' +
-				'?search=' + creatureName.textContent + '&go=Go" target="_blank">' +
-				'<img border=0 title="Search creature in Wiki" width=10 ' +
-				'height=10 src="/favicon.ico"/></a>';
-			var extraText = 'Add to the do not kill list';
-			if (doNotKillList.indexOf(creatureName.textContent.trim()) !== -1) {
-				extraText = 'Remove from do not kill list';
-			}
-			creatureName.innerHTML += '&nbsp;<span style="cursor:pointer;' +
-				'text-decoration:underline;color:blue;font-size:x-small;" ' +
-				'id="addRemoveCreatureToDoNotKillList" creatureName="' +
-				creatureName.textContent.trim() + '">' + extraText + '</span>';
-			document.getElementById('addRemoveCreatureToDoNotKillList')
-				.addEventListener('click',
-					FSH.Helper.addRemoveCreatureToDoNotKillList, true);
-		}
 	},
 
 	addRemoveCreatureToDoNotKillList: function(evt) { // Native - Both Maps
@@ -2344,7 +2251,6 @@ FSH.Helper = {
 	},
 
 	useStairs: function() { //jquery
-		//cmd=world&subcmd=usestairs&stairway_id=1645&x=6&y=11
 		$('input[name="stairway_id"]:first').each(function(){
 			location.href = 'index.php?cmd=world&subcmd=usestairs&' +
 				'stairway_id=' + $(this).val();
@@ -2353,13 +2259,12 @@ FSH.Helper = {
 
 	appendHead: function(o) { // native
 		var count = 0;
-		var scriptTag, linkTag;
 		var scriptFiles = o.js || [];
 		var cssFiles = o.css || [];
 		var head = document.getElementsByTagName('head')[0];
 
 		cssFiles.forEach(function(c) {
-			linkTag = document.createElement('link');
+			var linkTag = document.createElement('link');
 			linkTag.type = 'text/css';
 			linkTag.rel = 'stylesheet';
 			linkTag.href = c;
@@ -2367,7 +2272,7 @@ FSH.Helper = {
 		});
 
 		scriptFiles.forEach(function(s) {
-			scriptTag = document.createElement('script');
+			var scriptTag = document.createElement('script');
 			scriptTag.type = 'text/javascript';
 			if (typeof o.callback === 'function') {
 				scriptTag.onload = function() {
@@ -2392,7 +2297,8 @@ FSH.Helper = {
 	var o = {
 		css: [FSH.resources.calfSystemCss],
 		js:  [FSH.resources.localForage,
-					FSH.resources.calfSystemJs],
+					FSH.resources.calfSystemJs,
+					FSH.resources.dataTablesLoc],
 		callback: FSH.Helper.onPageLoad
 	};
 	if (typeof window.jQuery === 'undefined') {
