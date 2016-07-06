@@ -397,7 +397,8 @@ FSH.System = {
 	},
 
 	openInTab: function(url){
-		setTimeout(function() {window.open(url, '');}, 0);
+		// setTimeout(function() {window.open(url, '');}, 0);
+		window.open(url, '_blank');
 	},
 
 	escapeHtml: function(unsafe) {
@@ -523,16 +524,16 @@ FSH.Data = {
 	},
 
 	huntingOnImage:
-		'<img title="Hunting mode is ON" src="' +
+		'<img class="tip-static" data-tipped="Hunting mode is ON" src="' +
 		'data:image/gif;base64,R0lGODlhKAAoALMAAD+yQH3Kf7zjvxCfEMvpzur17qzcr' +
 		'y+rMDCsMGLAY9vv3k64T5fUmh+lIPr7/gCZACH5BAAAAAAALAAAAAAoACgAAASsEL1J' +
 		'q704T6m7/2AojmRpnmiqrtQSBA2rDYJjO4mMBfd9YICXcAEoFn+eQs8WAAoDDIFiSRV' +
 		'YGROqwxAaELTVyXSZCx0ESrBNMFlYpY7CwOQFF67PAABZqqvBBHN9X39aXHSEhUsofo' +
 		'o3KY2OgieRhQAqAy8JAAZ/lzo1amUyoWBNoH+nMmlghzKFbDqwOgOKOgC2MriFkyq7n' +
-		'jIDRsPEvTrHyMnKy8zHHM0bEQA7' + '" border=0 width=10 height=10>',
+		'jIDRsPEvTrHyMnKy8zHHM0bEQA7' + '" border=0 width=15 height=15>',
 
 	huntingOffImage:
-		'<img title="Hunting mode is OFF" src="' +
+		'<img class="tip-static" data-tipped="Hunting mode is OFF" src="' +
 		'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtA' +
 		'AAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAA' +
 		'gOgAAHUwAADqYAAAOpgAABdwnLpRPAAAABh0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHY' +
@@ -543,11 +544,11 @@ FSH.Data = {
 		'BwyYrB7m5RPM4qsK5He5f8pytoG8DHMhY7tm/wZbPhwgQBnNC+opFDJgb0lUxC2BOyG' +
 		'KAuSCLAuaALA4IB9ROqAEj+bnVrALoOvHdYkLA7qmSrUhijT4F0L04VEAom3KGu81aR' +
 		'UFugWCefQNS+9P0V4DYjF1wrQtxBfT1w5QcbETB1Nu6eg5WQIkC0rUqbUYCWQEl6qmd' +
-		'xRLIJyPitjwjlrDgAAAAAElFTkSuQmCC' + '" border=0 width=10 height=10>',
+		'xRLIJyPitjwjlrDgAAAAAElFTkSuQmCC' + '" border=0 width=15 height=15>',
 
 	soundMuteImage:
-		'<img border=0 title="Turn Off Sound when you have a new log message' +
-		'" width=10 height=10 src="' +
+		'<img class="tip-static" data-tipped="Turn Off Sound when you have a' +
+		' new log message" width=15 height=15 src="' +
 		'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hA' +
 		'AAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJ' +
 		'ZTwAAAHNSURBVHjaYvz//z8DJQAggJgYKAQAAUS0Ad3dnZFtbS1P0cUBAoiFkMaenm7' +
@@ -562,8 +563,8 @@ FSH.Data = {
 		'AADFSmhsBAoji3AgQYAAwuNxkuZyGCwAAAABJRU5ErkJggg==' + '">',
 
 	soundImage:
-		'<img border=0 title="Turn On Sound when you have a new log message' +
-		'" width=10 height=10 src="' +
+		'<img class="tip-static" data-tipped="Turn On Sound when you have a ' +
+		'new log message" width=15 height=15 src="' +
 		'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hA' +
 		'AAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJ' +
 		'ZTwAAAI9SURBVHjaYvz//z8DJQAggJgYKAQAAYTTgO7uzsi2tpanhAwACCAWdIGenm7' +
@@ -813,15 +814,12 @@ FSH.Data = {
 		},
 
 	defaults: {
-		currentTile: '',
 		lastActiveQuestPage: '',
 		lastCompletedQuestPage: '',
 		lastNotStartedQuestPage: '',
-		questBeingTracked: '',
 		lastWorld: '',
 		questsNotStarted: false,
 		questsNotComplete: false,
-		checkForQuestsInWorld: false,
 		enableLogColoring: true,
 		enableChatParsing: true,
 		enableCreatureColoring: true,
@@ -846,14 +844,11 @@ FSH.Data = {
 		goldRecipient: '',
 		goldAmount: '',
 		sendGoldonWorld: false,
-		goldConfirm: '',
 
-		hideKrulPortal: false,
 		hideQuests: false,
 		hideQuestNames: '',
 		hideRecipes: false,
 		hideRecipeNames: '',
-		footprintsColor: 'silver',
 		enableGuildInfoWidgets: true,
 		enableOnlineAlliesWidgets: true,
 		guildOnlineRefreshTime: 300,
@@ -882,7 +877,6 @@ FSH.Data = {
 		moveOnlineAlliesList: false,
 
 		hideMatchesForCompletedMoves: false,
-		quickKill: false,
 		doNotKillList: '',
 		enableBioCompressor: true,
 		maxCompressedCharacters: 250,
@@ -1123,7 +1117,6 @@ FSH.Data = {
 		'hideGuildInfoBuff',
 		'hideGuildInfoSecureTrade',
 		'hideGuildInfoTrade',
-		'quickKill',
 		'huntingBuffs',
 		'huntingBuffsName',
 		'huntingBuffs2',
@@ -1134,13 +1127,10 @@ FSH.Data = {
 		'moveGuildList',
 		'moveOnlineAlliesList',
 		'moveFSBox',
-		'hideKrulPortal',
 		'hideQuests',
 		'hideQuestNames',
-		'checkForQuestsInWorld',
 		'hideRecipes',
 		'hideRecipeNames',
-		'footprintsColor',
 		'doNotKillList',
 		'enableBioCompressor',
 		'maxCompressedCharacters',
@@ -1228,9 +1218,10 @@ FSH.Data = {
 	pageSwitcher: {
 		settings: {'-': {'-': {'-': {'-': 'settingsPage.injectSettings'}}}},
 		world: {
-			'-': {'-': {'-': {'-': 'injectWorld'}}},
+		'-': {'-': {'-': {'-': 'injectWorld'}}},
 			// 'viewcreature': {'-': {'-': {'-': 'injectCreature'}}}, // Old Map
-			'map': {'-': {'-': {'-': 'injectWorldMap'}}}},
+			// 'map': {'-': {'-': {'-': 'injectWorldMap'}}} // Old Map
+		},
 		news: {
 			'fsbox': {'-': {'-': {'-': 'news.newsFsbox'}}},
 			'shoutbox': {'-': {'-': {'-': 'news.newsShoutbox'}}}},
@@ -1849,6 +1840,57 @@ FSH.Layout = {
 		'&nbsp;Max lvl:&nbsp;<input id="fshMaxLvl" size="5">&nbsp;&nbsp;' +
 		'<input id="fshReset" class="custombutton" type="button" ' +
 		'value="Reset"></span></td></tr></tbody></table>',
+
+	searchMapUFSG:
+		'<a href="http://guide.fallensword.com/index.php?cmd=realms&subcmd=view' +
+		'&realm_id=@@realmId@@" target="mapUFSG">' +
+			'<img class="tip-static" data-tipped="Search map in Ultimate FSG" ' +
+			'width=15 height=15 src="' + FSH.System.imageServer + '/temple/1.gif">' +
+		'</a>',
+
+	searchMapWiki:
+		'<a href="http://wiki.fallensword.com/index.php/Special:Search?search=' +
+		'@@realmName@@&go=Go" target="mapWiki">' +
+			'<img class="tip-static" data-tipped="Search map in Wiki" width=15 ' +
+			'height=15 src="/favicon.ico">' +
+		'</a>',
+
+	worldBackpack:
+		'<a href="index.php?cmd=profile&amp;subcmd=dropitems" ' +
+		'target="fsBackpack">' +
+			'<img class="tip-static" data-tipped="Manage Backpack" src="' +
+			FSH.System.imageServer +
+			'/skin/realm/icon_action_manageitems.gif" height=15 width=15>' +
+		'</a>',
+
+	worldRepair:
+		'<a href="#">' +
+			'<img class="tip-static" ' +
+			'data-tipped="Quick Repair All Items [Shortcut Key: r]" src="' +
+			FSH.System.imageServer +
+			'/skin/realm/icon_action_repair.gif" height=15 width=15>' +
+		'</a>',
+
+	worldFormgroup:
+		'<a href="#">' +
+			'<img class="tip-static" data-tipped="Quick Create Attack Group" src="' +
+			FSH.System.imageServer +
+			'/skin/realm/icon_action_formgroup.gif" height=15 width=15>' +
+		'</a>',
+
+	worldQuickBuff:
+		'<a href="#">' +
+			'<img class="tip-static" data-tipped="Open Quick Buff Popup" src="' +
+			FSH.System.imageServer +
+			'/skin/realm/icon_action_quickbuff.gif" height=15 width=15>' +
+		'</a>',
+
+	worldMap:
+		'<a href="index.php?cmd=world&subcmd=map" target="fsWorldMap">' +
+			'<img class="tip-static" data-tipped="Open Realm Map" src="' +
+			FSH.System.imageServer +
+			'/skin/realm/icon_action_map.gif" height=15 width=15>' +
+		'</a>',
 
 };
 
@@ -2958,6 +3000,16 @@ FSH.groups = { // Legacy
 			.done(FSH.groups.doGroupPaint);
 		FSH.groups.displayMinGroupLevel();
 		FSH.groups.groupButtons();
+		FSH.groups.fixTable();
+	},
+
+	fixTable: function() {
+		// Cows don't add!
+		var tds = $('#pCC td.header-dark');
+		tds.eq(0).attr('width', '20%');
+		tds.eq(1).attr('width', '51%');
+		tds.eq(2).attr('width', '22%');
+		tds.eq(3).attr('width', '7%');
 	},
 
 	doGroupPaint: function(m) { // jQuery
@@ -3767,7 +3819,7 @@ FSH.inventory = { // jQuery
 
 	anotherSpinner: function(self) {
 		self.empty().append('<img src="' + FSH.System.imageServer +
-			'/world/actionLoadingSpinner.gif" width="11" height="11">');
+			'/skin/loading.gif" width="11" height="11">');
 	},
 
 	wearItem: function() { // jQuery
@@ -5109,6 +5161,7 @@ FSH.profile = { // Legacy
 
 	interceptDebuff: function(e) {
 		e.preventDefault();
+		$(e.target).qtip('hide');
 		var self = $(this);
 		var buffId = self.attr('href').match(/(\d+)$/)[1];
 		FSH.ajax.debuff(buffId)
@@ -6603,36 +6656,43 @@ FSH.questBook = { // Legacy
 
 		var questTable = FSH.System.findNode('//table[tbody/tr/td[.="Guide"]]');
 		if (!questTable) {return;}
-		var hideQuests=[];
+		var hideQuests = [];
 		if (FSH.System.getValue('hideQuests')) {
-			hideQuests=FSH.System.getValue('hideQuestNames').split(',');}
-		for (var i=0;i<questTable.rows.length;i += 1) {
+			hideQuests = FSH.System.getValue('hideQuestNames').split(',');
+		}
+		for (var i = 1; i < questTable.rows.length; i += 1) {
 			var aRow = questTable.rows[i];
-			if (i!==0) {
-				if (aRow.cells[0].innerHTML) {
-					var questName = aRow.cells[0].firstChild.innerHTML.replace(/  /g,' ').trim();
-					if (hideQuests.indexOf(questName)>=0) {
-						aRow.parentNode.removeChild(aRow.nextSibling);
-						aRow.parentNode.removeChild(aRow.nextSibling);
-						aRow.parentNode.removeChild(aRow);
-					}
-					var questID = /quest_id=(\d+)/.exec(aRow.cells[4].innerHTML)[1];
-					aRow.cells[4].innerHTML = '<a href="http://guide.fallensword.com/index.php?cmd=quests&amp;subcmd=view&amp;quest_id=' + questID + '&amp;search_name=&amp;search_level_min=&amp;search_level_max=&amp;sort_by=" target="_blank">' +
-						'<img border=0 style="float:left;" title="Search quest in Ultimate FSG" src="' + FSH.System.imageServer + '/temple/1.gif"/></a>';
-					aRow.cells[4].innerHTML += '&nbsp;<a href="http://wiki.fallensword.com/index.php?title=' + questName.replace(/ /g,'_') + '" target="_blank">' +
-						'<img border=0 style="float:left;" title="Search for this quest on the Wiki" src="' + FSH.System.imageServer + '/skin/fs_wiki.gif"/></a>';
+			if (aRow.cells[0].innerHTML) {
+				var questName =
+					aRow.cells[0].firstChild.innerHTML.replace(/  /g,' ').trim();
+				if (hideQuests.indexOf(questName) >= 0) {
+					aRow.parentNode.removeChild(aRow.nextSibling);
+					aRow.parentNode.removeChild(aRow.nextSibling);
+					aRow.parentNode.removeChild(aRow);
 				}
+				var questID = /quest_id=(\d+)/.exec(aRow.cells[4].innerHTML)[1];
+				aRow.cells[4].innerHTML = '<a href="http://guide.fallensword.com/' +
+					'index.php?cmd=quests&amp;subcmd=view&amp;quest_id=' + questID +
+					'&amp;search_name=&amp;search_level_min=&amp;search_level_max=' +
+					'&amp;sort_by=" target="_blank">' +
+					'<img border=0 style="float:left;" title="Search quest in Ultimate' +
+					' FSG" src="' + FSH.System.imageServer + '/temple/1.gif"/></a>';
+				aRow.cells[4].innerHTML += '&nbsp;<a href="http://wiki.fallensword' +
+					'.com/index.php?title=' + questName.replace(/ /g,'_') +
+					'" target="_blank"><img border=0 style="float:left;" title="' +
+					'Search for this quest on the Wiki" src="' +
+					FSH.System.imageServer + '/skin/fs_wiki.gif"/></a>';
 			}
 		}
 	},
 
 	injectQuestTracker: function() { // Legacy
 		var injectHere = FSH.System.findNode('//td[font/b[.="Quest Details"]]');
-		var tracking = false;
-		tracking = FSH.Helper.isQuestBeingTracked(location.search);
 		var questId = document.location.search.match(/quest_id=(\d+)/)[1];
-		injectHere.innerHTML += '&nbsp;<a target="_blank" href="http://guide.fallensword.com/index.php?cmd=quests&subcmd=view&quest_id=' + questId +
-			'"><img border=0 title="Search quest in Ultimate FSG" src="'+ FSH.System.imageServer + '/temple/1.gif"/></a>';
+		injectHere.innerHTML += '&nbsp;<a target="_blank" href="http://guide.' +
+			'fallensword.com/index.php?cmd=quests&subcmd=view&quest_id=' + questId +
+			'"><img border=0 title="Search quest in Ultimate FSG" src="' +
+			FSH.System.imageServer + '/temple/1.gif"/></a>';
 		
 		var questName = FSH.System.findNode('//font[@size="2" and contains(.,"\'")]', injectHere);
 		if (questName) {
@@ -6640,51 +6700,17 @@ FSH.questBook = { // Legacy
 			questName = questName.match(/"(.*)"/);
 			if (questName && questName.length > 1) {
 				questName = questName[1];
-				injectHere.innerHTML += '&nbsp;<a href="http://wiki.fallensword.com/index.php?title=' + questName.replace(/ /g,'_') +
-					'" target="_blank"><img border=0 title="Search for this quest on the Fallensword Wiki" src=' + FSH.System.imageServer + '/skin/fs_wiki.gif /></a>';
+				injectHere.innerHTML += '&nbsp;<a href="http://wiki.fallensword.com' +
+					'/index.php?title=' + questName.replace(/ /g,'_') +
+					'" target="_blank"><img border=0 title="Search for this quest on ' +
+					'the Fallensword Wiki" src=' + FSH.System.imageServer +
+					'/skin/fs_wiki.gif /></a>';
 			}
 		}
 
-		if (tracking === true) {
-			injectHere.innerHTML += '<br><input id="dontTrackThisQuest" data="' + location.search + '" type="button" value="Stop Tracking Quest" title="Tracks quest progress." class="custombutton">';
-			document.getElementById('dontTrackThisQuest').addEventListener('click', FSH.questBook.dontTrackThisQuest, true);
-		} else {
-			injectHere.innerHTML += '<br><input id="trackThisQuest" type="button" value="Track Quest" title="Tracks quest progress." class="custombutton">';
-			document.getElementById('trackThisQuest').addEventListener('click', FSH.questBook.trackThisQuest, true);
-		}
 	},
 
-	trackThisQuest: function() { // Native
-		var currentTrackedQuest = FSH.System.getValue('questBeingTracked').split(';');
-		if (currentTrackedQuest.length > 0 && currentTrackedQuest[0].trim().length > 0) {
-			FSH.System.setValue('questBeingTracked', FSH.System.getValue('questBeingTracked') + ';' + location.search);
-		} else {
-		FSH.System.setValue('questBeingTracked', location.search);
-		}
-		location.reload();
-	},
-
-	dontTrackThisQuest: function(evt) { // Native
-		var questNotToTrack = evt.target.getAttribute('data');
-		var currentTrackedQuest = FSH.System.getValue('questBeingTracked').split(';');
-		if (currentTrackedQuest.length > 0) {
-			var newTracked = '';
-			for (var i = 0; i < currentTrackedQuest.length; i += 1) {
-				if (currentTrackedQuest[i] !== questNotToTrack) {
-					if (newTracked.trim().length > 0) {
-						newTracked += ';';
-					}
-					newTracked += currentTrackedQuest[i];
-				}
-			}
-			FSH.System.setValue('questBeingTracked', newTracked);
-		} else {
-		FSH.System.setValue('questBeingTracked', '');
-		}
-		location.reload();
-	},
-
-	showAllQuestSteps: function() { // jQuery
+	showAllQuestSteps: function() { // Hybrid
 		if (FSH.System.getValue('showNextQuestSteps')) {
 			$('div[id*="stage"]').show();
 			document.getElementById('next_stage_button').style.display = 'none';
@@ -6831,9 +6857,6 @@ FSH.settingsPage = { // Legacy
 				'&nbsp;Legendary' +
 				'</td></tr>' +
 
-			'<tr><td align="right">Quick Kill ' + FSH.Layout.helpLink('Quick Kill', 'This will kill monsters without opening a new page') +
-				':</td><td><input name="quickKill" type="checkbox" value="on"' + (FSH.System.getValue('quickKill')?' checked':'') + '>' +
-				'</td></tr>' +
 			'<tr><td align="right">Keep Combat Logs' + FSH.Layout.helpLink('Keep Combat Logs', 'Save combat logs to a temporary variable. '+
 				'Press <u>Show logs</u> on the right to display and copy them') +
 				':</td><td><input name="keepLogs" type="checkbox" value="on"' + (FSH.System.getValue('keepLogs')?' checked':'') + '>' +
@@ -6862,12 +6885,6 @@ FSH.settingsPage = { // Legacy
 			'<tr><td align="right">Keep Creature Log' + FSH.Layout.helpLink('Keep Creature Log', 'This will show the creature log for each creature you see when you travel. This requires Show Creature Info enabled!') +
 				':</td><td><input name="showMonsterLog" type="checkbox" value="on"' + (FSH.System.getValue('showMonsterLog')?' checked':'') + '>'+
 				'&nbsp;&nbsp;<input type="button" class="custombutton" value="Show" id="Helper:ShowMonsterLogs"></td></tr>' +
-			'<tr><td align="right">Hide Krul Portal' + FSH.Layout.helpLink('Hide Krul Portal', 'This will hide the Krul portal on the world screen.') +
-				':</td><td><input name="hideKrulPortal" type="checkbox" value="on"' + (FSH.System.getValue('hideKrulPortal')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Footprints Color' + FSH.Layout.helpLink('Footprints Color', 'Changes the color of the footprints, useful if you can\\\'t see them in some maps') +
-				':</td><td><input name="footprintsColor" size="12" value="'+ FSH.System.getValue('footprintsColor') + '" /><input type="button" class="custombutton" value="Update Color" id="Helper:updateFpColor"><table width="40" height="40" cellspacing="0" cellpadding="0" border="0"><td width="40" height="40" background="' + FSH.System.getValue('currentTile') + '" align="center" style="color:' + FSH.System.getValue('footprintsColor') + ';"><center><table width="40" height="40" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td align="center">**</td></tr></tbody></table></center></td></table></td></tr>' +
-			'<tr><td align="right">Reset Footprints' + FSH.Layout.helpLink('Reset Footprints', 'Resets the footprints variable.') +
-				':</td><td>Current Size: ' + (!FSH.System.getValue('map') ? 'N/A' : FSH.System.getValue('map').length + ' <input type="button" class="custombutton" value="Reset" id="Helper:ResetFootprints">') + '</td></tr></td></tr>' +
 			'<tr><td align="right">Show Send Gold' + FSH.Layout.helpLink('Show Gold on World Screen', 'This will show an icon below the world map to allow you to quickly send gold to a Friend.') +
 				':</td><td><input name="sendGoldonWorld" type="checkbox" value="on"' + (FSH.System.getValue('sendGoldonWorld')?' checked':'') + '>'+
 				'Send <input name="goldAmount" size="5" value="'+ FSH.System.getValue('goldAmount') + '" /> '+
@@ -6947,15 +6964,23 @@ FSH.settingsPage = { // Legacy
 				'This works on Quest Manager and Quest Book.') +
 				':</td><td colspan="3"><input name="hideQuests" type="checkbox" value="on"' + (FSH.System.getValue('hideQuests')?' checked':'') + '>' +
 				'<input name="hideQuestNames" size="60" value="'+ FSH.System.getValue('hideQuestNames') + '" /></td></tr>' +
-			'<tr><td align="right">Show Incomplete/Not Started Quests' + FSH.Layout.helpLink('Show Incomplete/Not Started Quests', 'If checked, the helper will check to see if you have quests that are not started, or are started, not complete and not being tracked.' +
-				'<br>The helper will only check this when you change worlds, or if when it last checked, there were quests it detected for the current world.') +
-				':</td><td colspan="3"><input name="checkForQuestsInWorld" type="checkbox" value="on"' + (FSH.System.getValue('checkForQuestsInWorld')?' checked':'') + '>' +
-				'</td></tr>' +
-			'<tr><td align="right">Store Last Quest Page' + FSH.Layout.helpLink('Store Last Quest Page', 'This will store the page and sort order of each of the three quest selection pages for next time you visit. If you need to reset the links, turn this option off, '+
-				'click on the link you wish to reset and then turn this option back on again.') +
-				':</td><td><input name="storeLastQuestPage" type="checkbox" value="on"' + (FSH.System.getValue('storeLastQuestPage')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Show All Quest Steps' + FSH.Layout.helpLink('Show All Quest Steps', 'Shows all quest steps in the UFSG.') +
-				':</td><td><input name="showNextQuestSteps" type="checkbox" value="on"' + (FSH.System.getValue('showNextQuestSteps')?' checked':'') + '></td></tr>' +
+			'<tr><td align="right">Store Last Quest Page' +
+				FSH.Layout.helpLink('Store Last Quest Page', 'This will store the ' +
+				'page and sort order of each of the three quest selection pages for ' +
+				'next time you visit. If you need to reset the links, turn this ' +
+				'option off, click on the link you wish to reset and then turn ' +
+				'this option back on again.') +
+				':</td><td><input name="storeLastQuestPage" type="checkbox" ' +
+				'value="on"' +
+				(FSH.System.getValue('storeLastQuestPage') ? ' checked' : '') +
+				'></td></tr>' +
+			'<tr><td align="right">Show All Quest Steps' +
+				FSH.Layout.helpLink('Show All Quest Steps',
+				'Shows all quest steps in the UFSG.') +
+				':</td><td><input name="showNextQuestSteps" type="checkbox" ' +
+				'value="on"' +
+				(FSH.System.getValue('showNextQuestSteps') ? ' checked' : '') +
+				'></td></tr>' +
 			//profile prefs
 			'<tr><th colspan="2" align="left"><b>Profile preferences</b></th></tr>' +
 			'<tr><td align="right">Render self bio' + FSH.Layout.helpLink('Render self bio', 'This determines if your own bio will render the FSH special bio tags.') +
@@ -7063,8 +7088,6 @@ FSH.settingsPage = { // Legacy
 		document.getElementById('Helper:SaveOptions').addEventListener('click', FSH.settingsPage.saveConfig, true);
 		document.getElementById('Helper:ShowLogs').addEventListener('click', FSH.settingsPage.showLogs, true);
 		document.getElementById('Helper:ShowMonsterLogs').addEventListener('click', FSH.settingsPage.showMonsterLogs, true);
-		if (FSH.System.getValue('map')) {document.getElementById('Helper:ResetFootprints').addEventListener('click', FSH.settingsPage.resetFootprints, true);}
-		document.getElementById('Helper:updateFpColor').addEventListener('click', FSH.settingsPage.updateFpColor, true);
 
 		document.getElementById('toggleShowGuildSelfMessage').addEventListener('click', FSH.System.toggleVisibilty, true);
 		document.getElementById('toggleShowGuildFrndMessage').addEventListener('click', FSH.System.toggleVisibilty, true);
@@ -7164,23 +7187,6 @@ FSH.settingsPage = { // Legacy
 
 	showMonsterLogs: function() { // Native
 		document.location=FSH.System.server + 'index.php?cmd=notepad&blank=1&subcmd=monsterlog';
-	},
-
-	resetFootprints: function() { // Native
-		if (window.confirm('Are you sure you want to reset your footprints?')) {
-			var theMap = FSH.System.getValueJSON('map');
-			if (theMap) {
-				theMap = {};
-				theMap.levels = {};
-				FSH.System.setValueJSON('map', theMap);
-			}
-			location.reload();
-		}
-	},
-
-	updateFpColor: function() { // Native
-		FSH.System.setValue('footprintsColor', FSH.System.findNode('//input[@name="footprintsColor"]').value);
-		location.reload();
 	},
 
 	injectSaveSettings: function(){
@@ -7434,7 +7440,204 @@ FSH.environment = { // Legacy
 		window.document.onkeypress = null;
 		window.document.combatKeyHandler = null;
 		window.document.realmKeyHandler = null;
-		window.document.onkeypress = FSH.Helper.keyPress;
+		window.document.onkeypress = FSH.environment.keyPress;
+	},
+
+	keyPress: function(evt) {
+
+		console.log('charCode', evt.charCode, 'keyCode', evt.keyCode, 'key', evt.key);
+
+		var r, s;
+		if (evt.target.tagName!=='HTML' && evt.target.tagName!=='BODY') {return;}
+
+		// ignore control, alt and meta keys (I think meta is the command key in Macintoshes)
+		if (evt.ctrlKey) {return;}
+		if (evt.metaKey) {return;}
+		if (evt.altKey) {return;}
+
+		r = evt.charCode;
+		s = evt.keyCode;
+
+		switch (r) {
+		case 113: // nw [q]
+			// FSH.Helper.moveMe(-1,-1);
+			break;
+		case 119: // n [w]
+			// FSH.Helper.moveMe(0,-1);
+			break;
+		case 101: // ne [e]
+			// FSH.Helper.moveMe(1,-1);
+			break;
+		case 97: // w [a]
+			// FSH.Helper.moveMe(-1,0);
+			break;
+		case 100: // e [d]
+			// FSH.Helper.moveMe(1,0);
+			break;
+		case 122: // sw [z]
+			// FSH.Helper.moveMe(-1,1);
+			break;
+		case 120: // s [x]
+			// FSH.Helper.moveMe(0,1);
+			break;
+		case 99: // se [c]
+			// FSH.Helper.moveMe(1,1);
+			break;
+		case 114: // repair [r]
+			//do not use repair link for new map
+			if ($('#worldPage').length === 0) {
+				location.href = 'index.php?cmd=blacksmith&subcmd=repairall&fromworld=1';
+			}
+			break;
+		case 71: // create group [G]
+			location.href = 'index.php?cmd=guild&subcmd=groups&subcmd2=create&fromworld=1';
+			break;
+		case 76: // Log Page [L]
+			location.href = 'index.php?cmd=log';
+			break;
+		case 103: // go to guild [g]
+			location.href = 'index.php?cmd=guild&subcmd=manage';
+			break;
+		case 106: // join all group [j]
+			if (!FSH.System.getValue('enableMaxGroupSizeToJoin')) {
+				location.href = 'index.php?cmd=guild&subcmd=groups&subcmd2=joinall';
+			} else {
+				location.href = 'index.php?cmd=guild&subcmd=groups&subcmd2=joinallgroupsundersize';
+			}
+			break;
+		case 49: // [1]
+		case 50: // [2]
+		case 51: // [3]
+		case 52: // [4]
+		case 53: // [5]
+		case 54: // [6]
+		case 55: // [7]
+		case 56: // keyed combat [8]
+			// FSH.Helper.killMonsterAt(r-48);
+			break;
+		case 98: // backpack [b]
+			//~ location.href = 'index.php?cmd=profile&subcmd=dropitems&fromworld=1';
+			location.href = 'index.php?cmd=profile&subcmd=dropitems';
+			break;
+		case 115: // use stairs [s]
+			// FSH.Helper.useStairs(); // Old Map
+			break;
+		case 116: // quick buy [t]
+			FSH.Helper.quickBuyItem();
+			break;
+		case 118: // fast wear manager [v]
+			location.href = 'index.php?cmd=notepad&blank=1&subcmd=quickwear';
+			break;
+		case 121: // fast send gold [y]
+			// FSH.Helper.sendGoldToPlayer();
+			FSH.newMap.doSendGold();
+			break;
+		case 48: // return to world [0]
+			//do not use if using new map
+			if ($('#worldPage').length === 0) {
+				location.href = 'index.php?cmd=world';
+			}
+			break;
+		case 109: // map [m]
+			// Firefox will block window.open on keypress
+			// change to clickable link for browser consistency
+			// window.open('index.php?cmd=world&subcmd=map', 'fsMap');
+			// openWindow('index.php?cmd=world&subcmd=map', 'fsMap', 650, 650, ',scrollbars,resizable');
+			// FSH.System.openInTab(FSH.System.server + 'index.php?cmd=world&subcmd=map');
+			break;
+		case 112: // profile [p]
+			location.href = 'index.php?cmd=profile';
+			break;
+		case 110: // mini map [n]
+			// FSH.Helper.displayMiniMap();
+			break;
+		case 78: // auto move in mini map [N]
+			// FSH.Helper.autoMoveMiniMap();
+			break;
+		case 62: // move to next page [>]
+		case 60: // move to prev page [<]
+			FSH.environment.movePage({62:'>', 60:'<'}[r]);
+			break;
+		case 33: // Shift+1
+		case 64: // Shift+2
+		case 34: // Shift+2 -- for UK keyboards, I think
+		case 35: // Shift+3
+		case 36: // Shift+4
+		case 37: // Shift+5
+		case 94: // Shift+6
+		case 38: // Shift+7
+		case 42: // Shift+8
+		case 40: // Shift+9
+			var keyMap = {'key33':1, 'key64':2, 'key34':2, 'key35':3, 'key36':4, 'key37':5,
+				'key94':6, 'key38':7, 'key42':8, 'key40':9};
+			// I'm using "key??" because I don't feel comfortable of naming properties with integers
+			var itemIndex = keyMap['key' + r];
+			FSH.System.xmlhttp('index.php?cmd=profile', FSH.Helper.changeCombatSet, itemIndex);
+			break;
+		case 41: // Shift+0
+			// TODO: ask for a number, check isnumeric, then call changeCombatSet with that index.
+			break;
+		case 0: // special key
+			switch (s) {
+			case 19: // quick buffs [Pause] - Bug?
+				// This has never worked. Was in wrong section.
+				// Chrome does not pass the Pause button anyway
+				// Firefox blocks pop-ups on keypress
+				// window.openWindow('index.php?cmd=quickbuff', 'fsQuickBuff', 618, 1000, ',scrollbars');
+				// FSH.System.openInTab(FSH.System.server + 'index.php?cmd=quickbuff');
+				break;
+			case 37: // w
+				// FSH.Helper.moveMe(-1,0);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				break;
+			case 38: // n
+				// FSH.Helper.moveMe(0,-1);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				break;
+			case 39: // e
+				// FSH.Helper.moveMe(1,0);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				break;
+			case 40: // s
+				// FSH.Helper.moveMe(0,1);
+				// evt.preventDefault();
+				// evt.stopPropagation();
+				break;
+			case 33:
+				if (FSH.System.findNode('//div[@id="reportsLog"]')) {
+					FSH.Helper.scrollUpCombatLog();
+					evt.preventDefault();
+					evt.stopPropagation();
+				}
+				break;
+			case 34:
+				if (FSH.System.findNode('//div[@id="reportsLog"]')) {
+					FSH.Helper.scrollDownCombatLog();
+					evt.preventDefault();
+					evt.stopPropagation();
+				}
+				break;
+			default:
+				// console.log('special key: ' +s);
+				break;
+			}
+			break;
+		default:
+			// console.log('standard key: ' +r);
+			break;
+		}
+		//return true;
+	},
+
+	movePage: function(dir) {
+		var dirButton = FSH.System.findNode('//input[@value="'+dir+'"]');
+		if (!dirButton) {return;}
+		var url = dirButton.getAttribute('onClick');
+		url = url.replace(/^[^']*'/m, '').replace(/\';$/m, '');
+		location.href = url;
 	},
 
 	getEnvVars: function() { // Native
@@ -12118,49 +12321,6 @@ FSH.combatLog = { // Native
 
 FSH.newMap = { // Hybrid
 
-	debugEvents: function() {
-
-		var oldTrigger = $.fn.trigger;
-		jQuery.fn.extend({
-			trigger: function(event) {
-				if (typeof event === 'string' &&
-					event !== 'update.time' &&
-					event !== 'update.defines' &&
-					event !== 'ready.hcs-element' &&
-					event !== 'ready.hcs-worldRealm' &&
-					event !== 'ready.worldManager' &&
-					event !== 'show.mapTooltip' &&
-					event !== 'refresh.mapTooltip' &&
-					event !== 'hide.mapTooltip' &&
-					event !== 'blur' &&
-					event !== 'dragstart.mapCanvas' &&
-					event !== 'click.mapCanvas' &&
-					event !== 'dragend.mapCanvas' &&
-					event !== 'move-attempt.player' &&
-					event !== 'move-attempt-2.player' &&
-					event !== 'move.player' &&
-					event !== 'move-stop.player' &&
-					event !== 'move-end.player' &&
-					event !== 'minimize.actionlist' &&
-					event !== 'stamina.stats-player' &&
-					event !== 'location.stats-player' &&
-					event !== 'stats.player' &&
-					event !== 'notifications.player' &&
-					event !== 'update.player' &&
-					event !== 'update.realm' &&
-					event !== 'keydown.controls' &&
-					event !== 'keyup.controls' &&
-					event !== 'keypress.controls' &&
-					event !== 'focus') {
-					console.debug('Triggered', event, 'arguments', arguments);
-				}
-				var trigReturn = oldTrigger.apply(this,arguments);
-				return trigReturn;
-			}
-		});
-
-	},
-
 	subscribes: function() { // jQuery
 
 		if (FSH.System.getValue('sendGoldonWorld')) {
@@ -12271,6 +12431,19 @@ FSH.newMap = { // Hybrid
 					GameData.fetch(387);
 				}
 			});
+	},
+
+	updateSendGoldOnWorld: function(data) { // jQuery
+		$('#HelperSendTotal')
+			.html(FSH.System.getValue('currentGoldSentTotal')
+			.toString()
+			.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,'));
+		if (parseInt(data.player.gold, 10) >
+			FSH.System.getValue('goldAmount')){
+			$('#statbar-gold').css('background-color','red');
+		}else{
+			$('#statbar-gold').css('background-color','inherit');
+		}
 	},
 
 	readyViewCreature: function() { // Hybrid - New Map
@@ -12437,74 +12610,110 @@ FSH.newMap = { // Hybrid
 
 	injectWorldNewMap: function(data){ // jQuery - Ugly
 
-	var img;
-		if (data.player) {
-			// FSH.Helper.xLocation = data.player.location.x;
-			// FSH.Helper.yLocation = data.player.location.y;
-			//<dd id='HelperSendTotal'>' + FSH.System.getValue("currentGoldSentTotal").toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") + '</dd>
-			if (FSH.System.getValue('sendGoldonWorld')) {
-				$('#HelperSendTotal')
-					.html(FSH.System.getValue('currentGoldSentTotal')
-					.toString()
-					.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,'));
-				if (parseInt(data.player.gold, 10) >
-					FSH.System.getValue('goldAmount')){
-					$('#statbar-gold').css('background-color','red');
-				}else{
-					$('#statbar-gold').css('background-color','inherit');
-				}
-			}
+		if (data.player && FSH.System.getValue('sendGoldonWorld')) {
+			FSH.newMap.updateSendGoldOnWorld(data);
 		}
+
 		if (data.realm && data.realm.name) {
-			var worldName = $('h1#worldName');
-			worldName.html(data.realm.name); //HACK - incase of switchign between master realm and realm they dont replace teh realm name
-			worldName.append(' <a href="http://guide.fallensword.com/index.php' +
-				'?cmd=realms&subcmd=view&realm_id=' + data.realm.id +
-				'" target="_blank"><img border=0 title="Search map in Ultimate FSG" ' +
-				'width=10 height=10 src="' + FSH.System.imageServer +
-				'/temple/1.gif"/></a> <a href="http://wiki.fallensword.com/' +
-				'index.php/Special:Search?search=' + data.realm.name +
-				'&go=Go" target="_blank"><img border=0 title="Search map in Wiki" ' +
-				'width=10 height=10 src="/favicon.ico"/></a>');
-
-			if (FSH.System.getValue('showSpeakerOnWorld')) {
-				img = FSH.System.getValue('playNewMessageSound') === true ?
-					FSH.Data.soundMuteImage :
-					FSH.Data.soundImage;
-				worldName.append('<a href="#" id="toggleSoundLink">' + img + '</a>');
-				document.getElementById('toggleSoundLink').addEventListener('click',
-					function() {
-						if (FSH.System.getValue('playNewMessageSound') === false) {
-							$('a#toggleSoundLink').html(FSH.Data.soundMuteImage);
-						} else {
-							$('a#toggleSoundLink').html(FSH.Data.soundImage);
-						}
-						FSH.System.setValue('playNewMessageSound',
-							!FSH.System.getValue('playNewMessageSound'));
-					}, true);
-			}
-
-			var huntingMode = FSH.Helper.huntingMode;
-			img = huntingMode === true ? FSH.Data.huntingOnImage :
-				FSH.Data.huntingOffImage;
-			worldName.append(' <a href=# id="HelperToggleHuntingMode">' + img +
-				'</a>');
-
-			document.getElementById('HelperToggleHuntingMode')
-				.addEventListener('click',
-					function() {
-						if (!FSH.Helper.huntingMode) {
-							$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOnImage);
-						} else {
-							$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOffImage);
-						}
-						FSH.Helper.huntingMode = !FSH.Helper.huntingMode;
-						FSH.System.setValue('huntingMode', FSH.Helper.huntingMode);
-					}, true);
+			FSH.newMap.injectButtons(data);
 		}
 	},
 
-	colorMonsters: function() {
+	injectButtons: function(data) { // jQuery
+		var worldName = $('h1#worldName');
+		worldName.html(data.realm.name); //HACK - incase of switchign between master realm and realm they dont replace teh realm name
+		var oldButtonContainer = $('#fshWorldButtonContainer');
+		if (oldButtonContainer.length !== 0) {oldButtonContainer.remove();}
+		var buttonContainer = $('<div/>', {id: 'fshWorldButtonContainer'});
+		FSH.newMap.showQuickLinks(buttonContainer);
+		FSH.newMap.showSearchButtons(buttonContainer, data);
+		if (FSH.System.getValue('showSpeakerOnWorld')) {
+			FSH.newMap.showSpeakerOnWorld(buttonContainer);
+		}
+		FSH.newMap.showHuntMode(buttonContainer);
+		worldName.after(buttonContainer);
+	},
+
+	showQuickLinks: function(worldName) { // jQuery
+		worldName.append(FSH.Layout.worldBackpack);
+		var repair = $(FSH.Layout.worldRepair);
+		worldName.append('&nbsp;').append(repair);
+		repair.click(FSH.newMap.repair);
+		var formgroup = $(FSH.Layout.worldFormgroup);
+		worldName.append('&nbsp;').append(formgroup);
+		formgroup.click(FSH.newMap.formgroup);
+		var quickbuff = $(FSH.Layout.worldQuickBuff);
+		worldName.append('&nbsp;').append(quickbuff);
+		quickbuff.click(FSH.newMap.openQuickBuff);
+		worldName.append('&nbsp;').append(FSH.Layout.worldMap);
+	},
+
+	repair: function(e) { // jQuery
+		e.preventDefault();
+		$('img', this).qtip('hide');
+		GameData.doAction(15, 513, {}, 0);
+	},
+
+	formgroup: function(e) { // jQuery
+		e.preventDefault();
+		$('img', this).qtip('hide');
+		GameData.doAction(12, 385, {}, 0);
+	},
+
+	openQuickBuff: function(e) { // Native
+		e.preventDefault();
+		window.openWindow('index.php?cmd=quickbuff',
+			'fsQuickBuff', 618, 1000, ',scrollbars');
+	},
+
+	showSearchButtons: function(worldName, data) { // jQuery
+		worldName.append('&nbsp;')
+		.append(FSH.Layout.searchMapUFSG.replace('@@realmId@@', data.realm.id))
+		.append('&nbsp;')
+		.append(FSH.Layout.searchMapWiki.replace('@@realmName@@', data.realm.name));
+	},
+
+	showSpeakerOnWorld: function(worldName) { // jQuery
+		var img = FSH.System.getValue('playNewMessageSound') === true ?
+			FSH.Data.soundMuteImage :
+			FSH.Data.soundImage;
+		var toggleSound = $('<a href="#" id="toggleSoundLink">' + img + '</a>');
+		worldName.append('&nbsp;').append(toggleSound);
+		toggleSound.click(FSH.newMap.toggleSound);
+	},
+
+	showHuntMode: function(worldName) { // jQuery
+		var img = FSH.Helper.huntingMode === true ? FSH.Data.huntingOnImage :
+			FSH.Data.huntingOffImage;
+		var toggleHuntMode = $('<a href=# id="HelperToggleHuntingMode">' + img +
+			'</a>');
+		worldName.append('&nbsp;').append(toggleHuntMode);
+		toggleHuntMode.click(FSH.newMap.toggleHuntMode);
+	},
+
+	toggleSound: function(e) { // jQuery
+		e.preventDefault();
+		if (FSH.System.getValue('playNewMessageSound') === false) {
+			$('a#toggleSoundLink').html(FSH.Data.soundMuteImage);
+		} else {
+			$('a#toggleSoundLink').html(FSH.Data.soundImage);
+		}
+		FSH.System.setValue('playNewMessageSound',
+			!FSH.System.getValue('playNewMessageSound'));
+	},
+
+	toggleHuntMode: function(e) { // jQuery
+		e.preventDefault();
+		if (!FSH.Helper.huntingMode) {
+			$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOnImage);
+		} else {
+			$('a#HelperToggleHuntingMode').html(FSH.Data.huntingOffImage);
+		}
+		FSH.Helper.huntingMode = !FSH.Helper.huntingMode;
+		FSH.System.setValue('huntingMode', FSH.Helper.huntingMode);
+	},
+
+	colorMonsters: function() { // jQuery
 		$('ul#actionList li.creature-1').css('color','green');
 		$('ul#actionList li.creature-2').css('color','yellow');
 		$('ul#actionList li.creature-3').css('color','red');
@@ -12512,9 +12721,9 @@ FSH.newMap = { // Hybrid
 
 };
 
-FSH.guide = {
+FSH.guide = { // jQuery
 
-	allowBack: function () {
+	allowBack: function () { // jQuery
 		$('body').on('click', 'input[type="submit"]', function(e) {
 			e.preventDefault();
 			var url = 'index.php?';

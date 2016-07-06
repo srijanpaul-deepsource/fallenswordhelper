@@ -1,3 +1,14 @@
+#fshWorldButtonContainer {
+  float: left;
+  height: 25.6px;
+}
+
+
+#fshWorldButtonContainer img {
+  padding-top: 1ex;
+}
+
+
 #fshSpinner {
   float: right;
   margin: 0 160px 0 0;
