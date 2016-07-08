@@ -881,8 +881,6 @@ FSH.Data = {
 		enableBioCompressor: true,
 		maxCompressedCharacters: 250,
 		maxCompressedLines: 10,
-		// hideArenaPrizes: '',
-		// autoSortArenaList: false,
 
 		currentGoldSentTotal: 0,
 		keepBuffLog: false,
@@ -928,7 +926,6 @@ FSH.Data = {
 		enableQuickDrink: true,
 		enhanceOnlineDots: true,
 		hideBuffSelected: false,
-		// enableFastWalk: false,
 		hideHelperMenu: false,
 		keepHelperMenuOnScreen: true,
 		quickLinksTopPx: 22,
@@ -976,7 +973,6 @@ FSH.Data = {
 		alliestotal: 0,
 		enemiestotal: 0,
 		footprints: false,
-		// showFastWalkIconOnWorld: false,
 		hideNonPlayerGuildLogMessages: true,
 		listOfAllies: '',
 		listOfEnemies: '',
@@ -1072,15 +1068,14 @@ FSH.Data = {
 		arenaMoves: '[]',
 		arenaMatches: '[]',
 		CombatLog: '',
-
 		hideChampionsGroup: false,
 		hideElitesGroup: false,
 		hideSEGroup: false,
 		hideTitanGroup: false,
 		hideLegendaryGroup: false,
 		disableDeactivatePrompts: false,
-
 		monsterLog: '{}',
+		moveComposingButtons: true,
 
 	},
 
@@ -1186,7 +1181,8 @@ FSH.Data = {
 		'hideSEGroup',
 		'hideTitanGroup',
 		'hideLegendaryGroup',
-		'disableDeactivatePrompts'//,
+		'disableDeactivatePrompts',
+		'moveComposingButtons'
 
 	],
 
@@ -1385,14 +1381,6 @@ FSH.Data = {
 
 FSH.Layout = {
 
-	helpLink: function(title, text) {
-		return ' [&nbsp;' +
-			'<span style="text-decoration:underline;cursor:pointer;" class="tip-static" data-tipped="' +
-			'<span style=\'font-weight:bold; color:#FFF380;\'>' + title + '</span><br /><br />' +
-			text + '">?</span>' +
-			'&nbsp;]';
-	},
-
 	onlineDot: function(obj) {
 		var img;
 		var min = 0;
@@ -1565,7 +1553,8 @@ FSH.Layout = {
 	},
 
 	networkIcon:
-		'<img title="This function retrieves data from the network. ' +
+		'<img class="networkIcon tip-static" ' +
+		'data-tipped="This function retrieves data from the network. ' +
 		'Disable this to increase speed" src="data:image/png;base64,' +
 		'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA' +
 		'B3RJTUUH1QgGDTMWk1twEwAAAAlwSFlzAAALEgAACxIB0t1+' +
@@ -2350,9 +2339,11 @@ FSH.composing = { // jQuery
 			}
 		});
 
-		$('div.composing-level').parent()
-			.before($('#pCC b:contains("Instant Finish Price Reset:")')
-				.parent().attr('style', 'text-align: right; padding: 0 38px 0 0'));
+		if (FSH.System.getValue('moveComposingButtons')) {
+			$('div.composing-level').parent()
+				.before($('#pCC b:contains("Instant Finish Price Reset:")')
+					.parent().attr('style', 'text-align: right; padding: 0 38px 0 0'));
+		}
 
 	},
 
@@ -6721,11 +6712,300 @@ FSH.questBook = { // Legacy
 
 FSH.settingsPage = { // Legacy
 
+	mySimpleCheckboxes: {
+		moveGuildList: {
+			id: 'moveGuildList',
+			helpTitle: 'Move Guild Info List',
+			helpText: 'This will Move the Guild Info List higher ' +
+				'on the bar on the right'
+		},
+		moveOnlineAlliesList: {
+			id: 'moveOnlineAlliesList',
+			helpTitle: 'Move Online Allies List',
+			helpText: 'This will Move the Online Allies List higher ' +
+				'on the bar on the right'
+		},
+		enableOnlineAlliesWidgets: {
+			id: 'enableOnlineAlliesWidgets',
+			helpTitle: 'Enable Online Allies Widgets',
+			helpText: 'Enabling this option will enable the Allies List ' +
+				'Widgets (coloring on the Allies List panel)'
+		},
+		moveFSBox: {
+			id: 'moveFSBox',
+			helpTitle: 'Move FS box',
+			helpText: 'This will move the FS box to the left, under the menu, ' +
+				'for better visibility (unless it is already hidden.)'
+		},
+		gameHelpLink: {
+			id: 'gameHelpLink',
+			helpTitle: '&quot;Game Help&quot; Settings Link',
+			helpText: 'This turns the Game Help text in the lower ' +
+				'right box into a link to this settings page.'
+		},
+		enableTempleAlert: {
+			id: 'enableTempleAlert',
+			helpTitle: 'Enable Temple Alert',
+			helpText: 'Puts an alert on the LHS if you have not ' +
+				'prayed at the temple today.',
+			network: true
+		},
+		enableUpgradeAlert: {
+			id: 'enableUpgradeAlert',
+			helpTitle: 'Enable Gold Upgrade Alert',
+			helpText: 'Puts an alert on the LHS if you have not upgraded your ' +
+				'stamina with gold today.',
+			network: true
+		},
+		enableComposingAlert: {
+			id: 'enableComposingAlert',
+			helpTitle: 'Enable Composing Alert',
+			helpText: 'Puts an alert on the LHS if you have composing ' +
+				'slots available.',
+			network: true
+		},
+		enhanceOnlineDots: {
+			id: 'enhanceOnlineDots',
+			helpTitle: 'Enhance Online Dots',
+			helpText: 'Enhances the green/grey dots by player names to show ' +
+				'online/offline status.'
+		},
+		hideBuffSelected: {
+			id: 'hideBuffSelected',
+			helpTitle: 'Hide Buff Selected',
+			helpText: 'Hides the buff selected functionality in the online allies ' +
+				'and guild info section.'
+		},
+		hideHelperMenu: {
+			id: 'hideHelperMenu',
+			helpTitle: 'Hide Helper Menu',
+			helpText: 'Hides the helper menu from top left.'
+		},
+		keepHelperMenuOnScreen: {
+			id: 'keepHelperMenuOnScreen',
+			helpTitle: 'Keep Helper Menu On Screen',
+			helpText: 'Keeps helper menu on screen as you scroll (helper ' +
+				'menu must be enabled to work). Also works with quick links.'
+		},
+		showAdmin: {
+			id: 'showAdmin',
+			helpTitle: 'Show rank controls',
+			helpText: 'Show ranking controls for guild managemenet in member ' +
+				'profile page - this works for guild founders only'
+		},
+		ajaxifyRankControls: {
+			id: 'ajaxifyRankControls',
+			helpTitle: 'AJAXify rank controls',
+			helpText: 'Enables guild founders with ranking rights to change rank ' +
+				'positions without a screen refresh.'
+		},
+		detailedConflictInfo: {
+			id: 'detailedConflictInfo',
+			helpTitle: 'Show Conflict Details',
+			helpText: 'Inserts detailed conflict information onto your guild\'s ' +
+				'manage page. Currently displays the target guild as well as ' +
+				'the current score.',
+			network: true
+		},
+		showCombatLog: {
+			id: 'showCombatLog',
+			helpTitle: 'Show Combat Log',
+			helpText: 'This will show the combat log for each automatic ' +
+				'battle below the monster list.'
+		},
+		enableCreatureColoring: {
+			id: 'enableCreatureColoring',
+			helpTitle: 'Color Special Creatures',
+			helpText: 'Creatures will be colored according to their rarity. ' +
+				'Champions will be colored green, Elites yellow and Super Elites red.'
+		},
+		showCreatureInfo: {
+			id: 'showCreatureInfo',
+			helpTitle: 'Show Creature Info',
+			helpText: 'This will show the information from the view creature ' +
+				'link when you mouseover the link.',
+			network: true
+		},
+		fsboxlog: {
+			id: 'fsboxlog',
+			helpTitle: 'Enable FS Box Log',
+			helpText: 'This enables the functionality to keep a log of ' +
+				'recent seen FS Box message.'
+		},
+		keepBuffLog: {
+			id: 'keepBuffLog',
+			helpTitle: 'Enable Buff Log',
+			helpText: 'This enables the functionality to keep a log of ' +
+				'recently casted buffs'
+		},
+		huntingMode: {
+			id: 'huntingMode',
+			helpTitle: 'Enable Hunting Mode',
+			helpText: 'This disable menu and some visual features to ' +
+				'speed up the FSH.Helper.'
+		},
+		hideNonPlayerGuildLogMessages: {
+			id: 'hideNonPlayerGuildLogMessages',
+			helpTitle: 'Cleanup Guild Log',
+			helpText: 'Any log messages not related to the current player ' +
+				'will be dimmed (e.g. recall messages from guild store)'
+		},
+		useNewGuildLog: {
+			id: 'useNewGuildLog',
+			helpTitle: 'Use New Guild Log',
+			helpText: 'This will replace the standard guild log with the ' +
+				'helper version of the guild log.'
+		},
+		enableLogColoring: {
+			id: 'enableLogColoring',
+			helpTitle: 'Enable Log Coloring',
+			helpText: 'Three logs will be colored if this is enabled, ' +
+				'Guild Chat, Guild Log and Player Log. It will show any new ' +
+				'messages in yellow and anything 20 minutes old ones in brown.'
+		},
+		enableChatParsing: {
+			id: 'enableChatParsing',
+			helpTitle: 'Enable Chat Parsing',
+			helpText: 'If this is checked, your character log will be parsed for ' +
+				'chat messages and show the chat message on the screen if you reply ' +
+				'to that message.'
+		},
+		addAttackLinkToLog: {
+			id: 'addAttackLinkToLog',
+			helpTitle: 'Add attack link to log',
+			helpText: 'If checked, this will add an Attack link to each message ' +
+				'in your log.'
+		},
+		enhanceChatTextEntry: {
+			id: 'enhanceChatTextEntry',
+			helpTitle: 'Enhance Chat Text Entry',
+			helpText: 'If checked, this will enhance the entry field for entering ' +
+				'chat text on the guild chat page.'
+		},
+		disableItemColoring: {
+			id: 'disableItemColoring',
+			helpTitle: 'Disable Item Coloring',
+			helpText: 'Disable the code that colors the item text based on the ' +
+				'rarity of the item.'
+		},
+		showQuickDropLinks: {
+			id: 'showQuickDropLinks',
+			helpTitle: 'Show Quick Drop Item',
+			helpText: 'This will show a link beside each item which gives the ' +
+				'option to drop the item.  WARNING: NO REFUNDS ON ERROR'
+		},
+		storeLastQuestPage: {
+			id: 'storeLastQuestPage',
+			helpTitle: 'Store Last Quest Page',
+			helpText: 'This will store the page and sort order of each of the ' +
+				'three quest selection pages for next time you visit. If you need ' +
+				'to reset the links, turn this option off, click on the link you ' +
+				'wish to reset and then turn this option back on again.'
+		},
+		showNextQuestSteps: {
+			id: 'showNextQuestSteps',
+			helpTitle: 'Show Quick Drop Item',
+			helpText: 'Shows all quest steps in the UFSG.'
+		},
+		renderSelfBio: {
+			id: 'renderSelfBio',
+			helpTitle: 'Render self bio',
+			helpText: 'This determines if your own bio will render the FSH ' +
+				'special bio tags.'
+		},
+		renderOtherBios: {
+			id: 'renderOtherBios',
+			helpTitle: 'Render other players&#39; bios',
+			helpText: 'This determines if other players bios will render the FSH ' +
+				'special bio tags.'
+		},
+		showStatBonusTotal: {
+			id: 'showStatBonusTotal',
+			helpTitle: 'Show Stat Bonus Total',
+			helpText: 'This will show a total of the item stats when you ' +
+				'mouseover an item on the profile screen.'
+		},
+		enableQuickDrink: {
+			id: 'enableQuickDrink',
+			helpTitle: 'Enable Quick Drink/Wear',
+			helpText: 'This enables the quick drink/wear functionality on the ' +
+				'profile page.'
+		},
+		disableDeactivatePrompts: {
+			id: 'disableDeactivatePrompts',
+			helpTitle: 'Disable Deactivate Prompts',
+			helpText: 'This disables the prompts for deactivating buffs on ' +
+				'the profile page.'
+		},
+		enableAttackHelper: {
+			id: 'enableAttackHelper',
+			helpTitle: 'Show Attack Helper',
+			helpText: 'This will show extra information on the attack player ' +
+				'screen about stats and buffs on you and your target',
+			network: true
+		},
+		showPvPSummaryInLog: {
+			id: 'showPvPSummaryInLog',
+			helpTitle: 'Show PvP Summary in Log',
+			helpText: 'This will show a summary of the PvP results in the log.',
+			network: true
+		},
+		autoFillMinBidPrice: {
+			id: 'autoFillMinBidPrice',
+			helpTitle: 'Auto Fill Min Bid Price',
+			helpText: 'This enables the functionality to automatically fill in ' +
+				'the min bid price so you just have to hit bid and your bid will ' +
+				'be placed.'
+		},
+		hideRelicOffline: {
+			id: 'hideRelicOffline',
+			helpTitle: 'Hide Relic Offline',
+			helpText: 'This hides the relic offline defenders checker.'
+		},
+		enterForSendMessage: {
+			id: 'enterForSendMessage',
+			helpTitle: 'Enter Sends Message',
+			helpText: 'If enabled, will send a message from the Send Message ' +
+				'screen if you press enter. You can still insert a new line by ' +
+				'holding down shift when you press enter.'
+		},
+		navigateToLogAfterMsg: {
+			id: 'navigateToLogAfterMsg',
+			helpTitle: 'Navigate After Message Sent',
+			helpText: 'If enabled, will navigate to the referring page after a ' +
+				'successful message is sent. Example:  if you are on the world ' +
+				'screen and hit message on the guild info panel after you send the ' +
+				'message, it will return you to the world screen.'
+		},
+		moveComposingButtons: {
+			id: 'moveComposingButtons',
+			helpTitle: 'Move Composing Buttons',
+			helpText: 'If enabled, will move composing buttons to the top of ' +
+				'the composing screen.'
+		},
+	},
+
+	helpLink: function(title, text) {
+		return '&nbsp;[&nbsp;<span class="fshLink tip-static" data-tipped="' +
+			'<span class=\'fshHelpTitle\'>' + title + '</span><br><br>' +
+			text + '">?</span>&nbsp;]';
+	},
+
+	simpleCheckbox: function(o) {
+		return '<tr><td align="right">' +
+			(o.network ? FSH.Layout.networkIcon : '') +
+			'<label for="' + o.id + '">' + o.helpTitle +
+			FSH.settingsPage.helpLink(o.helpTitle, o.helpText) +
+			':<label></td><td><input id="' + o.id +
+			'" name="' + o.id + '" type="checkbox" value="on"' +
+			(FSH.System.getValue(o.id) ? ' checked' : '') + '></td></tr>';
+
+	},
+
 	injectSettings: function() { // Legacy
-		var tickNode = FSH.System.findNode('//td[@height="10" and contains(.,"Tick which skills you do not want cast on you")]');
-		tickNode.innerHTML+='<br><span style="cursor:pointer; text-decoration:underline;" id="Helper:tickAllBuffs">' +
-		'Tick all buffs</span>';
-		document.getElementById('Helper:tickAllBuffs').addEventListener('click', FSH.settingsPage.toggleTickAllBuffs, true);
+		var tickAll = $('<span class="fshLink">Tick all buffs</span>');
+		tickAll.click(FSH.settingsPage.toggleTickAllBuffs);
+		$('#settingsTabs-4 td').eq(0).append('<br>').append(tickAll);
 
 		var buffs                  = FSH.System.getValue('huntingBuffs');
 		var buffsName              = FSH.System.getValue('huntingBuffsName');
@@ -6744,8 +7024,12 @@ FSH.settingsPage = { // Legacy
 		var enabledHuntingMode     = FSH.System.getValue('enabledHuntingMode');
 		var storage = (JSON.stringify(localStorage).length /
 			(5 * 1024 * 1024) * 100).toFixed(2);
-		var configData=
-			'<form><table style="border-spacing: 10px;">' +
+
+		var simpleCheckbox = FSH.settingsPage.simpleCheckbox;
+		var mySimpleCheckboxes = FSH.settingsPage.mySimpleCheckboxes;
+
+		var configData =
+			'<form><table id="fshSettingsTable">' +
 			'<tr><th colspan="2"><b>Fallen Sword Helper configuration ' +
 				'Settings</b></th></tr>' +
 			'<tr><td colspan="2" align=center>' +
@@ -6760,84 +7044,112 @@ FSH.settingsPage = { // Legacy
 				'Fallen Sword Helper web site</a> ' +
 				'for any suggestions, requests or bug reports</span></td></tr>' +
 			//General Prefs
-			'<tr><th colspan="2" align="left"><b>General preferences (apply to most screens)</b></th></tr>' +
+			'<tr><th colspan="2" align="left"><b>General preferences ' +
+				'(apply to most screens)</b></th></tr>' +
 
-			'<tr><td align="right">Enable Guild Info Widgets' + FSH.Layout.helpLink('Enable Guild Info Widgets', 'Enabling this option will enable the Guild Info Widgets (coloring on the Guild Info panel)') +
-				':</td><td><input name="enableGuildInfoWidgets" type="checkbox" value="on"' + (FSH.System.getValue('enableGuildInfoWidgets')?' checked':'') +
-				'>  Hide Message&gt;<input name="hideGuildInfoMessage" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoMessage')?' checked':'') +
-				'>  Hide Buff&gt;<input name="hideGuildInfoBuff" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoBuff')?' checked':'') +
-				'>  Hide ST&gt;<input name="hideGuildInfoSecureTrade" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoSecureTrade')?' checked':'') +
-				'>  Hide Trade&gt;<input name="hideGuildInfoTrade" type="checkbox" value="on"' + (FSH.System.getValue('hideGuildInfoTrade')?' checked':'') +
-				'></td></tr>' +
+			'<tr><td align="right">' +
+				'<label for="enableGuildInfoWidgets">' +
+				'Enable Guild Info Widgets' +
+				FSH.settingsPage.helpLink('Enable Guild Info Widgets',
+				'Enabling this option will enable the Guild Info Widgets ' +
+				'(coloring on the Guild Info panel)') + ':</label></td><td>' +
+				'<input id="enableGuildInfoWidgets" name="enableGuildInfoWidgets" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('enableGuildInfoWidgets') ? ' checked' : '') +
+				'>&nbsp;' +
+				'<label>Hide Message&gt;<input name="hideGuildInfoMessage" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('hideGuildInfoMessage') ? ' checked' : '') +
+				'></label>&nbsp;' +
+				'<label>Hide Buff&gt;<input name="hideGuildInfoBuff" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('hideGuildInfoBuff') ? ' checked' : '') +
+				'></label>&nbsp;' +
+				'<label>Hide ST&gt;<input name="hideGuildInfoSecureTrade" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('hideGuildInfoSecureTrade') ? ' checked' : '') +
+				'></label>&nbsp;' +
+				'<label>Hide Trade&gt;<input name="hideGuildInfoTrade" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('hideGuildInfoTrade') ? ' checked' : '') +
+				'></label></td></tr>' +
 
-			'<tr><td align="right">Move Guild Info List' + FSH.Layout.helpLink('Move Guild Info List', 'This will Move the Guild Info List higher on the bar on the right') +
-				':</td><td><input name="moveGuildList" type="checkbox" value="on"' + (FSH.System.getValue('moveGuildList')?' checked':'') + '>' +
-				'</td></tr>' +
-			'<tr><td align="right">Move Online Allies List' + FSH.Layout.helpLink('Move Guild Info List', 'This will Move the Online Allies List higher on the bar on the right') +
-				':</td><td><input name="moveOnlineAlliesList" type="checkbox" value="on"' + (FSH.System.getValue('moveOnlineAlliesList')?' checked':'') + '>' +
-				'</td></tr>' +
-			'<tr><td align="right">' + FSH.Layout.networkIcon + 'Show Online Allies/Enemies' + FSH.Layout.helpLink('Show Online Allies/Enemies', 'This will show the allies/enemies online list on the right.') +
-				':</td><td>Allies<input name="enableAllyOnlineList" type="checkbox" value="on"' + (FSH.System.getValue('enableAllyOnlineList')?' checked':'') +
-				'> Enemies<input name="enableEnemyOnlineList" type="checkbox" value="on"' + (FSH.System.getValue('enableEnemyOnlineList')?' checked':'') +
-				'> <input name="allyEnemyOnlineRefreshTime" size="3" value="'+ FSH.System.getValue('allyEnemyOnlineRefreshTime') + '" /> seconds refresh</td></tr>' +
-			'<tr><td align="right">Enable Online Allies Widgets' + FSH.Layout.helpLink('Enable Online Allies Widgets', 'Enabling this option will enable the Allies List Widgets (coloring on the Allies List panel)') +
-				':</td><td><input name="enableOnlineAlliesWidgets" type="checkbox" value="on"' + (FSH.System.getValue('enableOnlineAlliesWidgets')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Move FS box' + FSH.Layout.helpLink('Move FallenSword Box', 'This will move the FS box to the left, under the menu, for better visibility (unless it is already hidden.)') +
-				':</td><td><input name="moveFSBox" type="checkbox" value="on"' + (FSH.System.getValue('moveFSBox')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">"Game Help" Settings Link' + FSH.Layout.helpLink('Game Help Settings Link', 'This turns the Game Help text in the lower right box into a link to this settings page. This can be helpful if you use the FS Image Pack.') +
-				':</td><td><input name="gameHelpLink" type="checkbox" value="on"' + (FSH.System.getValue('gameHelpLink')?' checked':'') + '></td></tr>' +
+			simpleCheckbox(mySimpleCheckboxes.moveGuildList) +
+			simpleCheckbox(mySimpleCheckboxes.moveOnlineAlliesList) +
 
-			'<tr><td align="right">' + FSH.Layout.networkIcon + 'Enable Temple Alert' + FSH.Layout.helpLink('Enable Temple Alert', 'Puts an alert on the LHS if you have not prayed at the temple today.') +
-				':</td><td><input name="enableTempleAlert" type="checkbox" value="on"' + (FSH.System.getValue('enableTempleAlert')?' checked':'') + '></td></tr>' +
+			'<tr><td align="right">' + FSH.Layout.networkIcon +
+				'Show Online Allies/Enemies' +
+				FSH.settingsPage.helpLink('Show Online Allies/Enemies',
+				'This will show the allies/enemies online list on the right.') +
+				':</td><td><label>Allies&nbsp;<input name="enableAllyOnlineList" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('enableAllyOnlineList') ? ' checked' : '') +
+				'></label>&nbsp;&nbsp;<label>Enemies&nbsp;' +
+				'<input name="enableEnemyOnlineList" type="checkbox" value="on"' +
+				(FSH.System.getValue('enableEnemyOnlineList') ? ' checked' : '') +
+				'></label>&nbsp;&nbsp;' +
+				'<input name="allyEnemyOnlineRefreshTime" size="3" value="' +
+				FSH.System.getValue('allyEnemyOnlineRefreshTime') +
+				'"> seconds refresh</td></tr>' +
 
-			'<tr><td align="right">' + FSH.Layout.networkIcon + 'Enable Gold ' +
-				'Upgrade Alert' + FSH.Layout.helpLink('Enable Gold Upgrade Alert',
-				'Puts an alert on the LHS if you have not upgraded your ' +
-				'stamina with gold today.') +
-				':</td><td><input name="enableUpgradeAlert" type="checkbox" ' +
-				'value="on"' + (FSH.System.getValue('enableUpgradeAlert') ?
-				' checked' : '') + '></td></tr>' +
+			simpleCheckbox(mySimpleCheckboxes.enableOnlineAlliesWidgets) +
+			simpleCheckbox(mySimpleCheckboxes.moveFSBox) +
+			simpleCheckbox(mySimpleCheckboxes.fsboxlog) +
+			simpleCheckbox(mySimpleCheckboxes.gameHelpLink) +
+			simpleCheckbox(mySimpleCheckboxes.enableTempleAlert) +
+			simpleCheckbox(mySimpleCheckboxes.enableUpgradeAlert) +
+			simpleCheckbox(mySimpleCheckboxes.enableComposingAlert) +
+			simpleCheckbox(mySimpleCheckboxes.enhanceOnlineDots) +
+			simpleCheckbox(mySimpleCheckboxes.hideBuffSelected) +
+			simpleCheckbox(mySimpleCheckboxes.hideHelperMenu) +
+			simpleCheckbox(mySimpleCheckboxes.keepHelperMenuOnScreen) +
 
-			'<tr><td align="right">' + FSH.Layout.networkIcon + 'Enable ' +
-				'Composing Alert' + FSH.Layout.helpLink('Enable Composing Alert',
-				'Puts an alert on the LHS if you have composing slots ' +
-				'available.') +
-				':</td><td><input name="enableComposingAlert" type="checkbox" ' +
-				'value="on"' + (FSH.System.getValue('enableComposingAlert') ?
-				' checked' : '') + '></td></tr>' +
+			'<tr><td align="right">Quick Links Screen Location' +
+				FSH.settingsPage.helpLink('Quick Links Screen Location',
+				'Determines where the quick links dialog shows on the screen. ' +
+				'Default is top 22, left 0.') +
+				':</td><td>Top: <input name="quickLinksTopPx" size="3" value="'+
+				FSH.System.getValue('quickLinksTopPx') +
+				'"> Left: <input name="quickLinksLeftPx" size="3" value="' +
+				FSH.System.getValue('quickLinksLeftPx') +
+				'"></td></tr>' +
 
-			'<tr><td align="right">Enhance Online Dots' + FSH.Layout.helpLink('Enhance Online Dots', 'Enhances the green/grey dots by player names to show online/offline status.') +
-				':</td><td><input name="enhanceOnlineDots" type="checkbox" value="on"' + (FSH.System.getValue('enhanceOnlineDots')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Hide Buff Selected' + FSH.Layout.helpLink('Hide Buff Selected', 'Hides the buff selected functionality in the online allies and guild info section.') +
-				':</td><td><input name="hideBuffSelected" type="checkbox" value="on"' + (FSH.System.getValue('hideBuffSelected')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Hide Helper Menu' + FSH.Layout.helpLink('Hide Helper Menu', 'Hides the helper menu from top left.') +
-				':</td><td><input name="hideHelperMenu" type="checkbox" value="on"' + (FSH.System.getValue('hideHelperMenu')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Keep Helper Menu On Screen' + FSH.Layout.helpLink('Keep Helper Menu On Screen', 'Keeps helper menu on screen as you scroll (helper menu must be enabled to work). Also works with quick links.') +
-				':</td><td><input name="keepHelperMenuOnScreen" type="checkbox" value="on"' + (FSH.System.getValue('keepHelperMenuOnScreen')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Quick Links Screen Location' + FSH.Layout.helpLink('Quick Links Screen Location', 'Determines where the quick links dialog shows on the screen. Default is top 22, left 0.') +
-				':</td><td>Top: <input name="quickLinksTopPx" size="3" value="'+ FSH.System.getValue('quickLinksTopPx') + '" /> Left: <input name="quickLinksLeftPx" size="3" value="'+ FSH.System.getValue('quickLinksLeftPx') + '" /></td></tr>' +
 			//Guild Manage
-			'<tr><th colspan="2" align="left"><b>Guild>Manage preferences</b></th></tr>' +
-			'<tr><td colspan="2" align="left">Enter guild names, seperated by commas</td></tr>' +
-			'<tr><td>Own Guild</td><td>'+ FSH.settingsPage.injectSettingsGuildData('Self') + '</td></tr>' +
-			'<tr><td>Friendly Guilds</td><td>'+ FSH.settingsPage.injectSettingsGuildData('Frnd') + '</td></tr>' +
-			'<tr><td>Old Guilds</td><td>'+ FSH.settingsPage.injectSettingsGuildData('Past') + '</td></tr>' +
-			'<tr><td>Enemy Guilds</td><td>'+ FSH.settingsPage.injectSettingsGuildData('Enmy') + '</td></tr>' +
-			'<tr><td align="right">Highlight Valid PvP Targets' + FSH.Layout.helpLink('Highlight Valid PvP Targets', 'Enabling this option will highlight targets in OTHER guilds that are within your level range to attack for PvP or GvG.') +
-				':</td><td>PvP: <input name="highlightPlayersNearMyLvl" type="checkbox" value="on"' + (FSH.System.getValue('highlightPlayersNearMyLvl')?' checked':'') +
-				'> GvG: <input name="highlightGvGPlayersNearMyLvl" type="checkbox" value="on"' + (FSH.System.getValue('highlightGvGPlayersNearMyLvl')?' checked':'') + '/></td></tr>'  +
-			'<tr><td align="right">Show rank controls' + FSH.Layout.helpLink('Show rank controls', 'Show ranking controls for guild managemenet in member profile page - ' +
-				'this works for guild founders only') +
-				':</td><td><input name="showAdmin" type="checkbox" value="on"' + (FSH.System.getValue('showAdmin')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">AJAXify rank controls' + FSH.Layout.helpLink('AJAXify rank controls', 'Enables guild founders with ranking rights to change rank positions without a screen refresh.') +
-				':</td><td><input name="ajaxifyRankControls" type="checkbox" value="on"' + (FSH.System.getValue('ajaxifyRankControls')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">'+FSH.Layout.networkIcon+'Show Conflict Details' + FSH.Layout.helpLink('Show Conflict Details', 'Inserts detailed conflict information onto your guild\\\'s manage page. Currently displays the target guild as well as the current score.') +
-				':</td><td><input name="detailedConflictInfo" type="checkbox" value="on"' + (FSH.System.getValue('detailedConflictInfo')?' checked':'') + '></td></tr>' +
+			'<tr><th colspan="2" align="left"><b>Guild>Manage preferences' +
+				'</b></th></tr>' +
+			'<tr><td colspan="2" align="left">Enter guild names, ' +
+				'separated by commas</td></tr>' +
+			'<tr><td>Own Guild</td><td>' +
+				FSH.settingsPage.injectSettingsGuildData('Self') + '</td></tr>' +
+			'<tr><td>Friendly Guilds</td><td>' +
+				FSH.settingsPage.injectSettingsGuildData('Frnd') + '</td></tr>' +
+			'<tr><td>Old Guilds</td><td>' +
+				FSH.settingsPage.injectSettingsGuildData('Past') + '</td></tr>' +
+			'<tr><td>Enemy Guilds</td><td>' +
+				FSH.settingsPage.injectSettingsGuildData('Enmy') + '</td></tr>' +
+
+			'<tr><td align="right">Highlight Valid PvP Targets' +
+				FSH.settingsPage.helpLink('Highlight Valid PvP Targets',
+				'Enabling this option will highlight targets in OTHER guilds that ' +
+				'are within your level range to attack for PvP or GvG.') +
+				':</td><td>PvP: <input name="highlightPlayersNearMyLvl" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('highlightPlayersNearMyLvl') ? ' checked' : '') +
+				'> GvG: <input name="highlightGvGPlayersNearMyLvl" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('highlightGvGPlayersNearMyLvl') ?
+				' checked' : '') + '></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.showAdmin) +
+			simpleCheckbox(mySimpleCheckboxes.ajaxifyRankControls) +
+			simpleCheckbox(mySimpleCheckboxes.detailedConflictInfo) +
+
 			//World Screen
-			'<tr><th colspan="2" align="left"><b>World screen/Hunting preferences</b></th></tr>' +
+			'<tr><th colspan="2" align="left"><b>World screen/Hunting preferences' +
+				'</b></th></tr>' +
 
 			'<tr><td align="right">Hide Create Group Button' +
-				FSH.Layout.helpLink('Hide Create Group Button',
+				FSH.settingsPage.helpLink('Hide Create Group Button',
 				'Enabling this option will hide the Create Group button') +
 				':</td><td>' +
 				'<input name="hideChampionsGroup" ' + 'type="checkbox" value="on"' +
@@ -6857,278 +7169,382 @@ FSH.settingsPage = { // Legacy
 				'&nbsp;Legendary' +
 				'</td></tr>' +
 
-			'<tr><td align="right">Keep Combat Logs' + FSH.Layout.helpLink('Keep Combat Logs', 'Save combat logs to a temporary variable. '+
+			'<tr><td align="right">Keep Combat Logs' +
+				FSH.settingsPage.helpLink('Keep Combat Logs',
+				'Save combat logs to a temporary variable. ' +
 				'Press <u>Show logs</u> on the right to display and copy them') +
-				':</td><td><input name="keepLogs" type="checkbox" value="on"' + (FSH.System.getValue('keepLogs')?' checked':'') + '>' +
-				'<input type="button" class="custombutton" value="Show Logs" id="Helper:ShowLogs"></td></tr>' +
-			'<tr><td align="right">Show Combat Log' + FSH.Layout.helpLink('Show Combat Log', 'This will show the combat log for each automatic battle below the monster list.') +
-				':</td><td><input name="showCombatLog" type="checkbox" value="on"' + (FSH.System.getValue('showCombatLog')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Color Special Creatures' + FSH.Layout.helpLink('Color Special Creatures', 'Creatures will be colored according to their rarity. ' +
-				'Champions will be colored green, Elites yellow and Super Elites red.') +
-				':</td><td><input name="enableCreatureColoring" type="checkbox" value="on"' + (FSH.System.getValue('enableCreatureColoring')?' checked':'') + '></td></td></tr>' +
-			'<tr><td align="right">'+FSH.Layout.networkIcon+'Show Creature Info' + FSH.Layout.helpLink('Show Creature Info', 'This will show the information from the view creature link when you mouseover the link.' +
-				// (FSH.System.browserVersion<3?'Does not work in Firefox 2 - suggest disabling or upgrading to Firefox 3.':'')) +
-				'') +
-				':</td><td><input name="showCreatureInfo" type="checkbox" value="on"' + (FSH.System.getValue('showCreatureInfo')?' checked':'') + '></td></tr>' +
+				':</td><td><input name="keepLogs" type="checkbox" value="on"' +
+				(FSH.System.getValue('keepLogs') ? ' checked' : '') + '>&nbsp;&nbsp;' +
+				'<input type="button" class="custombutton" value="Show Logs" ' +
+				'id="Helper:ShowLogs"></td></tr>' +
 
-			'<tr><td align="right">Combat Evaluator Bias' + FSH.Layout.helpLink('Combat Evaluator Bias', 'This changes the bias of the combat evaluator for the damage and HP evaluation. It will not change the attack bias (1.1053).'+
-					'<br>Conservative = 1.1053 and 1.1 (Safest)'+
-					'<br>Semi-Conservative = 1.1 and 1.053'+
-					'<br>Adventurous = 1.053 and 1 (Bleeding Edge)'+
-					'<br>Conservative+ = 1.1053 and 1 with the attack calculation changed to +-48 per RJEM') +
-				':</td><td><select name="combatEvaluatorBias"><option value="0"' + (combatEvaluatorBias === 0 ? ' SELECTED' : '') +
-					'>Conservative</option><option value="1"' + (combatEvaluatorBias===1?' SELECTED':'') +
-					'>Semi-Conservative</option><option value="2"' + (combatEvaluatorBias===2?' SELECTED':'') +
-					'>Adventurous</option><option value="3"' + (combatEvaluatorBias===3?' SELECTED':'') +
-					'>Conservative+</option></select></td></tr>' +
+			simpleCheckbox(mySimpleCheckboxes.showCombatLog) +
+			simpleCheckbox(mySimpleCheckboxes.enableCreatureColoring) +
+			simpleCheckbox(mySimpleCheckboxes.showCreatureInfo) +
 
-			'<tr><td align="right">Keep Creature Log' + FSH.Layout.helpLink('Keep Creature Log', 'This will show the creature log for each creature you see when you travel. This requires Show Creature Info enabled!') +
-				':</td><td><input name="showMonsterLog" type="checkbox" value="on"' + (FSH.System.getValue('showMonsterLog')?' checked':'') + '>'+
-				'&nbsp;&nbsp;<input type="button" class="custombutton" value="Show" id="Helper:ShowMonsterLogs"></td></tr>' +
-			'<tr><td align="right">Show Send Gold' + FSH.Layout.helpLink('Show Gold on World Screen', 'This will show an icon below the world map to allow you to quickly send gold to a Friend.') +
-				':</td><td><input name="sendGoldonWorld" type="checkbox" value="on"' + (FSH.System.getValue('sendGoldonWorld')?' checked':'') + '>'+
-				'Send <input name="goldAmount" size="5" value="'+ FSH.System.getValue('goldAmount') + '" /> '+
-				'gold to <input name="goldRecipient" size="10" value="'+ FSH.System.getValue('goldRecipient') + '" />' +
-				' Current total: <input name="currentGoldSentTotal" size="5" value="'+ FSH.System.getValue('currentGoldSentTotal') + '" />' +
+			'<tr><td align="right">Combat Evaluator Bias' +
+				FSH.settingsPage.helpLink('Combat Evaluator Bias',
+				'This changes the bias of the combat evaluator for the damage and ' +
+				'HP evaluation. It will not change the attack bias (1.1053).' +
+				'<br>Conservative = 1.1053 and 1.1 (Safest)' +
+				'<br>Semi-Conservative = 1.1 and 1.053' +
+				'<br>Adventurous = 1.053 and 1 (Bleeding Edge)' +
+				'<br>Conservative+ = 1.1053 and 1 with the attack calculation ' +
+				'changed to +-48 per RJEM') +
+				':</td><td><select name="combatEvaluatorBias">' +
+				'<option value="0"' + (combatEvaluatorBias === 0 ? ' SELECTED' : '') +
+				'>Conservative</option>' +
+				'<option value="1"' + (combatEvaluatorBias === 1 ? ' SELECTED' : '') +
+				'>Semi-Conservative</option>' +
+				'<option value="2"' + (combatEvaluatorBias === 2 ? ' SELECTED' : '') +
+				'>Adventurous</option>' +
+				'<option value="3"' + (combatEvaluatorBias === 3 ? ' SELECTED' : '') +
+				'>Conservative+</option></select></td></tr>' +
+
+			'<tr><td align="right">Keep Creature Log' +
+				FSH.settingsPage.helpLink('Keep Creature Log',
+				'This will show the creature log for each creature you see when ' +
+				'you travel. This requires Show Creature Info enabled!') +
+				':</td><td><input name="showMonsterLog" type="checkbox" value="on"' +
+				(FSH.System.getValue('showMonsterLog') ? ' checked' : '') + '>' +
+				'&nbsp;&nbsp;<input type="button" class="custombutton" ' +
+				'value="Show" id="Helper:ShowMonsterLogs"></td></tr>' +
+
+			'<tr><td align="right">Show Send Gold' +
+				FSH.settingsPage.helpLink('Show Gold on World Screen',
+				'This will show an icon below the world map to allow you to ' +
+				'quickly send gold to a Friend.') +
+				':</td><td><input name="sendGoldonWorld" type="checkbox" value="on"' +
+				(FSH.System.getValue('sendGoldonWorld') ? ' checked' : '') + '>' +
+				'&nbsp;&nbsp;Send <input name="goldAmount" size="5" value="' +
+				FSH.System.getValue('goldAmount') + '"> '+
+				'gold to <input name="goldRecipient" size="10" value="' +
+				FSH.System.getValue('goldRecipient') + '">' +
+				' Current total: <input name="currentGoldSentTotal" size="5" value="'+
+				FSH.System.getValue('currentGoldSentTotal') + '">' +
 				'</td></tr>' +
-			'<tr><td align="right">Do Not Kill List' + FSH.Layout.helpLink('Do Not Kill List', 'List of creatures that will not be killed by quick kill. You must type the full name of each creature, ' +
-				'separated by commas. Creature name will show up in red color on world screen and will not be killed by keyboard entry (but can still be killed by mouseclick). Quick kill must be '+
-				'enabled for this function to work.') +
-				':</td><td colspan="3"><input name="doNotKillList" size="60" value="'+ doNotKillList + '" /></td></tr>' +
-			'<tr><td align="right">Hunting Buffs' + FSH.Layout.helpLink('Hunting Buffs', 'Customize which buffs are designated as hunting buffs. You must type the full name of each buff, ' +
+
+			'<tr><td align="right">Do Not Kill List' +
+				FSH.settingsPage.helpLink('Do Not Kill List',
+				'List of creatures that will not be killed by quick kill. ' +
+				'You must type the full name of each creature, separated by commas. ' +
+				'Creature name will show up in red color on world screen and will ' +
+				'not be killed by keyboard entry (but can still be killed by ' +
+				'mouseclick). Quick kill must be enabled for this function to work.') +
+				':</td><td colspan="3"><input name="doNotKillList" size="60" value="' +
+				doNotKillList + '"></td></tr>' +
+
+			'<tr><td align="right">Hunting Buffs' +
+				FSH.settingsPage.helpLink('Hunting Buffs',
+				'Customize which buffs are designated as hunting buffs. ' +
+				'You must type the full name of each buff, ' +
 				'separated by commas. Use the checkbox to enable/disable them.') +
-				':</td><td colspan="3"><input name="showHuntingBuffs" type="checkbox" value="on"' + (FSH.System.getValue('showHuntingBuffs')?' checked':'') + '> ' +
-				'Enabled Hunting Mode' + FSH.Layout.helpLink('Enabled Hunting Mode', 'This will determine which list of buffs gets checked on the world screen.') +
-				':<select name="enabledHuntingMode"><option value="1"' + (enabledHuntingMode===1?' SELECTED':'') +
-					'>' + buffsName + '</option><option value="2"' + (enabledHuntingMode===2?' SELECTED':'') +
-					'>' + buffs2Name + '</option><option value="3"' + (enabledHuntingMode===3?' SELECTED':'') +
-					'>' + buffs3Name + '</option></select></td></tr>' +
-			'<tr><td align="right">' + buffsName + ' Hunting Buff List' + FSH.Layout.helpLink(buffsName + ' Hunting Buff List', buffsName + ' list of hunting buffs.') +
-				':</td><td colspan="3"><input name="huntingBuffsName" title="Hunting mode name" size="7" value="'+ buffsName + '" /><input name="huntingBuffs" size="49" value="'+ buffs + '" /></td></tr>' +
-			'<tr><td align="right">' + buffs2Name + ' Hunting Buff List' + FSH.Layout.helpLink(buffs2Name + ' Hunting Buff List', 'List of ' + buffs2Name + ' hunting buffs.') +
-				':</td><td colspan="3"><input name="huntingBuffs2Name" title="Hunting mode name" size="7" value="'+ buffs2Name + '" /><input name="huntingBuffs2" size="49" value="'+ buffs2 + '" /></td></tr>' +
-			'<tr><td align="right">' + buffs3Name + ' Hunting Buff List' + FSH.Layout.helpLink(buffs3Name + ' Hunting Buff List', 'List of ' + buffs3Name + ' hunting buffs.') +
-				':</td><td colspan="3"><input name="huntingBuffs3Name" title="Hunting mode name" size="7" value="'+ buffs3Name + '" /><input name="huntingBuffs3" size="49" value="'+ buffs3 + '" /></td></tr>' +
-			'<tr><td align="right">Enable FS Box Log' + FSH.Layout.helpLink('Enable FS Box Log', 'This enables the functionality to keep a log of recent seen FS Box message.') +
-				':</td><td><input name="fsboxlog" type="checkbox" value="on"' + (FSH.System.getValue('fsboxlog')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Enable Buff Log' + FSH.Layout.helpLink('Enable Buff Log', 'This enables the functionality to keep a log of recently casted buffs') +
-				':</td><td><input name="keepBuffLog" type="checkbox" value="on"' + (FSH.System.getValue('keepBuffLog')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Enable Hunting Mode' + FSH.Layout.helpLink('Enable Hunting Mode', 'This disable menu and some visual features to speed up the FSH.Helper.') +
-				':</td><td><input name="huntingMode" type="checkbox" value="on"' + (FSH.System.getValue('huntingMode')?' checked':'') + '></td></tr>' +
-			// '<tr><td align="right">Enable Fast Walk' + FSH.Layout.helpLink('Enable Fast Walk', 'This functionality will allow the user to send multiple move commands, each subsequent one assuming that the previous one succeeded. ' +
-				// 'It does not check for blocked squares, not does it check to make sure that the move commands arrived at the server in the right order. Depending on the lag you experience, the user may have to pause slightly ' +
-				// 'between each move to make sure they reach the server in the right order.') +
-				// ':</td><td><input name="enableFastWalk" type="checkbox" value="on"' + (FSH.System.getValue('enableFastWalk')?' checked':'') + '>'+
-				// ' Show FastWalk icon on world' + FSH.Layout.helpLink('Show FastWalk icon on world', 'Should the FastWalk toggle icon show on the world map') +
-				// ':<input name="showFastWalkIconOnWorld" type="checkbox" value="on"' + (FSH.System.getValue('showFastWalkIconOnWorld')?' checked':'') + '></td></tr>' +
+				':</td><td colspan="3"><input name="showHuntingBuffs" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('showHuntingBuffs') ? ' checked' : '') + '> ' +
+				'Enabled Hunting Mode' +
+				FSH.settingsPage.helpLink('Enabled Hunting Mode',
+				'This will determine which list of buffs gets checked ' +
+				'on the world screen.') +
+				':<select name="enabledHuntingMode">' +
+				'<option value="1"' + (enabledHuntingMode === 1 ? ' SELECTED' : '') +
+				'>' + buffsName + '</option>' +
+				'<option value="2"' + (enabledHuntingMode === 2 ? ' SELECTED' : '') +
+				'>' + buffs2Name + '</option>' +
+				'<option value="3"' + (enabledHuntingMode === 3 ? ' SELECTED' : '') +
+				'>' + buffs3Name + '</option>' +
+				'</select></td></tr>' +
+			'<tr><td align="right">' + buffsName + ' Hunting Buff List' +
+				FSH.settingsPage.helpLink(buffsName + ' Hunting Buff List',
+				buffsName + ' list of hunting buffs.') +
+				':</td><td colspan="3"><input name="huntingBuffsName" ' +
+				'title="Hunting mode name" size="7" value="' + buffsName +
+				'"><input name="huntingBuffs" size="49" value="' + buffs +
+				'"></td></tr>' +
+			'<tr><td align="right">' + buffs2Name + ' Hunting Buff List' +
+				FSH.settingsPage.helpLink(buffs2Name + ' Hunting Buff List',
+				'List of ' + buffs2Name + ' hunting buffs.') +
+				':</td><td colspan="3"><input name="huntingBuffs2Name" ' +
+				'title="Hunting mode name" size="7" value="' + buffs2Name +
+				'"><input name="huntingBuffs2" size="49" value="' + buffs2 +
+				'"></td></tr>' +
+			'<tr><td align="right">' + buffs3Name + ' Hunting Buff List' +
+				FSH.settingsPage.helpLink(buffs3Name + ' Hunting Buff List',
+				'List of ' + buffs3Name + ' hunting buffs.') +
+				':</td><td colspan="3"><input name="huntingBuffs3Name" ' +
+				'title="Hunting mode name" size="7" value="'+ buffs3Name +
+				'"><input name="huntingBuffs3" size="49" value="' + buffs3 +
+				'"></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.huntingMode) +
+
 			//Log screen prefs
-			'<tr><th colspan="2" align="left"><b>Log screen preferences</b></th></tr>' +
-			'<tr><td align="right">Cleanup Guild Log' + FSH.Layout.helpLink('Dim Non Player Guild Log Messages', 'Any log messages not related to the ' +
-				'current player will be dimmed (e.g. recall messages from guild store)') +
-				':</td><td><input name="hideNonPlayerGuildLogMessages" type="checkbox" value="on"' + (FSH.System.getValue('hideNonPlayerGuildLogMessages')?' checked':'') + '></td></td></tr>' +
-			'<tr><td align="right">Use New Guild Log' + FSH.Layout.helpLink('Use New Guild Log', 'This will replace the standard guild log with the helper version of the guild log.') +
-				':</td><td><input name="useNewGuildLog" type="checkbox" value="on"' + (FSH.System.getValue('useNewGuildLog')?' checked':'') + '></td></td></tr>' +
-			'<tr><td align="right">New Guild Log History' + FSH.Layout.helpLink('New Guild Log History (pages)', 'This is the number of pages that the new guild log screen will go back in history.') +
-				':</td><td><input name="newGuildLogHistoryPages" size="3" value="'+ FSH.System.getValue('newGuildLogHistoryPages') + '" /></td></td></tr>' +
-			'<tr><td align="right">Enable Log Coloring' + FSH.Layout.helpLink('Enable Log Coloring', 'Three logs will be colored if this is enabled, Guild Chat, Guild Log and Player Log. ' +
-				'It will show any new messages in yellow and anything 20 minutes old ones in brown.') +
-				':</td><td><input name="enableLogColoring" type="checkbox" value="on"' + (FSH.System.getValue('enableLogColoring')?' checked':'') + '></td></td></tr>' +
-			'<tr><td align="right">New Log Message Sound' + FSH.Layout.helpLink('New Log Message Sound', 'The .wav or .ogg file to play when you have unread log messages. This must be a .wav or .ogg file. This option can be turned on/off on the world page. Only works in Firefox 3.5+') +
-				':</td><td colspan="3"><input name="defaultMessageSound" size="60" value="'+ FSH.System.getValue('defaultMessageSound') + '" /></td></tr>' +
-			'<tr><td align="right">Play sound on unread log' + FSH.Layout.helpLink('Play sound on unread log', 'Should the above sound play when you have unread log messages? (will work on Firefox 3.5+ only)') +
-				':</td><td><input name="playNewMessageSound" type="checkbox" value="on"' + (FSH.System.getValue('playNewMessageSound')?' checked':'') + '>' +
-				' Show speaker on world' + FSH.Layout.helpLink('Show speaker on world', 'Should the toggle play sound speaker show on the world map? (This icon is next to the Fallensword wiki icon and will only display on Firefox 3.5+)') +
-				':<input name="showSpeakerOnWorld" type="checkbox" value="on"' + (FSH.System.getValue('showSpeakerOnWorld')?' checked':'') + '></tr></td>' +
-			'<tr><td align="right">Enable Chat Parsing' + FSH.Layout.helpLink('Enable Chat Parsing', 'If this is checked, your character log will be parsed for chat messages and show the chat message on the screen if you reply to that message.') +
-				':</td><td><input name="enableChatParsing" type="checkbox" value="on"' + (FSH.System.getValue('enableChatParsing')?' checked':'') + '></td></td></tr>' +
-			'<tr><td align="right">Add attack link to log' + FSH.Layout.helpLink('Add attack link to log', 'If checked, this will add an Attack link to each message in your log.') +
-				':</td><td><input name="addAttackLinkToLog" type="checkbox" value="on"' + (FSH.System.getValue('addAttackLinkToLog')?' checked':'') + '></td></td></tr>' +
-			'<tr><td align="right">Enhance Chat Text Entry' + FSH.Layout.helpLink('Enhance Chat Text Entry', 'If checked, this will enhance the entry field for entering chat text on the guild chat page.') +
-				':</td><td><input name="enhanceChatTextEntry" type="checkbox" value="on"' + (FSH.System.getValue('enhanceChatTextEntry')?' checked':'') + '></td></td></tr>' +
+			'<tr><th colspan="2" align="left"><b>Log screen preferences' +
+				'</b></th></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.hideNonPlayerGuildLogMessages) +
+			simpleCheckbox(mySimpleCheckboxes.useNewGuildLog) +
+
+			'<tr><td align="right">New Guild Log History' +
+				FSH.settingsPage.helpLink('New Guild Log History (pages)',
+				'This is the number of pages that the new guild log ' +
+				'screen will go back in history.') +
+				':</td><td><input name="newGuildLogHistoryPages" size="3" value="' +
+				FSH.System.getValue('newGuildLogHistoryPages') + '"></td></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.enableLogColoring) +
+
+			'<tr><td align="right">New Log Message Sound' +
+				FSH.settingsPage.helpLink('New Log Message Sound',
+				'The .wav or .ogg file to play when you have unread log messages. ' +
+				'This must be a .wav or .ogg file. This option can be turned on/off ' +
+				'on the world page. Only works in Firefox 3.5+') +
+				':</td><td colspan="3"><input name="defaultMessageSound" size="60" ' +
+				'value="' + FSH.System.getValue('defaultMessageSound') +
+				'"></td></tr>' +
+
+			'<tr><td align="right">Play sound on unread log' +
+				FSH.settingsPage.helpLink('Play sound on unread log',
+				'Should the above sound play when you have unread log messages? ' +
+				'(will work on Firefox 3.5+ only)') +
+				':</td><td><input name="playNewMessageSound" type="checkbox" ' +
+				'value="on"' +
+				(FSH.System.getValue('playNewMessageSound') ? ' checked' : '') + '>' +
+				' Show speaker on world' +
+				FSH.settingsPage.helpLink('Show speaker on world',
+				'Should the toggle play sound speaker show on the world map? ' +
+				'(This icon is next to the Fallensword wiki icon and will only ' +
+				'display on Firefox 3.5+)') +
+				':<input name="showSpeakerOnWorld" type="checkbox" value="on"' +
+				(FSH.System.getValue('showSpeakerOnWorld') ? ' checked' : '') +
+				'></tr></td>' +
+
+			simpleCheckbox(mySimpleCheckboxes.enableChatParsing) +
+			simpleCheckbox(mySimpleCheckboxes.keepBuffLog) +
+			simpleCheckbox(mySimpleCheckboxes.addAttackLinkToLog) +
+			simpleCheckbox(mySimpleCheckboxes.enhanceChatTextEntry) +
+
 			//Equipment screen prefs
-			'<tr><th colspan="2" align="left"><b>Equipment screen preferences</b></th></tr>' +
-			'<tr><td align="right">Disable Item Coloring' + FSH.Layout.helpLink('Disable Item Coloring', 'Disable the code that colors the item text based on the rarity of the item.') +
-				':</td><td><input name="disableItemColoring" type="checkbox" value="on"' + (FSH.System.getValue('disableItemColoring')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Show Quick Send Item' + FSH.Layout.helpLink('Show Quick Send on Manage Backpack', 'This will show a link beside each item which gives the option to quick send the item to this person') +
-				':</td><td><input name="showQuickSendLinks" type="checkbox" value="on"' + (FSH.System.getValue('showQuickSendLinks')?' checked':'') + '>'+
-				'Send Items To <input name="itemRecipient" size="10" value="'+ FSH.System.getValue('itemRecipient') + '" />' +
-			'<tr><td align="right">Show Quick Drop Item' + FSH.Layout.helpLink('Show Quick Drop on Manage Backpack', 'This will show a link beside each item which gives the option to drop the item.  WARNING: NO REFUNDS ON ERROR') +
-				':</td><td><input name="showQuickDropLinks" type="checkbox" value="on"' + (FSH.System.getValue('showQuickDropLinks')?' checked':'') + '>'+
-			
-			'<tr><td align="right">Quick Select all of type in Send Screen' + FSH.Layout.helpLink('Quick Select all of type in Send Screen', 'This allows you to customize what quick links you would like displayed in your send item screen.<br>Use the format [&quot;name&quot;,&quot;itemid&quot;],[&quot;othername&quot;,&quot;itemid2&quot;].<br>WARNING: NO REFUNDS ON ERROR') +
-				':</td><td><input name="sendClasses" size="60" value="' + FSH.System.escapeHtml(FSH.System.getValue('sendClasses')) + '">'+
-			
+			'<tr><th colspan="2" align="left"><b>Equipment screen preferences' +
+				'</b></th></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.disableItemColoring) +
+
+			'<tr><td align="right">Show Quick Send Item' +
+				FSH.settingsPage.helpLink('Show Quick Send on Manage Backpack',
+				'This will show a link beside each item which gives the option to ' +
+				'quick send the item to this person') +
+				':</td><td><input name="showQuickSendLinks" type="checkbox" ' +
+				'value="on"' +
+				(FSH.System.getValue('showQuickSendLinks') ? ' checked' : '') + '>'+
+				'&nbsp;&nbsp;Send Items To ' +
+				'<input name="itemRecipient" size="10" value="' +
+				FSH.System.getValue('itemRecipient') + '">' +
+
+			simpleCheckbox(mySimpleCheckboxes.showQuickDropLinks) +
+
+			'<tr><td align="right">Quick Select all of type in Send Screen' +
+				FSH.settingsPage.helpLink('Quick Select all of type in Send Screen',
+				'This allows you to customize what quick links you would like ' +
+				'displayed in your send item screen.<br>Use the format ' +
+				'[&quot;name&quot;,&quot;itemid&quot;],[&quot;othername&quot;,' +
+				'&quot;itemid2&quot;].<br>WARNING: NO REFUNDS ON ERROR') +
+				':</td><td><input name="sendClasses" size="60" value="' +
+				FSH.System.escapeHtml(FSH.System.getValue('sendClasses')) + '">'+
+
 			//Quest Preferences
 			'<tr><th colspan="2" align="left"><b>Quest preferences</b></th></tr>' +
-			'<tr><td align="right">Hide Specific Quests' + FSH.Layout.helpLink('Hide Specific Quests', 'If enabled, this hides quests whose name matches the list (separated by commas). ' +
-				'This works on Quest Manager and Quest Book.') +
-				':</td><td colspan="3"><input name="hideQuests" type="checkbox" value="on"' + (FSH.System.getValue('hideQuests')?' checked':'') + '>' +
-				'<input name="hideQuestNames" size="60" value="'+ FSH.System.getValue('hideQuestNames') + '" /></td></tr>' +
-			'<tr><td align="right">Store Last Quest Page' +
-				FSH.Layout.helpLink('Store Last Quest Page', 'This will store the ' +
-				'page and sort order of each of the three quest selection pages for ' +
-				'next time you visit. If you need to reset the links, turn this ' +
-				'option off, click on the link you wish to reset and then turn ' +
-				'this option back on again.') +
-				':</td><td><input name="storeLastQuestPage" type="checkbox" ' +
+
+			'<tr><td align="right">Hide Specific Quests' +
+				FSH.settingsPage.helpLink('Hide Specific Quests',
+				'If enabled, this hides quests whose name matches the list ' +
+				'(separated by commas). This works on Quest Manager and Quest Book.') +
+				':</td><td colspan="3"><input name="hideQuests" type="checkbox" ' +
 				'value="on"' +
-				(FSH.System.getValue('storeLastQuestPage') ? ' checked' : '') +
-				'></td></tr>' +
-			'<tr><td align="right">Show All Quest Steps' +
-				FSH.Layout.helpLink('Show All Quest Steps',
-				'Shows all quest steps in the UFSG.') +
-				':</td><td><input name="showNextQuestSteps" type="checkbox" ' +
-				'value="on"' +
-				(FSH.System.getValue('showNextQuestSteps') ? ' checked' : '') +
-				'></td></tr>' +
+				(FSH.System.getValue('hideQuests') ? ' checked' : '') + '>' +
+				'&nbsp;<input name="hideQuestNames" size="60" value="' +
+				FSH.System.getValue('hideQuestNames') + '"></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.storeLastQuestPage) +
+			simpleCheckbox(mySimpleCheckboxes.showNextQuestSteps) +
+
 			//profile prefs
 			'<tr><th colspan="2" align="left"><b>Profile preferences</b></th></tr>' +
-			'<tr><td align="right">Render self bio' + FSH.Layout.helpLink('Render self bio', 'This determines if your own bio will render the FSH special bio tags.') +
-				':</td><td><input name="renderSelfBio" type="checkbox" value="on"' + (FSH.System.getValue('renderSelfBio')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Render other players\' bios' + FSH.Layout.helpLink('Render other players bios', 'This determines if other players bios will render the FSH special bio tags.') +
-				':</td><td><input name="renderOtherBios" type="checkbox" value="on"' + (FSH.System.getValue('renderOtherBios')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Enable Bio Compressor' + FSH.Layout.helpLink('Enable Bio Compressor', 'This will compress long bios according to settings and provide a link to expand the compressed section.') +
-				':</td><td><input name="enableBioCompressor" type="checkbox" value="on"' + (FSH.System.getValue('enableBioCompressor')?' checked':'') +
-				'> Max Characters:<input name="maxCompressedCharacters" size="4" value="'+ FSH.System.getValue('maxCompressedCharacters') + '" />'+
-				' Max Lines:<input name="maxCompressedLines" size="3" value="'+ FSH.System.getValue('maxCompressedLines') + '" /></td></tr>' +
-			'<tr><td align="right">Buy Buffs Greeting' + FSH.Layout.helpLink('Buy Buffs Greeting', 'This is the default text to open a message with when asking to buy buffs. You can use {playername} to insert the target players name. You can also use' +
-				' {buffs} to insert the list of buffs. You can use {cost} to insert the total cost of the buffs.') +
-				':</td><td colspan="3"><input name="buyBuffsGreeting" size="60" value="'+ FSH.System.getValue('buyBuffsGreeting') + '" /></td></tr>' +
-			'<tr><td align="right">Show Stat Bonus Total' + FSH.Layout.helpLink('Show Stat Bonus Total', 'This will show a total of the item stats when you mouseover an item on the profile screen.') +
-				':</td><td><input name="showStatBonusTotal" type="checkbox" value="on"' + (FSH.System.getValue('showStatBonusTotal')?' checked':'') + '></td></tr>' +
 
-			'<tr><td align="right">Enable Quick Drink/Wear' +
-				FSH.Layout.helpLink('Enable Quick Drink/Wear On Profile', 'This ' +
-					'enables the quick drink/wear functionality on the profile page.') +
-				':</td><td><input name="enableQuickDrink" type="checkbox" value="on"' +
-				(FSH.System.getValue('enableQuickDrink') ? ' checked' : '') +
-				'></td></tr>' +
+			simpleCheckbox(mySimpleCheckboxes.renderSelfBio) +
+			simpleCheckbox(mySimpleCheckboxes.renderOtherBios) +
 
-			'<tr><td align="right">Disable Deactivate Prompts' +
-				FSH.Layout.helpLink('Disable Deactivate Prompts', 'This disables the ' +
-					'prompts for deactivating buffs on the profile page.') +
-				':</td><td><input name="disableDeactivatePrompts" type="checkbox" ' +
+			'<tr><td align="right">Enable Bio Compressor' +
+				FSH.settingsPage.helpLink('Enable Bio Compressor',
+				'This will compress long bios according to settings and provide a ' +
+				'link to expand the compressed section.') +
+				':</td><td><input name="enableBioCompressor" type="checkbox" ' +
 				'value="on"' +
-				(FSH.System.getValue('disableDeactivatePrompts') ? ' checked' : '') +
-				'></td></tr>' +
+				(FSH.System.getValue('enableBioCompressor') ? ' checked' : '') +
+				'> Max Characters:<input name="maxCompressedCharacters" size="4" ' +
+				'value="' + FSH.System.getValue('maxCompressedCharacters') + '" />' +
+				' Max Lines:<input name="maxCompressedLines" size="3" value="' +
+				FSH.System.getValue('maxCompressedLines') + '"></td></tr>' +
 
-			//Arena prefs
-			// '<tr><th colspan="2" align="left"><b>Arena preferences</b></th></tr>' +
-			// '<tr><td align="right">Auto Sort Arena List' + FSH.Layout.helpLink('Auto Sort Arena List', 'This will automatically sort the arena list based on your last preference for sort.') +
-				// ':</td><td><input name="autoSortArenaList" type="checkbox" value="on"' + (FSH.System.getValue('autoSortArenaList')?' checked':'') + '></td></tr>' +
-			// '<tr><td align="right">Hide Arena Prizes' + FSH.Layout.helpLink('Hide Arena Prizes', 'List of the itemIds of arena prizes that should not display on the arena screen ' +
-				// 'separated by commas. To find the itemId you will have to view the source of the page or mouseover the item on the arena page.') +
-				// ':</td><td colspan="3"><input name="hideArenaPrizes" size="60" value="'+ hideArenaPrizes + '" /></td></tr>' +
+			'<tr><td align="right">Buy Buffs Greeting' +
+				FSH.settingsPage.helpLink('Buy Buffs Greeting',
+				'This is the default text to open a message with when asking to ' +
+				'buy buffs. You can use {playername} to insert the target players ' +
+				'name. You can also use {buffs} to insert the list of buffs. You ' +
+				'can use {cost} to insert the total cost of the buffs.') +
+				':</td><td colspan="3"><input name="buyBuffsGreeting" size="60" ' +
+				'value="' + FSH.System.getValue('buyBuffsGreeting') + '"></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.showStatBonusTotal) +
+			simpleCheckbox(mySimpleCheckboxes.enableQuickDrink) +
+			simpleCheckbox(mySimpleCheckboxes.disableDeactivatePrompts) +
+
 			//Bounty hunting prefs
-			'<tr><th colspan="2" align="left"><b>Bounty hunting preferences</b></th></tr>' +
-			'<tr><td align= "right">' + FSH.Layout.networkIcon + 'Show Active Bounties' + FSH.Layout.helpLink('Show Active Bounties', 'This will show your active bounties ' +
-				'on the right hand side') + ':</td><td colspan="3"><input name="enableActiveBountyList" type = "checkbox" value = "on"' + (enableActiveBountyList? ' checked':'') + '/>' +
-				'<input name="bountyListRefreshTime" size="3" value="'+ bountyListRefreshTime + '" /> seconds refresh</td></tr>' +
-			'<tr><td align= "right">' + FSH.Layout.networkIcon + 'Show Wanted Bounties' + FSH.Layout.helpLink('Show Wanted Bounties', 'This will show when someone you want is on the bounty board, the list is ' +
-				'displayed on the right hand side') + ':</td><td colspan="3"><input name="enableWantedList" type = "checkbox" value = "on"' + (enableWantedList? ' checked':'') + '/> Refresh time is same as Active Bounties' +
-			'<tr><td align= "right">Wanted Names' + FSH.Layout.helpLink('Wanted Names', 'The names of the people you want to see on the bounty board separated by commas') + ':</td><td colspan="3">' +
-				'<input name ="wantedNames" size ="60" value="' + wantedNames + '"/></td></tr>' +
-			'<tr><td align= "right">' + FSH.Layout.networkIcon + 'Show Attack Helper' + FSH.Layout.helpLink('Show Attack Helper', 'This will show extra information on the attack player screen ' +
-				'about stats and buffs on you and your target') + ':</td><td colspan="3"><input name="enableAttackHelper" type = "checkbox" value = "on"' + (FSH.System.getValue('enableAttackHelper')? ' checked':'') + '/>' +
-			'<tr><td align= "right">' + FSH.Layout.networkIcon + 'Show PvP Summary in Log' + FSH.Layout.helpLink('Show PvP Summary in Log', 'This will show a summary of the PvP results in the log.') + ':</td><td colspan="3">' +
-				'<input name="showPvPSummaryInLog" type = "checkbox" value = "on"' + (FSH.System.getValue('showPvPSummaryInLog')? ' checked':'') + '/>' +
-			//Auction house prefs
-			'<tr><th colspan="2" align="left"><b>Auction house preferences</b></th></tr>' +
-			'<tr><td align="right">Auto Fill Min Bid Price' + FSH.Layout.helpLink('Auto Fill Min Bid Price', 'This enables the functionality to automatically fill in the min bid price so you just have to hit bid and your bid will be placed.') +
-				':</td><td><input name="autoFillMinBidPrice" type="checkbox" value="on"' + (FSH.System.getValue('autoFillMinBidPrice')?' checked':'') + '></td></tr>' +
+			'<tr><th colspan="2" align="left"><b>Bounty hunting preferences' +
+				'</b></th></tr>' +
+
+			'<tr><td align= "right">' + FSH.Layout.networkIcon +
+				'Show Active Bounties' +
+				FSH.settingsPage.helpLink('Show Active Bounties',
+				'This will show your active bounties on the right hand side') +
+				':</td><td colspan="3"><input name="enableActiveBountyList" ' +
+				'type = "checkbox" value = "on"' +
+				(enableActiveBountyList ? ' checked' : '') + '>&nbsp;' +
+				'<input name="bountyListRefreshTime" size="3" value="' +
+				bountyListRefreshTime + '"> seconds refresh</td></tr>' +
+
+			'<tr><td align= "right">' + FSH.Layout.networkIcon +
+				'Show Wanted Bounties' +
+				FSH.settingsPage.helpLink('Show Wanted Bounties',
+				'This will show when someone you want is on the bounty board, ' +
+				'the list is displayed on the right hand side') +
+				':</td><td colspan="3"><input name="enableWantedList" ' +
+				'type="checkbox" value="on"' +
+				(enableWantedList ? ' checked' : '') +
+				'> Refresh time is same as Active Bounties' +
+
+			'<tr><td align= "right">Wanted Names' +
+				FSH.settingsPage.helpLink('Wanted Names',
+				'The names of the people you want to see on the bounty board ' +
+				'separated by commas') + ':</td><td colspan="3">' +
+				'<input name="wantedNames" size="60" value="' + wantedNames +
+				'"></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.enableAttackHelper) +
+			simpleCheckbox(mySimpleCheckboxes.showPvPSummaryInLog) +
+
 			//Other prefs
 			'<tr><th colspan="2" align="left"><b>Other preferences</b></th></tr>' +
-			'<tr><td align="right">Hide Specific Recipes' + FSH.Layout.helpLink('Hide Specific Recipes', 'If enabled, this hides recipes whose name matches the list (separated by commas). ' +
-				'This works on Recipe Manager') +
-				':</td><td colspan="3"><input name="hideRecipes" type="checkbox" value="on"' + (FSH.System.getValue('hideRecipes')?' checked':'') + '>' +
-				'<input name="hideRecipeNames" size="60" value="'+ FSH.System.getValue('hideRecipeNames') + '" /></td></tr>' +
-			'<tr><td align="right">Hide Relic Offline' + FSH.Layout.helpLink('Hide Relic Offline', 'This hides the relic offline defenders checker.') +
-				':</td><td><input name="hideRelicOffline" type="checkbox" value="on"' + (FSH.System.getValue('hideRelicOffline')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Enter Sends Message' + FSH.Layout.helpLink('Enter Sends Message', 'If enabled, will send a message from the Send Message screen if you press enter. You can still insert a new line by holding down shift' +
-			' when you press enter.') +
-				':</td><td><input name="enterForSendMessage" type="checkbox" value="on"' + (FSH.System.getValue('enterForSendMessage')?' checked':'') + '></td></tr>' +
-			'<tr><td align="right">Navigate After Message Sent' + FSH.Layout.helpLink('Navigate After Message Sent', 'If enabled, will navigate to the referring page after a successful message is sent. Example: ' +
-				' if you are on the world screen and hit message on the guild info panel after you send the message, it will return you to the world screen.') +
-				':</td><td><input name="navigateToLogAfterMsg" type="checkbox" value="on"' + (FSH.System.getValue('navigateToLogAfterMsg')?' checked':'') + '></td></tr>' +
-			'<tr><td align= "right">Max Group Size to Join' + FSH.Layout.helpLink('Max Group Size to Join', 'This will disable HCSs Join All functionality and will only join groups less than a set size. ') +
-				':</td><td colspan="3"><input name="enableMaxGroupSizeToJoin" type = "checkbox" value = "on"' + (FSH.System.getValue('enableMaxGroupSizeToJoin')? ' checked':'') + '/>' +
-				'Max Size: <input name="maxGroupSizeToJoin" size="3" value="' + FSH.System.getValue('maxGroupSizeToJoin') + '" /></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.autoFillMinBidPrice) +
+
+			'<tr><td align="right">Hide Specific Recipes' +
+				FSH.settingsPage.helpLink('Hide Specific Recipes',
+				'If enabled, this hides recipes whose name matches the list ' +
+				'(separated by commas). This works on Recipe Manager') +
+				':</td><td colspan="3"><input name="hideRecipes" ' +
+				'type="checkbox" value="on"' +
+				(FSH.System.getValue('hideRecipes') ? ' checked' : '') + '>' +
+				'&nbsp;<input name="hideRecipeNames" size="60" value="' +
+				FSH.System.getValue('hideRecipeNames') + '"></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.hideRelicOffline) +
+			simpleCheckbox(mySimpleCheckboxes.enterForSendMessage) +
+			simpleCheckbox(mySimpleCheckboxes.navigateToLogAfterMsg) +
+
+			'<tr><td align= "right">Max Group Size to Join' +
+				FSH.settingsPage.helpLink('Max Group Size to Join',
+				'This will disable HCSs Join All functionality and will only join ' +
+				'groups less than a set size. ') +
+				':</td><td colspan="3"><input name="enableMaxGroupSizeToJoin" ' +
+				'type = "checkbox" value = "on"' +
+				(FSH.System.getValue('enableMaxGroupSizeToJoin') ? ' checked' : '') +
+				'>&nbsp;&nbsp;Max Size: ' +
+				'<input name="maxGroupSizeToJoin" size="3" value="' +
+				FSH.System.getValue('maxGroupSizeToJoin') + '"></td></tr>' +
+
+			simpleCheckbox(mySimpleCheckboxes.moveComposingButtons) +
+
 			//save button
 			//http://www.fallensword.com/index.php?cmd=notepad&blank=1&subcmd=savesettings
-			'<tr><td colspan="2" align=center><input type="button" class="custombutton" value="Save" id="Helper:SaveOptions"></td></tr>' +
-			'<tr><td colspan="2" align=center><a href="http://www.fallensword.com/index.php?cmd=notepad&blank=1&subcmd=savesettings">Export or Load Settings!</a></td></tr>' +
+			'<tr><td colspan="2" align=center><input type="button" class=' +
+				'"custombutton" value="Save" id="Helper:SaveOptions"></td></tr>' +
+			'<tr><td colspan="2" align=center><a href="' + FSH.System.server +
+				'index.php?cmd=notepad&blank=1&subcmd=savesettings">Export or Load ' +
+				'Settings!</a></td></tr>' +
 			'<tr><td colspan="2" align=center>' +
-			'<span style="font-size:xx-small">Fallen Sword Helper was coded by <a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=1393340">Coccinella</a>, ' +
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=1599987">yuuzhan</a>, ' +
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=1963510">PointyHair</a>, ' +
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=1346893">Tangtop</a>, '+
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=2536682">dkwizard</a>, ' +
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=1570854">jesiegel</a>,  ' +
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=2156859">ByteBoy</a>, and ' +
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=2169401">McBush</a>, ' +
-			'with valuable contributions by <a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=524660">Nabalac</a>, ' +
-			'<a href="' + FSH.System.server + 'index.php?cmd=profile&player_id=37905">Ananasii</a></td></tr>' +
+				'<span style="font-size:xx-small">Fallen Sword Helper was coded by ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=1393340">Coccinella</a>, ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=1599987">yuuzhan</a>, ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=1963510">PointyHair</a>, ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=1346893">Tangtop</a>, ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=2536682">dkwizard</a>, ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=1570854">jesiegel</a>, ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=2156859">ByteBoy</a>, and ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=2169401">McBush</a>, ' +
+				'with valuable contributions by ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=524660">Nabalac</a>, ' +
+				'<a href="' + FSH.System.server +
+				'index.php?cmd=profile&player_id=37905">Ananasii</a></span></td></tr>' +
 			'</table></form>';
-		//var insertHere = FSH.System.findNode('//table[@width="100%" and @cellspacing="0" and @cellpadding="5" and @border="0"]');
-		//var newRow=insertHere.insertRow(insertHere.rows.length);
-		//var newCell=newRow.insertCell(0);
-		//newCell.colSpan=3;
-		//newCell.innerHTML=configData;
-		// insertHere.insertBefore(configData, insertHere);
-		var maxID=parseInt($('div[id*="settingsTabs-"]:last').attr('id').split('-')[1], 10);
-		$('div[id*="settingsTabs-"]:last').after('<div id="settingsTabs-'+(maxID+1)+'">'+configData+'</div>');
-		if($('#settingsTabs').tabs('length')>0){
+
+		var maxID = parseInt($('div[id*="settingsTabs-"]:last').attr('id')
+			.split('-')[1], 10);
+		$('div[id*="settingsTabs-"]:last').after('<div id="settingsTabs-' +
+			(maxID + 1) + '">' + configData + '</div>');
+		if($('#settingsTabs').tabs('length') > 0){
 			//chrome, have to add it this way (due to loading order
-			$('#settingsTabs').tabs('add','#settingsTabs-'+(maxID+1),'FSH Settings');
-		}else{
+			$('#settingsTabs').tabs('add','#settingsTabs-' + (maxID + 1),
+				'FSH Settings');
+		} else {
 			//firefox loads it later, so just print to page
-			$('a[href*="settingsTabs-"]:last').parent().after('<li><a href="#settingsTabs-'+(maxID+1)+'">FSH Settings</a></li>');
+			$('a[href*="settingsTabs-"]:last').parent()
+				.after('<li><a href="#settingsTabs-' + (maxID + 1) +
+				'">FSH Settings</a></li>');
 		}
 
-		document.getElementById('Helper:SaveOptions').addEventListener('click', FSH.settingsPage.saveConfig, true);
-		document.getElementById('Helper:ShowLogs').addEventListener('click', FSH.settingsPage.showLogs, true);
-		document.getElementById('Helper:ShowMonsterLogs').addEventListener('click', FSH.settingsPage.showMonsterLogs, true);
+		document.getElementById('Helper:SaveOptions')
+			.addEventListener('click', FSH.settingsPage.saveConfig, true);
+		document.getElementById('Helper:ShowLogs')
+			.addEventListener('click', FSH.settingsPage.showLogs, true);
+		document.getElementById('Helper:ShowMonsterLogs')
+			.addEventListener('click', FSH.settingsPage.showMonsterLogs, true);
 
-		document.getElementById('toggleShowGuildSelfMessage').addEventListener('click', FSH.System.toggleVisibilty, true);
-		document.getElementById('toggleShowGuildFrndMessage').addEventListener('click', FSH.System.toggleVisibilty, true);
-		document.getElementById('toggleShowGuildPastMessage').addEventListener('click', FSH.System.toggleVisibilty, true);
-		document.getElementById('toggleShowGuildEnmyMessage').addEventListener('click', FSH.System.toggleVisibilty, true);
+		document.getElementById('toggleShowGuildSelfMessage')
+			.addEventListener('click', FSH.System.toggleVisibilty, true);
+		document.getElementById('toggleShowGuildFrndMessage')
+			.addEventListener('click', FSH.System.toggleVisibilty, true);
+		document.getElementById('toggleShowGuildPastMessage')
+			.addEventListener('click', FSH.System.toggleVisibilty, true);
+		document.getElementById('toggleShowGuildEnmyMessage')
+			.addEventListener('click', FSH.System.toggleVisibilty, true);
 
-		var krulButton = FSH.System.findNode('//input[@value="Instant Portal back to Krul Island"]');
-		var onClick = krulButton.getAttribute('onclick');
-		//window.location='index.php?cmd=settings&subcmd=fix&xcv=3264968baaf287c67b0fab314280b163';
-		var krulXCVRE = /xcv=([a-z0-9]+)'/;
-		var krulXCV = krulXCVRE.exec(onClick);
-		if (krulXCV) {FSH.System.setValue('krulXCV',krulXCV[1]);}
-
-		var minGroupLevelTextField = FSH.System.findNode('//input[@name="min_group_level"]');
+		var minGroupLevelTextField =
+			FSH.System.findNode('//input[@name="min_group_level"]');
 		if (minGroupLevelTextField) {
 			var minGroupLevel = minGroupLevelTextField.value;
 			FSH.System.setValue('minGroupLevel',minGroupLevel);
 		}
 	},
 
-	toggleTickAllBuffs: function(){ // Legacy
-		var allItems=FSH.System.findNodes('//input[@type="checkbox" and @name="blockedSkillList\[\]"]');
-		var tckTxt =document.getElementById('Helper:tickAllBuffs');
-		if (allItems) {
-			for (var i=0; i<allItems.length; i += 1) {
-				var checkboxForItem = allItems[i];
-				if (checkboxForItem.style.visibility === 'hidden') {
-					checkboxForItem.checked = false;
-				} else {
-					if(tckTxt.innerHTML==='Tick all buffs'){
-						checkboxForItem.checked = true;
-					}else{
-						checkboxForItem.checked = false;
-					}
-				}
-			}
-			if(tckTxt.innerHTML==='Tick all buffs'){
-				document.getElementById('Helper:tickAllBuffs').innerHTML='Untick all buffs';
-			}else{
-				document.getElementById('Helper:tickAllBuffs').innerHTML='Tick all buffs';
-			}
+	toggleTickAllBuffs: function(){ // jQuery
+		var allItems = $('input[name^="blockedSkillList"]:visible',
+			'#settingsTabs-4');
+		var tckTxt = $(this);
+		allItems.prop('checked', tckTxt.text() === 'Tick all buffs');
+		if (tckTxt.text() === 'Tick all buffs') {
+			tckTxt.text('Untick all buffs');
+		} else {
+			tckTxt.text('Tick all buffs');
 		}
 	},
 
@@ -10011,7 +10427,7 @@ FSH.findBuffs = { // Legacy
 			'<td align="right" style="color:brown;"># potential buffers to ' +
 			'search:&nbsp;</td><td align="left" id="potentialBuffers"></td>' +
 			'<td align="right" style="color:brown;">Search allies/enemies:' +
-			FSH.Layout.helpLink('Search Allies/Enemies', 'The checkbox enables ' +
+			FSH.settingsPage.helpLink('Search Allies/Enemies', 'The checkbox enables ' +
 			'searching your own personal allies/enemies list for buffs.<br><br>' +
 			'Additional profiles to search can be added in the text field to the ' +
 			'right, separated by commas.') + '</td>' +
@@ -10404,7 +10820,7 @@ FSH.findBuffs = { // Legacy
 			'<td align="right" style="color:brown;"># potential players to ' +
 			'search:&nbsp;</td><td align="left" id="potentialBuffers"></td>' +
 			'<td align="right" style="color:brown;">Search allies/enemies:' +
-			FSH.Layout.helpLink('Search Allies/Enemies',
+			FSH.settingsPage.helpLink('Search Allies/Enemies',
 				'The checkbox enables searching your own personal ' +
 				'allies/enemies list for buffs.<br><br>' +
 				'Additional profiles to search can be added in the text ' +
