@@ -13067,9 +13067,9 @@ FSH.newMap = { // Hybrid
 	},
 
 	showQuickLinks: function(worldName, data) { // jQuery
-		worldName.append('&nbsp;').append('Min Lvl: ' + data.realm.minlevel);
+		worldName.append('Min Lvl: ' + data.realm.minlevel);
 		var formgroup = $(FSH.Layout.worldFormgroup);
-		worldName.append('&nbsp;').append(formgroup);
+		worldName.append('&nbsp;&nbsp;&nbsp;').append(formgroup);
 		formgroup.click(FSH.newMap.formgroup);
 		var quickbuff = $(FSH.Layout.worldQuickBuff);
 		worldName.append('&nbsp;').append(quickbuff);
