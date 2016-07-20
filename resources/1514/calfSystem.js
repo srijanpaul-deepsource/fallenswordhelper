@@ -9653,7 +9653,7 @@ FSH.trade = { // jQuery
 			.closest('tr')
 			.before(multiple);
 
-		FSH.ajax.inventory(true).done(FSH.trade.processTrade);
+		FSH.ajax.inventory(false).done(FSH.trade.processTrade);
 	},
 
 	processTrade: function(data) { // jQuery
