@@ -7563,7 +7563,7 @@ FSH.ga = { // jQuery
 	},
 
 	setup: function() { // jQuery
-		if (FSH.ga.isAuto || typeof ga === 'undefined') {return;}
+		if (FSH.ga.isAuto() || typeof ga === 'undefined') {return;}
 
 		ga('create', 'UA-76488113-1', 'auto', 'fshApp', {
 			userId: $('dt#statbar-character').text()
@@ -7577,7 +7577,7 @@ FSH.ga = { // jQuery
 	},
 
 	screenview: function(funcName) { // Native
-		if (FSH.ga.isAuto || typeof ga === 'undefined') {return;}
+		if (FSH.ga.isAuto() || typeof ga === 'undefined') {return;}
 		ga('fshApp.send', 'screenview', {screenName: funcName});
 	},
 
