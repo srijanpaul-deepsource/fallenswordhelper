@@ -1622,19 +1622,6 @@ FSH.Layout = {
 		'href="index.php?cmd=trade&target_player=@@username@@" ' +
 		'data-tipped="Send Gold/Items/FSP"></a></div></li>',
 
-	reportLinks:
-		'<span class="fshNoWrap">Recall to: <a class="tip-static" ' +
-		'href="@@firstHref@@" data-tipped="@@firstOldTitle@@">@@firstText@@' +
-		'</a><span class="fshHide"> | <a class="tip-static" ' +
-		'href="@@secondHref@@" data-tipped="Click to recall to guild store">' +
-		'Guild Store</a></span> | <span class="reportLink recall tip-static" ' +
-		'href="@@firstHref@@" data-tipped="@@firstOldTitle@@">Fast ' +
-		'@@fasttext@@</span><span class="fshHide"> | <span class="reportLink ' +
-		'recall tip-static" href="@@secondHref@@" data-tipped="Click to ' +
-		'recall to guild store">Fast GS</span></span><span ' +
-		'class="fshWearHide"> | <span class="reportLink @@linktype@@">Fast ' +
-		'Wear</span></span></span>',
-
 	bazaarTable:
 		'<table id="fshBazaar"><tr><td colspan="5">Select an item to ' +
 		'quick-buy:</td></tr><tr><td colspan="5">Select how many to ' +
@@ -2445,28 +2432,33 @@ FSH.guildReport = { // Legacy
 	},
 
 	doReportPaint: function(innerTable) { // jQuery
-		var rows = $('tr', innerTable);
+
+		FSH.ga.start('JS Perf', 'doReportPaint');
 
 		var searchUser = FSH.System.getUrlParameter('user');
 		if (searchUser) {
 			var userNode = $('b:contains("' + searchUser + '")', innerTable);
 			if (userNode.length > 0) {
-				userNode.closest('tr').prevAll().remove();
-				var otherUsers = $('b', innerTable);
-				if (otherUsers.length > 1) {
-					otherUsers.eq(1).closest('tr').prev().nextAll().remove();
+				// userNode.closest('tr').prevAll().remove();
+				userNode.closest('tr').prevAll().addClass('fshHide');
+				// var otherUsers = $('b', innerTable);
+				var otherUsers = userNode.closest('tr').nextAll().find('b');
+				if (otherUsers.length > 0) {
+					// otherUsers.eq(1).closest('tr').prev().nextAll().remove();
+					otherUsers.eq(0).closest('tr').prev().nextAll().addClass('fshHide');
 				}
 			}
 		}
 
-		var searchSet = FSH.System.getUrlParameter('set');
-		if (searchSet) {
-			var setRE = new RegExp(searchSet);
-			rows.filter(function() {
-				var tds = $('td', this);
-				return tds.length !== 2 && !setRE.test(tds.eq(1).text());
-			}).remove();
-		}
+		// var rows = $('tr', innerTable);
+		// var searchSet = FSH.System.getUrlParameter('set');
+		// if (searchSet) {
+			// var setRE = new RegExp(searchSet);
+			// rows.filter(function() {
+				// var tds = $('td', this);
+				// return tds.length !== 2 && !setRE.test(tds.eq(1).text());
+			// }).remove();
+		// }
 
 		FSH.guildReport.reportChild(innerTable);
 
@@ -2479,39 +2471,100 @@ FSH.guildReport = { // Legacy
 		innerTable.on('click', '.equip',
 			FSH.common.equipProfileInventoryItem);
 
+		FSH.ga.end('JS Perf', 'doReportPaint');
+
 	},
+
+	reportLinks:
+		'<span class="fshNoWrap">' +
+			'Recall to: <a class="tip-static" ' +
+			'href="@@firstHref@@" data-tipped="@@firstOldTitle@@">@@firstText@@' +
+			'</a>' +
+			'<span class="fshHide">' +
+				' | <a class="tip-static" ' +
+				'href="@@secondHref@@" data-tipped="Click to recall to guild store">' +
+				'Guild Store</a>' +
+			'</span>' +
+			' | ' +
+			'<span class="reportLink recall tip-static" href="@@firstHref@@" data-tipped="@@firstOldTitle@@">' +
+				'Fast @@fasttext@@' +
+			'</span>' +
+			'<span class="fshHide">' +
+				' | ' +
+				'<span class="reportLink recall tip-static" href="@@secondHref@@" data-tipped="Click to recall to guild store">' +
+					'Fast GS' +
+				'</span>' +
+			'</span>' +
+			'<span class="fshWearHide">' +
+				' | ' +
+				'<span class="reportLink @@linktype@@">' +
+					'Fast Wear' +
+				'</span>' +
+			'</span>' +
+		'</span>',
 
 	reportChild: function(innerTable) { // jQuery
 		var wearRE = new RegExp('<b>|Bottle|Brew|Draft|Elixir|Potion' +
 			'|Jagua Egg');
-		$('td:contains("Recall to:")', innerTable).each(function() {
-			var self = $(this);
-			var atd = $('a', self);
-			var firstA = atd.first();
-			var firstHref = firstA.attr('href');
-			var firstOldTitle = firstA.attr('oldtitle');
-			var firstText = firstA.text();
-			var secondHref = atd.length === 2 ? atd.eq(1).attr('href') : null;
-			var output = FSH.Layout.reportLinks;
-			output = output.replace(/@@firstHref@@/g, firstHref);
-			output = output.replace(/@@firstOldTitle@@/g, firstOldTitle);
-			output = output.replace(/@@firstText@@/g, firstText);
-			output = output.replace(/@@fasttext@@/g, firstText === 'Backpack' ?
-				'BP' : 'GS');
-			if (secondHref) {
-				output = output.replace(/fshHide/g, 'fshInline');
-				output = output.replace(/@@secondHref@@/g, secondHref);
-			}
+		$('td:contains("Recall to:")', innerTable)
+			.append(function() {
+				var self = $(this);
+				var output = ' | ';
+				var atd = $('a', self);
+				var firstA = atd.first();
+				var firstHref = firstA.attr('href');
+				var firstOldTitle = firstA.attr('oldtitle');
+				var firstText = firstA.text() === 'Backpack' ? 'BP' : 'GS';
+				var secondHref = atd.length === 2 ? atd.eq(1).attr('href') : null;
+				output += '<span class="reportLink recall tip-static" href="' +
+					firstHref + '" data-tipped="' + firstOldTitle + '">Fast ' +
+					firstText + '</span>';
+				if (secondHref) {
+					output += ' | <span class="reportLink recall tip-static" href="' +
+						secondHref + '" data-tipped="Click to recall to guild store">' +
+						'Fast GS</span>';
+				}
 
-			var itemName = self.prev().html();
-			if (!wearRE.test(itemName)) {
-				output = output.replace(/fshWearHide/g, 'fshInline');
-				output = output.replace(/@@linktype@@/g, secondHref ?
-					'wear" href="' + firstHref :
-					'equip" itemid="' + /&id=(\d+)/.exec(firstHref)[1]);
-			}
-			self.html(output);
-		});
+				var itemName = self.prev().html();
+				if (!wearRE.test(itemName)) {
+					output += ' | <span class="reportLink ' +
+						(secondHref ? 'wear" href="' + firstHref :
+						'equip" itemid="' + /&id=(\d+)/.exec(firstHref)[1]) +
+						'">Fast Wear</span>';
+				}
+
+				return output;
+			})
+			.wrapInner('<span class="fshNoWrap"></span>');
+
+		// $('td:contains("Recall to:")', innerTable).each(function() {
+			// var self = $(this);
+			// var atd = $('a', self);
+			// var firstA = atd.first();
+			// var firstHref = firstA.attr('href');
+			// var firstOldTitle = firstA.attr('oldtitle');
+			// var firstText = firstA.text();
+			// var secondHref = atd.length === 2 ? atd.eq(1).attr('href') : null;
+			// var output = FSH.guildReport.reportLinks;
+			// output = output.replace(/@@firstHref@@/g, firstHref);
+			// output = output.replace(/@@firstOldTitle@@/g, firstOldTitle);
+			// output = output.replace(/@@firstText@@/g, firstText);
+			// output = output.replace(/@@fasttext@@/g, firstText === 'Backpack' ?
+				// 'BP' : 'GS');
+			// if (secondHref) {
+				// output = output.replace(/fshHide/g, 'fshInline');
+				// output = output.replace(/@@secondHref@@/g, secondHref);
+			// }
+
+			// var itemName = self.prev().html();
+			// if (!wearRE.test(itemName)) {
+				// output = output.replace(/fshWearHide/g, 'fshInline');
+				// output = output.replace(/@@linktype@@/g, secondHref ?
+					// 'wear" href="' + firstHref :
+					// 'equip" itemid="' + /&id=(\d+)/.exec(firstHref)[1]);
+			// }
+			// self.html(output);
+		// });
 	},
 
 	recallItem: function(evt) { // Legacy
@@ -7664,7 +7717,7 @@ FSH.environment = { // Legacy
 
 		// This must be at the end in order not to screw up other FSH.System.findNode calls (Issue 351)
 		if (!FSH.Helper.huntingMode) {
-			FSH.environment.injectQuickLinks();
+			setTimeout(FSH.environment.injectQuickLinks, 0);
 		}
 	},
 
@@ -7695,9 +7748,6 @@ FSH.environment = { // Legacy
 	},
 
 	prepareEnv: function() { // jQuery
-
-		FSH.environment.navMenu();
-		FSH.environment.statbar();
 
 		if (FSH.System.getValue('gameHelpLink')) {
 			var gameHelpNode = $('div.minibox h3:contains("Game Help")');
@@ -7732,9 +7782,15 @@ FSH.environment = { // Legacy
 				FSH.Helper.enableActiveBountyList) {
 				FSH.activeWantedBounties.prepareBountyData();
 			}
+
+			FSH.environment.navMenu();
+			FSH.environment.statbar();
+
 			FSH.environment.injectStaminaCalculator();
 			FSH.environment.injectLevelupCalculator();
-			FSH.Layout.injectMenu();
+
+			setTimeout(FSH.Layout.injectMenu, 0);
+
 			FSH.environment.replaceKeyHandler();
 			FSH.environment.injectFSBoxLog();
 			FSH.environment.fixOnlineGuildBuffLinks();
@@ -7753,11 +7809,15 @@ FSH.environment = { // Legacy
 				FSH.notification.injectUpgradeAlert();}
 			if (FSH.Helper.enableComposingAlert) {
 				FSH.composing.injectComposeAlert();}
-			FSH.messaging.injectQuickMsgDialogJQ();
+
+			setTimeout(FSH.messaging.injectQuickMsgDialogJQ, 0);
+
 		}
+
 		if (!FSH.System.getValue('hideHelperMenu')) {
 			FSH.helperMenu.injectHelperMenu();
 		}
+
 	},
 
 	replaceKeyHandler: function() { // jQuery
