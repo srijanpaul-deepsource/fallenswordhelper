@@ -7743,8 +7743,6 @@ FSH.environment = { // Legacy
 
 	keyPress: function(evt) {
 
-		console.log('charCode', evt.charCode, 'keyCode', evt.keyCode, 'key', evt.key);
-
 		var r, s;
 		if (evt.target.tagName!=='HTML' && evt.target.tagName!=='BODY') {return;}
 
