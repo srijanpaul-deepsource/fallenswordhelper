@@ -9,7 +9,7 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1515b1
+// @version        1515b2
 // @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
 // @grant          none
 // ==/UserScript==
@@ -30,10 +30,14 @@ FSH.resources = {
 	dataTablesLoc: 'https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js'
 };
 
+FSH.version = '1515b2';
+
 if (typeof GM_info === 'undefined') {
-	FSH.version = '1515b1_native';
-} else {
-	FSH.version = GM_info.script.version;
+	FSH.version += '_native';
+} else if (typeof GM_info.script === 'undefined') {
+	FSH.version += '_noScript';
+} else if (typeof GM_info.script.version === 'undefined') {
+	FSH.version += '_noVersion';
 }
 
 FSH.Helper = {
