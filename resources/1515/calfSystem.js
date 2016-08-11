@@ -2530,11 +2530,19 @@ FSH.notification = { // jQuery
 FSH.guildReport = { // bad jQuery
 
 	injectReportPaint: function() { // jQuery
+
+		FSH.ga.start('JS Perf', 'injectReportPaint');
+
+
 		var container = $('#pCC > table > tbody > tr > td').last();
 		var innerTable = $('table', container);//.detach();
 		FSH.ajax.getMembrList(false)
 			.done(function() {FSH.guildReport.reportHeader(innerTable);});
 		FSH.guildReport.doReportPaint(innerTable);
+
+		FSH.ga.end('JS Perf', 'injectReportPaint');
+
+
 	},
 
 	reportHeader: function(innerTable) { // bad jQuery
@@ -2550,9 +2558,6 @@ FSH.guildReport = { // bad jQuery
 	},
 
 	doReportPaint: function(innerTable) { // jQuery
-
-		FSH.ga.start('JS Perf', 'doReportPaint');
-
 		var searchUser = FSH.System.getUrlParameter('user');
 		if (searchUser) {
 			var userNode = $('b:contains("' + searchUser + '")', innerTable);
@@ -2574,8 +2579,6 @@ FSH.guildReport = { // bad jQuery
 		innerTable.on('click', '.recall', FSH.guildReport.recallItem);
 		innerTable.on('click', '.equip',
 			FSH.guildReport.wearItem);
-
-		FSH.ga.end('JS Perf', 'doReportPaint');
 
 	},
 
@@ -7718,9 +7721,9 @@ FSH.ga = { // jQuery
 		ga('fshApp.send', 'timing', category, variable,
 			Math.round(performance.now()) -
 			FSH.ga.times[category + ':' + variable + ':' + label], label);
-		// $('#pF').addClass('fshCenter').text('FSH processing time: ' +
-			// (Math.round(performance.now()) -
-			// FSH.ga.times[category + ':' + variable + ':' + label]) + 'ms');
+		$('#pF').addClass('fshCenter').append(' - ' + variable + ': ' +
+			(Math.round(performance.now()) -
+			FSH.ga.times[category + ':' + variable + ':' + label]) + 'ms');
 	},
 
 	refAry: ['www.lazywebtools.co.uk', 'refreshthing.com'],
