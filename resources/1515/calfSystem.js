@@ -7720,12 +7720,15 @@ FSH.ga = { // jQuery
 	},
 
 	end: function(category, variable, label) {
-		ga('fshApp.send', 'timing', category, variable,
-			Math.round(performance.now()) -
-			FSH.ga.times[category + ':' + variable + ':' + label], label);
-		$('#pF').addClass('fshCenter').append(' - ' + variable + ': ' +
-			(Math.round(performance.now()) -
-			FSH.ga.times[category + ':' + variable + ':' + label]) + 'ms');
+		var myTime = Math.round(performance.now()) -
+			FSH.ga.times[category + ':' + variable + ':' + label];
+		ga('fshApp.send', 'timing', category, variable, myTime, label);
+
+		if (myTime > 2) {
+			$('#pF').addClass('fshCenter')
+			.append(' - ' + variable + ': ' + myTime + 'ms');
+		}
+
 	},
 
 	refAry: ['www.lazywebtools.co.uk', 'refreshthing.com'],
@@ -7852,9 +7855,6 @@ FSH.environment = { // Legacy
 
 		FSH.ga.start('JS Perf', 'statbar');
 
-		// $('#statbar-character').off('click');
-			// .wrap('<a href="index.php?cmd=profile"></a>');
-
 		var sw = FSH.environment.statbarWrapper;
 		sw('index.php?cmd=profile', 'statbar-character');
 		sw('index.php?cmd=points&subcmd=reserve', 'statbar-stamina');
@@ -7862,17 +7862,6 @@ FSH.environment = { // Legacy
 		sw('index.php?cmd=profile&subcmd=dropitems', 'statbar-inventory');
 		sw('index.php?cmd=points', 'statbar-fsp');
 		sw('index.php?cmd=bank', 'statbar-gold');
-
-			// $('#statbar-stamina').off('click')
-			// .wrap('<a href="index.php?cmd=points&subcmd=reserve"></a>');
-		// $('#statbar-equipment').off('click')
-			// .wrap('<a href="index.php?cmd=blacksmith"></a>');
-		// $('#statbar-inventory').off('click')
-			// .wrap('<a href="index.php?cmd=profile&subcmd=dropitems"></a>');
-		// $('#statbar-fsp').off('click')
-			// .wrap('<a href="index.php?cmd=points"></a>');
-		// $('#statbar-gold').off('click')
-			// .wrap('<a href="index.php?cmd=bank"></a>');
 
 		FSH.ga.end('JS Perf', 'statbar');
 
