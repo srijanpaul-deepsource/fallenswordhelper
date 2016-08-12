@@ -1457,10 +1457,9 @@ FSH.Layout = {
 			$('a[href="index.php?cmd=questbook"]').attr('href',
 				FSH.System.getValue('lastActiveQuestPage'));
 		}
-		var pCL = $('#pCL');
-		if (pCL.length === 0) {return;}
+		if ($('#pCL').length === 0) {return;}
 		//character
-		pCL.find('#nav-character-log').parent('li')
+		$('#nav-character-log').parent('li')
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 				'character-recipemanager" href="index.php?cmd=notepad&blank' +
 				'=1&subcmd=recipemanager">Recipe Manager</a></li>')
@@ -1471,50 +1470,50 @@ FSH.Layout = {
 				'character-medalguide" href="index.php?cmd=profile&subcmd=' +
 				'medalguide">Medal Guide</a></li>');
 		if (FSH.System.getValue('keepBuffLog')) {
-			pCL.find('#nav-character-log').parent('li')
+			$('#nav-character-log').parent('li')
 				.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 					'character-bufflog" href="index.php?cmd=notepad&blank=1&' +
 					'subcmd=bufflogcontent">Buff Log</a></li>');
 		}
 		if (FSH.System.getValue('keepLogs')) {
-			pCL.find('#nav-character-notepad').parent('li')
+			$('#nav-character-notepad').parent('li')
 				.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 					'character-showlogs" href="index.php?cmd=notepad&blank=1' +
 					'&subcmd=showlogs">Combat Logs</a></li>');
 		}
 		if (FSH.System.getValue('showMonsterLog')) {
-			pCL.find('#nav-character-notepad').parent('li')
+			$('#nav-character-notepad').parent('li')
 				.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 					'character-monsterlog" href="index.php?cmd=notepad&blank' +
 					'=1&subcmd=monsterlog">Creature Logs</a></li>');
 		}
-		pCL.find('#nav-character-notepad').parent('li')
+		$('#nav-character-notepad').parent('li')
 			.after('<li class="nav-level-1"><a class="nav-link" id="nav-' +
 				'character-quicklinkmanager" href="index.php?cmd=notepad&' +
 				'blank=1&subcmd=quicklinkmanager">Quick Links</a></li>');
 		//guild
-		pCL.find('#nav-guild-storehouse-inventory').parent('li')
+		$('#nav-guild-storehouse-inventory').parent('li')
 			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
 				'guild-guildinvmanager" href="index.php?cmd=notepad&blank=1' +
 				'&subcmd=guildinvmgr">Guild Inventory</a></li>');
 		if (!FSH.System.getValue('useNewGuildLog')) {
 			//if not using the new guild log, show it as a separate menu entry
-			pCL.find('#nav-guild-ledger-guildlog').parent('li')
+			$('#nav-guild-ledger-guildlog').parent('li')
 				.before('<li class="nav-level-2"><a class="nav-link" id="nav' +
 					'-guild-newguildlog" href="index.php?cmd=notepad&blank=1' +
 					'&subcmd=newguildlog">New Guild Log</a></li>');
 		}
 		//top rated
-		pCL.find('#nav-toprated-players-level').parent('li')
+		$('#nav-toprated-players-level').parent('li')
 			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
 				'toprated-top250" href="index.php?cmd=toprated&subcmd=xp">' +
 				'Top 250 Players</a></li>');
 		//actions
-		pCL.find('#nav-actions-trade-auctionhouse').parent('li')
+		$('#nav-actions-trade-auctionhouse').parent('li')
 			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
 				'actions-ahquicksearch" href="index.php?cmd=notepad&blank=1' +
 				'&subcmd=auctionsearch">AH Quick Search</a></li>');
-		pCL.find('#nav-actions-interaction-findplayer').parent('li')
+		$('#nav-actions-interaction-findplayer').parent('li')
 			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
 				'actions-onlineplayers" href="index.php?cmd=notepad&blank=1' +
 				'&subcmd=onlineplayers">Online Players</a></li>')
@@ -1524,16 +1523,20 @@ FSH.Layout = {
 			.after('<li class="nav-level-2"><a class="nav-link" id="nav-' +
 				'actions-findbuffs" href="index.php?cmd=notepad&blank=1&' +
 				'subcmd=findbuffs">Find Buffs</a></li>');
-		//adjust the menu length in chrome for the newly added items
-		//first the open ones
-		$('ul.nav-animated')
-			.filter(function() {
-				return $(this).css('height') !== '0px';
-			}).css('height', function() {
-				return $(this).find('li').length * 22;
-			});
-		//and now the closed saved variables
-		$('#nav').nav('calcHeights');
+		// adjust the menu height for the newly added items
+		var theNav = $('#nav');
+		var myNav = theNav.data('nav');
+		// first the closed saved variables
+		myNav.heights = [ null, null, 264, 660, 484, 374, 132, 132, null ];
+		if (myNav.state !== -1) {
+			// and now the open one
+			theNav.children().eq(myNav.state).children('ul')
+				.css('height', myNav.heights[myNav.state]);
+		}
+		// Use this to get new heights if you change anything
+		// $('#nav').nav('calcHeights').data('nav').heights
+		// Do NOT run it real time
+		// Doesn't seem to work in Chrome
 
 		FSH.ga.end('JS Perf', 'injectMenu');
 
@@ -7013,6 +7016,9 @@ FSH.settingsPage = { // Legacy
 	},
 
 	injectSettings: function() { // Legacy
+
+		FSH.ga.start('JS Perf', 'injectSettings');
+
 		var tickAll = $('<span class="fshLink">Tick all buffs</span>');
 		tickAll.click(FSH.settingsPage.toggleTickAllBuffs);
 		$('#settingsTabs-4 td').eq(0).append('<br>').append(tickAll);
@@ -7551,6 +7557,9 @@ FSH.settingsPage = { // Legacy
 			var minGroupLevel = minGroupLevelTextField.value;
 			FSH.System.setValue('minGroupLevel',minGroupLevel);
 		}
+
+		FSH.ga.end('JS Perf', 'injectSettings');
+
 	},
 
 	clearStorage: function() {
@@ -8298,6 +8307,9 @@ FSH.environment = { // Legacy
 	},
 
 	changeGuildLogHREF: function() { // Legacy
+
+		FSH.ga.start('JS Perf', 'changeGuildLogHREF');
+
 		if (!FSH.System.getValue('useNewGuildLog')) {return;}
 		var guildLogNodes = FSH.System.findNodes('//a[@href="index.php?cmd=guild&subcmd=log"]');
 		var guildLogNode;
@@ -8314,7 +8326,7 @@ FSH.environment = { // Legacy
 					if (messageBox) {
 						messageBox.style.display = 'none';
 						messageBox.style.visibility = 'hidden';
-						//hide the empty row before it too (can"t do after in case there is no after row)
+						//hide the empty row before it too (can't do after in case there is no after row)
 						messageBox.previousSibling.style.display = 'none';
 						messageBox.previousSibling.style.visibility = 'hidden';
 					}
@@ -8327,6 +8339,9 @@ FSH.environment = { // Legacy
 				}
 			}
 		}
+
+		FSH.ga.end('JS Perf', 'changeGuildLogHREF');
+
 	},
 
 	doMsgSound: function() { // jQuery
@@ -8342,6 +8357,9 @@ FSH.environment = { // Legacy
 	},
 
 	injectQuickLinks: function() { // Bad jquery
+
+		FSH.ga.start('JS Perf', 'injectQuickLinks');
+
 		// don't put all the menu code here (but call if clicked) to minimize lag
 		var quickLinks = FSH.System.getValueJSON('quickLinks') || [];
 		if (quickLinks.length <= 0) {return;}
@@ -8365,11 +8383,16 @@ FSH.environment = { // Legacy
 			divQuickLink.css('position', 'fixed');
 		}
 		$('body').append(divQuickLink);
+
+		FSH.ga.end('JS Perf', 'injectQuickLinks');
+
 	},
 
 	unknownPage: function() { // Legacy
 
 		if (typeof window.jQuery === 'undefined') {return;}
+
+		FSH.ga.start('JS Perf', 'unknownPage');
 
 		if ($('#pCC td:contains("Below is the current status for ' +
 			'the relic")').length > 0) {
@@ -8405,6 +8428,9 @@ FSH.environment = { // Legacy
 			FSH.ga.screenview('unknown.Helper.injectInvent');
 			FSH.Helper.injectInvent();
 		}
+
+		FSH.ga.end('JS Perf', 'unknownPage');
+
 	},
 
 };
@@ -9150,6 +9176,9 @@ FSH.upgrades = { // Legacy
 FSH.newGuildLog = { // Legacy
 
 	injectNewGuildLog: function(content){ // Legacy
+
+		FSH.ga.start('JS Perf', 'injectNewGuildLog');
+
 		if (!content) {content=FSH.Layout.notebookContent();}
 
 		FSH.newGuildLog.setupGuildLogFilters();
@@ -9211,6 +9240,9 @@ FSH.newGuildLog = { // Legacy
 		//fetch guild log page and apply filters
 		FSH.System.xmlhttp('index.php?cmd=guild&subcmd=log', FSH.newGuildLog.parseGuildLogPage,
 			{'guildLogInjectTable': guildLogInjectTable, 'pageNumber': 1, 'loadingMessageInjectHere': loadingMessageInjectHere, 'maxPagesToFetch': maxPagesToFetch, 'completeReload': completeReload});
+
+		FSH.ga.end('JS Perf', 'injectNewGuildLog');
+
 	},
 
 	setupGuildLogFilters: function() { // Native - but WTF?
@@ -9908,6 +9940,8 @@ FSH.trade = { // jQuery
 
 	injectTrade: function() { // jQuery
 
+		FSH.ga.start('JS Perf', 'injectTrade');
+
 		var multiple = $('<tr id="fshSelectMultiple"></tr>');
 		var myTd = $('<td colspan=6></td>');
 
@@ -9936,6 +9970,9 @@ FSH.trade = { // jQuery
 			.before(multiple);
 
 		FSH.ajax.inventory(true).done(FSH.trade.processTrade);
+
+		FSH.ga.end('JS Perf', 'injectTrade');
+
 	},
 
 	processTrade: function(data) { // jQuery
