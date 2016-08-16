@@ -7500,11 +7500,13 @@ FSH.ga = { // jQuery
 	times: {},
 
 	start: function(category, variable, label) {
+		if (FSH.ga.isAuto() || typeof ga === 'undefined') {return;}
 		FSH.ga.times[category + ':' + variable + ':' + label] =
 			Math.round(performance.now());
 	},
 
 	end: function(category, variable, label) {
+		if (FSH.ga.isAuto() || typeof ga === 'undefined') {return;}
 		var myTime = Math.round(performance.now()) -
 			FSH.ga.times[category + ':' + variable + ':' + label];
 		ga('fshApp.send', 'timing', category, variable, myTime, label);
