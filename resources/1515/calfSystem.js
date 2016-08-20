@@ -719,7 +719,7 @@ FSH.Data = {
 		showCreatureInfo: false,
 		keepLogs: false,
 
-		showExtraLinks: false,
+		showExtraLinks: true,
 		huntingBuffs: 'Doubler,Librarian,Adept Learner,Merchant,Treasure Hunter,Animal Magnetism,Conserve',
 		huntingBuffsName: 'default',
 		huntingBuffs2: 'Deflect',
@@ -1062,7 +1062,8 @@ FSH.Data = {
 		'hideTitanGroup',
 		'hideLegendaryGroup',
 		'disableDeactivatePrompts',
-		'moveComposingButtons'
+		'moveComposingButtons',
+		'showExtraLinks'
 
 	],
 
