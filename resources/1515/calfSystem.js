@@ -7733,7 +7733,9 @@ FSH.environment = { // Legacy
 			}
 
 			setTimeout(FSH.environment.navMenu);
-			setTimeout(FSH.environment.statbar);
+			if (FSH.cmd !== 'world') {
+				setTimeout(FSH.environment.statbar);
+			}
 
 			setTimeout(FSH.environment.injectStaminaCalculator);
 			setTimeout(FSH.environment.injectLevelupCalculator);
