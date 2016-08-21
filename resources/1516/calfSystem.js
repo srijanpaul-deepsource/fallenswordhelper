@@ -1514,22 +1514,27 @@ FSH.Layout = {
 
 	godsNotification:
 		'<li class="notification">' +
-		'<span id="helperPrayToGods" style="text-align:center"><table><tbody>' +
-		'<tr><td style="padding: 1px"><img src="' + FSH.System.imageServer +
-		'/temple/0.gif" class="tip-static" data-tipped="Pray to Sahria" ' +
-		'style="cursor: pointer"></td>' +
-		'<td style="padding: 1px"><img src="' + FSH.System.imageServer +
-		'/temple/1.gif" class="tip-static" data-tipped="Pray to Osverin" ' +
-		'style="cursor: pointer"></td>' +
-		'<td rowspan="2"><a href="index.php?cmd=temple" ' +
-		'class="notification-content" style="position: static">' +
-		'Bow down to the gods</a></td></tr>' +
-		'<tr><td style="padding: 1px"><img src="' + FSH.System.imageServer +
-		'/temple/2.gif" class="tip-static" data-tipped="Pray to Gurgriss" ' +
-		'style="cursor: pointer"></td>' +
-		'<td style="padding: 1px"><img src="' + FSH.System.imageServer +
-		'/temple/3.gif" class="tip-static" data-tipped="Pray to Lindarsil" ' +
-		'style="cursor: pointer"></td></tr></tbody></table></span></li>',
+		'<span id="helperPrayToGods" class="fastPray">' +
+		'<table><tbody><tr><td>' +
+		'<span class="tip-static" data-tipped="Pray to Sahria" ' +
+		'style="background-image: url(\'' + FSH.System.imageServer +
+		'/temple/0.gif\');" praytype="0"></span></td><td>' +
+		'<span class="tip-static" data-tipped="Pray to Osverin" ' +
+		'style="background-image: url(\'' + FSH.System.imageServer +
+		'/temple/1.gif\');" praytype="1"></span></td></tr><tr><td>' +
+		'<span class="tip-static" data-tipped="Pray to Gurgriss" ' +
+		'style="background-image: url(\'' + FSH.System.imageServer +
+		'/temple/2.gif\');" praytype="2"></span></td><td>' +
+		'<span class="tip-static" data-tipped="Pray to Lindarsil" ' +
+		'style="background-image: url(\'' + FSH.System.imageServer +
+		'/temple/3.gif\');" praytype="3"></span></td></tr></tbody></table>' +
+		'<a href="index.php?cmd=temple">' +
+		'<p class="notification-content">Bow down to the gods</p>' +
+		'</a></span></li>',
+
+	havePrayed:
+		'<span class="notification-icon"></span><p class="notification-content">' +
+		'You are currently praying at the temple.</p>',
 
 	goldUpgradeMsg:
 		'<li class="notification"><a href="index.php?cmd=points&type=1"><span' +
@@ -2132,9 +2137,6 @@ FSH.composing = { // jQuery
 
 	injectComposeAlert: function() { //jquery
 		if (FSH.cmd === 'composing') {return;}
-
-		console.time('composing.injectComposeAlert');
-
 		var needToCompose = FSH.System.getValue('needToCompose');
 		if (needToCompose) {
 			FSH.composing.displayComposeMsg();
@@ -2143,9 +2145,6 @@ FSH.composing = { // jQuery
 		var lastComposeCheck = FSH.System.getValue('lastComposeCheck');
 		if (lastComposeCheck && Date.now() < lastComposeCheck) {return;}
 		$.get('index.php?cmd=composing', FSH.composing.parseComposing);
-
-		console.timeEnd('composing.injectComposeAlert');
-
 	},
 
 	parseComposing: function(data) { //jquery
@@ -2245,9 +2244,6 @@ FSH.notification = { // jQuery
 	injectTempleAlert: function() { //jquery
 		//Checks to see if the temple is open for business.
 		if (FSH.cmd === 'temple') {return;}
-
-		console.time('notification.injectTempleAlert');
-
 		var templeAlertLastUpdate = FSH.System.getValue('lastTempleCheck');
 		var needToPray = FSH.System.getValue('needToPray');
 		var needToParse = false;
@@ -2263,9 +2259,6 @@ FSH.notification = { // jQuery
 		if (needToParse) {
 			$.get('index.php?cmd=temple', FSH.notification.parseTemplePage);
 		}
-
-		console.timeEnd('notification.injectTempleAlert');
-
 	},
 
 	parseTemplePage: function(responseText) { //native
@@ -2288,23 +2281,28 @@ FSH.notification = { // jQuery
 	},
 
 	displayDisconnectedFromGodsMessage: function() { //jquery
-		$('#notifications').prepend(FSH.Layout.godsNotification);
-		$('#helperPrayToGods').on('click', 'img', function() {
-			$('#helperPrayToGods').off('click', 'img');
-			var index = $(this).qtip('hide').attr('src').replace(/\D/g, '');
-			$.post(
-				FSH.System.server + 'index.php',
-				'cmd=temple&subcmd=pray&type=' + index,
-				function() {
-					$('#helperPrayToGods').html('<span class="notification-' +
-						'icon"></span><p class="notification-content">You ' +
-						'are currently praying at the temple.</p>');
-					FSH.System.setValue('needToPray',false);
-					FSH.System.setValue('lastTempleCheck', new Date()
-						.setUTCHours(23, 59, 59, 999) + 1); // Midnight
-				}
-			);
-		});
+		document.getElementById('notifications').insertAdjacentHTML('afterbegin',
+			FSH.Layout.godsNotification);
+		document.getElementById('helperPrayToGods').addEventListener('click',
+			FSH.notification.prayToGods);
+	},
+
+	prayToGods: function(e) { // jQuery
+		var myGod = e.target.getAttribute('praytype');
+		if (!myGod) {return;}
+		document.getElementById('helperPrayToGods').removeEventListener('click',
+			FSH.notification.prayToGods);
+		$.get('index.php?cmd=temple&subcmd=pray&type=' + myGod)
+			.done(FSH.notification.havePrayed);
+		$(e.target).qtip('hide');
+	},
+
+	havePrayed: function() {
+		document.getElementById('helperPrayToGods').outerHTML =
+			FSH.Layout.havePrayed;
+		FSH.System.setValue('needToPray',false);
+		FSH.System.setValue('lastTempleCheck', new Date()
+			.setUTCHours(23, 59, 59, 999) + 1); // Midnight
 	},
 
 	injectUpgradeAlert: function() { //jquery
@@ -4299,10 +4297,8 @@ FSH.profile = { // Legacy
 	},
 
 	updateQuickBuff: function() { // jQuery
-		var qb = $('#profileRightColumn a[href*="quickbuff"]');
-		if (qb.length !== 0) {
-			qb.attr('href', qb.attr('href').replace(/, 500/g,', 1000'));
-		}
+		FSH.environment
+			.updateHCSQuickBuffLinks('#profileRightColumn a[href*="quickbuff"]');
 	},
 
 	updateStatistics: function() { // Native
@@ -7732,7 +7728,9 @@ FSH.environment = { // Legacy
 			}
 
 			setTimeout(FSH.environment.navMenu);
-			setTimeout(FSH.environment.statbar);
+			if (FSH.cmd !== 'world') {
+				setTimeout(FSH.environment.statbar);
+			}
 
 			setTimeout(FSH.environment.injectStaminaCalculator);
 			setTimeout(FSH.environment.injectLevelupCalculator);
@@ -8071,112 +8069,133 @@ FSH.environment = { // Legacy
 	},
 
 	fixOnlineGuildBuffLinks: function() { // jQuery
+		FSH.environment.updateHCSQuickBuffLinks(
+			'#minibox-guild-members-list #guild-minibox-action-quickbuff');
+		FSH.environment.updateHCSQuickBuffLinks(
+			'#minibox-allies-list #online-allies-action-quickbuff');
+	},
 
-		console.time('environment.fixOnlineGuildBuffLinks');
-
-		// illegal multiple id's - use a to prevent getElementById
-		$('a#guild-minibox-action-quickbuff').each(function() {
-			var self = $(this);
-			self.attr('href', self.attr('href').replace(/500/g,'1000'));
-		});
-		$('a#online-allies-action-quickbuff').each(function() {
-			var self = $(this);
-			self.attr('href', self.attr('href').replace(/, 500/g,', 1000'));
-		});
-
-		console.timeEnd('environment.fixOnlineGuildBuffLinks');
-
+	// Move this to common or Layout
+	updateHCSQuickBuffLinks: function(selector) {
+		Array.prototype.forEach.call(document.querySelectorAll(selector),
+			function(el) {
+				el.setAttribute('href', el.getAttribute('href')
+					.replace(/, 500/g, ', 1000'));
+			}
+		);
 	},
 
 	addGuildInfoWidgets: function() { //jquery
 
-		console.time('environment.addGuildInfoWidgets');
+		// console.time('environment.addGuildInfoWidgets');
 
-		var guildMembrList = $('#minibox-guild-members-list');
-		if (guildMembrList.length === 0) {return;} // list exists
+		var guildMembrList = document.getElementById('minibox-guild-members-list');
+		if (!guildMembrList) {return;} // list exists
 		// hide guild info links
-		// illegal multiple id's - use a to prevent getElementById
+		var hideQSA = FSH.environment.hideQuerySelectorAll;
 		if (FSH.Helper.hideGuildInfoTrade) {
-			$('a#guild-minibox-action-trade', guildMembrList).addClass('fshHide');
+			hideQSA(guildMembrList, '#guild-minibox-action-trade');
 		}
 		if (FSH.Helper.hideGuildInfoSecureTrade) {
-			$('a#guild-minibox-action-secure-trade', guildMembrList)
-				.addClass('fshHide');
+			hideQSA(guildMembrList, '#guild-minibox-action-secure-trade');
 		}
 		if (FSH.Helper.hideGuildInfoBuff) {
-			$('a#guild-minibox-action-quickbuff', guildMembrList).addClass('fshHide');
+			hideQSA(guildMembrList, '#guild-minibox-action-quickbuff');
 		}
 		if (FSH.Helper.hideGuildInfoMessage) {
-			$('a#guild-minibox-action-send-message', guildMembrList)
-				.addClass('fshHide');
+			hideQSA(guildMembrList, '#guild-minibox-action-send-message');
 		}
 		if (FSH.Helper.hideBuffSelected) {
-			$('a.guild-buff-check-on', guildMembrList).addClass('fshHide');
-			$('#guild-quick-buff').addClass('fshHide');
+			FSH.environment.hideNodeList(
+				guildMembrList.getElementsByClassName('guild-buff-check-on'));
+			document.getElementById('guild-quick-buff').classList.add('fshHide');
 		}
 		// add coloring for offline time
-		$('a.player-name', guildMembrList).each(function() {
-			var playerA = $(this);
-			var lastActivityMinutes = /Last Activity:<\/td><td>(\d+) mins/
-				.exec(playerA.data('tipped'))[1];
-			if (lastActivityMinutes < 2) {
-				playerA.addClass('fshGreen');
-			} else if (lastActivityMinutes < 5) {
-				playerA.addClass('fshWhite');
-			} else {
-				playerA.addClass('fshGrey');
+		Array.prototype.forEach.call(
+			guildMembrList.getElementsByClassName('player-name'),
+			FSH.environment.guildColour
+		);
+		Array.prototype.forEach.call(
+			document.querySelectorAll('#pCR h4'),
+			function(el) {
+				if (el.textContent !== 'Chat') {return;}
+				el.innerHTML = '<a href="index.php?cmd=guild&subcmd=chat">' +
+					el.textContent + '</a>';
 			}
-		});
-		var chatH4 = $('#pCR h4:contains("Chat")');
-		chatH4.html('<a href="index.php?cmd=guild&subcmd=chat"><span style="' +
-			'color:white;">' + chatH4.html() + '</span></a>');
+		);
 
-		console.timeEnd('environment.addGuildInfoWidgets');
+		// console.timeEnd('environment.addGuildInfoWidgets');
 
 	},
 
+	guildColour: function(el) {
+		FSH.environment.contactColour(el, {
+			l1: 'fshGreen',
+			l2: 'fshWhite',
+			l3: 'fshGrey'
+		});
+	},
+
+	hideNodeList: function(nodeList) {
+		Array.prototype.forEach.call(nodeList, FSH.environment.hideElement);
+	},
+
+	hideElement: function(el) {el.classList.add('fshHide');},
+
+	hideQuerySelectorAll: function(parent, selector) {
+		FSH.environment.hideNodeList(parent.querySelectorAll(selector));
+	},
+
 	addOnlineAlliesWidgets: function() { // jQuery
-
-		console.time('environment.addOnlineAlliesWidgets');
-
-		var onlineAlliesList = $('#minibox-allies-list');
-		if (onlineAlliesList.length === 0) {
+		var onlineAlliesList = document.getElementById('minibox-allies-list');
+		if (!onlineAlliesList) {
 			console.timeEnd('environment.addOnlineAlliesWidgets');
 			return;
 		}
-		// illegal multiple id's - use a to prevent getElementById
+		var hideQSA = FSH.environment.hideQuerySelectorAll;
 		if (FSH.Helper.hideGuildInfoTrade) {
-			$('a#online-allies-action-trade').hide();
+			hideQSA(onlineAlliesList, '#online-allies-action-trade');
 		}
 		if (FSH.Helper.hideGuildInfoSecureTrade) {
-			$('a#online-allies-action-secure-trade').hide();
+			hideQSA(onlineAlliesList, '#online-allies-action-secure-trade');
 		}
 		if (FSH.Helper.hideGuildInfoBuff) {
-			$('a#online-allies-action-quickbuff').hide();
+			hideQSA(onlineAlliesList, '#online-allies-action-quickbuff');
 		}
 		if (FSH.Helper.hideGuildInfoMessage) {
-			$('a#online-allies-action-send-message').hide();
+			hideQSA(onlineAlliesList, '#online-allies-action-send-message');
 		}
 		if (FSH.Helper.hideBuffSelected) {
-			$('a.ally-buff-check-on').hide();
-			$('#ally-quick-buff').hide();
+			FSH.environment.hideNodeList(
+				onlineAlliesList.getElementsByClassName('ally-buff-check-on'));
+			document.getElementById('ally-quick-buff').classList.add('fshHide');
 		}
-		//add coloring for offline time
-		$(onlineAlliesList).find('li.player').each(function() {
-			var playerA = $(this).find('a[class*="player-name"]');
-			var onMouseOver = playerA.data('tipped');
-			var lastActivityMinutes = /Last Activity:<\/td><td>(\d+) mins/.exec(onMouseOver)[1];
-			if (lastActivityMinutes < 2) {
-				playerA.css('color','DodgerBlue');
-			} else if (lastActivityMinutes < 5) {
-				playerA.css('color','LightSkyBlue');
-			} else {
-				playerA.css('color','PowderBlue');
-			}
+		// add coloring for offline time
+		Array.prototype.forEach.call(
+			onlineAlliesList.getElementsByClassName('player-name'),
+			FSH.environment.alliesColour
+		);
+	},
+
+	alliesColour: function(el) {
+		FSH.environment.contactColour(el, {
+			l1: 'fshDodgerBlue',
+			l2: 'fshLightSkyBlue',
+			l3: 'fshPowderBlue'
 		});
+	},
 
-		console.timeEnd('environment.addOnlineAlliesWidgets');
-
+	contactColour: function(el, obj) {
+		var onMouseOver = el.getAttribute('data-tipped');
+		var lastActivityMinutes =
+			/Last Activity:<\/td><td>(\d+) mins/.exec(onMouseOver)[1];
+		if (lastActivityMinutes < 2) {
+			el.classList.add(obj.l1);
+		} else if (lastActivityMinutes < 5) {
+			el.classList.add(obj.l2);
+		} else {
+			el.classList.add(obj.l3);
+		}
 	},
 
 	changeGuildLogHREF: function() { // Native
@@ -8524,9 +8543,8 @@ FSH.misc = { // Legacy
 	},
 
 	cancelAllAH: function() {
-		var resultRows = document.getElementById('resultRows');
-		var cancelButtons =
-			resultRows.getElementsByClassName('auctionCancel');
+		var cancelButtons = document.getElementById('resultRows')
+			.getElementsByClassName('auctionCancel');
 		if (cancelButtons.length === 0) {return;}
 		var prm = [];
 		for (var i = cancelButtons.length - 1; i >= 0; i -= 1) {
