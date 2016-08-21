@@ -4,6 +4,84 @@
 
 window.FSH = window.FSH || {};
 
+FSH.debug = function(text, value) {
+	document.getElementById('foot-wrap').insertAdjacentHTML('beforeend',
+		'<br>' + text + ': ' + value + ' (' + typeof value + ')');
+};
+
+(function( console ) {
+
+  // 'use strict';
+
+  var timers;
+
+  // do we have access to the console?
+  if ( !console ) {
+    return;
+  }
+
+
+  // table of current timers
+  timers = {};
+
+
+  /**
+   * Stores current time in milliseconds
+   * in the timers map
+   *
+   * @param {string} timer name
+   * @return {void}
+   */
+  console.time = function( name ) {
+    if ( name ) {
+      timers[ name ] = Date.now();
+    }
+  };
+
+
+  /**
+   * Finds difference between when this method
+   * was called and when the respective time method
+   * was called, then logs out the difference
+   * and deletes the original record
+   *
+   * @param {string} timer name
+   * @return {void}
+   */
+  console.timeEnd = function( name ) {
+    if ( timers[ name ] ) {
+      FSH.debug( name, Date.now() - timers[ name ] + 'ms' );
+      delete timers[ name ];
+    }
+  };
+
+
+}( window.console ));
+
+/* jshint ignore:start */
+
+// Console-polyfill. MIT license.
+// https://github.com/paulmillr/console-polyfill
+// Make it safe to do console.log() always.
+(function(global) {
+  'use strict';
+  if (!global.console) {
+    global.console = {};
+  }
+  var con = global.console;
+  var prop, method;
+  var dummy = function() {};
+  var properties = ['memory'];
+  var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
+     'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
+     'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn').split(',');
+  while (prop = properties.pop()) if (!con[prop]) con[prop] = {};
+  while (method = methods.pop()) if (typeof con[method] !== 'function') con[method] = dummy;
+  // Using `this` for web workers & supports Browserify / Webpack.
+})(typeof window === 'undefined' ? this : window);
+
+/* jshint ignore:end */
+
 (function GM_ApiBrowserCheck() {
 	// GM_ApiBrowserCheck
 	// @author        GIJoe
@@ -49,7 +127,7 @@ window.FSH = window.FSH || {};
 			if (result) {
 				ws = typeof window.localStorage;
 			} else {
-				console.log('There is a problem with your local storage. ' +
+				FSH.debug('There is a problem with your local storage. ' +
 					'FSH cannot persist your settings.');
 				ws = null;
 			}
@@ -1401,7 +1479,7 @@ FSH.Layout = {
 			// Guild
 			document.querySelectorAll('#nav-guild > ul li').length * 22,
 			374, 132, 132, null ];
-		if (myNav.state !== '-1') {
+		if (myNav.state !== '-1' && myNav.state !== -1) {
 			// and now the open one
 			theNav.children[myNav.state].children[1].style.height =
 				myNav.heights[myNav.state] + 'px';
@@ -1898,7 +1976,7 @@ FSH.ajax = { // jQuery
 		var dfr = $.Deferred();
 		localforage.setItem(forage, data, function setItemCallback(err, data) {
 			if (err) {
-				console.log(forage + ' forage error', err);
+				FSH.debug(forage + ' forage error', err);
 				dfr.reject(err);
 			} else {
 				dfr.resolve(data);
@@ -1913,7 +1991,7 @@ FSH.ajax = { // jQuery
 		var dfr = $.Deferred();
 		localforage.getItem(forage, function getItemCallback(err, data) {
 			if (err) {
-				console.log(forage + ' forage error', err);
+				FSH.debug(forage + ' forage error', err);
 				dfr.reject(err);
 			} else {
 				// returns null if key does not exist
@@ -4802,7 +4880,7 @@ FSH.profile = { // Legacy
 			document.getElementById('compDelAll').addEventListener('click', FSH.profile.delAllComponent, true);
 			$('#compDelAll').hide();
 		} else {
-			console.log('Components div not found! Please let Yuuzhan know.');
+			FSH.debug('Components div not found! Please let Yuuzhan know.');
 		}
 	},
 
@@ -6292,8 +6370,8 @@ FSH.dropItems = { // Legacy
 			target.style.color = 'red';
 			target.style.fontSize = 'small';
 			target.innerHTML = 'Weird Error: check the Tools>Error Console';
-			console.log('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
-			console.log(callback.url);
+			FSH.debug('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
+			FSH.debug(callback.url);
 		}
 	},
 
@@ -6328,8 +6406,8 @@ FSH.dropItems = { // Legacy
 			target.style.color = 'red';
 			target.style.fontSize = 'small';
 			target.innerHTML = 'Weird Error: check the Tools>Error Console';
-			console.log('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
-			console.log(callback.url);
+			FSH.debug('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
+			FSH.debug(callback.url);
 		}
 	},
 
@@ -7545,8 +7623,7 @@ FSH.ga = { // Native
 			ga('fshApp.send', 'timing', category, variable, myTime, label);
 		}
 
-		document.getElementById('foot-wrap').insertAdjacentHTML('beforeend',
-			'<br>' + variable + ': ' + myTime + 'ms');
+		FSH.debug(variable, myTime + 'ms');
 
 	},
 
@@ -7674,9 +7751,15 @@ FSH.environment = { // Legacy
 	},
 
 	statbarWrapper: function(href, id) { // Native
+		var myWrapper = document.createElement('a');
+		myWrapper.setAttribute('href', href);
 		var character = document.getElementById(id);
-		character.outerHTML = '<a href="' + href + '">' + character.outerHTML +
-			'</a>';
+		var statWrapper = character.parentNode;
+		myWrapper.appendChild(character);
+		statWrapper.insertBefore(myWrapper, statWrapper.firstChild);
+		myWrapper.addEventListener('click', function(evt) {
+			evt.stopPropagation();
+		}, true);
 	},
 
 	statbar: function() { // Native
@@ -7728,9 +7811,7 @@ FSH.environment = { // Legacy
 			}
 
 			setTimeout(FSH.environment.navMenu);
-			if (FSH.cmd !== 'world') {
-				setTimeout(FSH.environment.statbar);
-			}
+			setTimeout(FSH.environment.statbar);
 
 			setTimeout(FSH.environment.injectStaminaCalculator);
 			setTimeout(FSH.environment.injectLevelupCalculator);
@@ -8847,7 +8928,7 @@ FSH.guild = { // Legacy
 				var xpNode = xpLock.parentNode.parentNode;
 				xpNode.cells[1].innerHTML += ' (<b>' + FSH.System.addCommas(xpLockXP - actualXP) + '</b>)';
 			} catch (err) {
-				console.log(err);
+				FSH.debug(err);
 			}
 		}
 	},
@@ -8884,7 +8965,7 @@ FSH.guild = { // Legacy
 					{'node': callback.node});
 			}
 		} catch (err) {
-			console.log(err);
+			FSH.debug(err);
 		}
 	},
 
@@ -8929,8 +9010,8 @@ FSH.guild = { // Legacy
 			itemCellElement.innerHTML = '<span style="color:red; font-weight:bold;">Error:' + info + '</span>';
 		} else {
 			itemCellElement.innerHTML = 'Weird Error: check the Tools>Error Console';
-			console.log('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
-			console.log(callback.url);
+			FSH.debug('Post the previous HTML and the following message to the GitHub or to the forum to help us debug this error');
+			FSH.debug(callback.url);
 		}
 	},
 

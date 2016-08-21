@@ -27,14 +27,14 @@ var fshMain = function() {
 
 window.FSH = window.FSH || {};
 
+FSH.version = '1516b1';
+
 FSH.resources = {
 	calfSystemJs: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1516/calfSystem.js',
 	calfSystemCss: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1516/calfSystem.css',
 	localForage: 'https://cdn.jsdelivr.net/localforage/1.4.2/localforage.min.js',
 	dataTablesLoc: 'https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js'
 };
-
-FSH.version = '1516b1';
 
 if (typeof GM_info === 'undefined') {
 	FSH.version += '_native';
