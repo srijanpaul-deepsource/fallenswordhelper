@@ -9,78 +9,23 @@ FSH.debug = function(text, value) {
 		'<br>' + text + ': ' + value + ' (' + typeof value + ')');
 };
 
-(function( console ) {
-
-  // 'use strict';
-
-  var timers;
-
-  // do we have access to the console?
-  if ( !console ) {
-    return;
-  }
-
-
-  // table of current timers
-  timers = {};
-
-
-  /**
-   * Stores current time in milliseconds
-   * in the timers map
-   *
-   * @param {string} timer name
-   * @return {void}
-   */
-  console.time = function( name ) {
-    if ( name ) {
-      timers[ name ] = Date.now();
-    }
-  };
-
-
-  /**
-   * Finds difference between when this method
-   * was called and when the respective time method
-   * was called, then logs out the difference
-   * and deletes the original record
-   *
-   * @param {string} timer name
-   * @return {void}
-   */
-  console.timeEnd = function( name ) {
-    if ( timers[ name ] ) {
-      FSH.debug( name, Date.now() - timers[ name ] + 'ms' );
-      delete timers[ name ];
-    }
-  };
-
-
-}( window.console ));
-
-/* jshint ignore:start */
-
-// Console-polyfill. MIT license.
-// https://github.com/paulmillr/console-polyfill
-// Make it safe to do console.log() always.
-(function(global) {
-  'use strict';
-  if (!global.console) {
-    global.console = {};
-  }
-  var con = global.console;
-  var prop, method;
-  var dummy = function() {};
-  var properties = ['memory'];
-  var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
-     'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
-     'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn').split(',');
-  while (prop = properties.pop()) if (!con[prop]) con[prop] = {};
-  while (method = methods.pop()) if (typeof con[method] !== 'function') con[method] = dummy;
-  // Using `this` for web workers & supports Browserify / Webpack.
-})(typeof window === 'undefined' ? this : window);
-
-/* jshint ignore:end */
+(function(console) {
+	var timers;
+	if (!console) {
+		return;
+	}
+	timers = {};
+	console.time = function(name) {
+		if (name) {timers[name] = performance.now() * 1000;}
+	};
+	console.timeEnd = function(name) {
+		if (timers[name]) {
+			FSH.debug(name, Math.round(performance.now() * 1000 - timers[name]) /
+				1000 + 'ms' );
+			delete timers[name];
+		}
+	};
+}(window.console));
 
 (function GM_ApiBrowserCheck() {
 	// GM_ApiBrowserCheck
@@ -2384,7 +2329,7 @@ FSH.notification = { // jQuery
 	},
 
 	injectUpgradeAlert: function() { //jquery
-		if (location.search.search('cmd=points&type=1') !== -1) {return;}
+		if (location.search.indexOf('cmd=points&type=1') !== -1) {return;}
 		var needToDoUpgrade = FSH.System.getValue('needToDoUpgrade');
 		if (needToDoUpgrade) {
 			FSH.notification.displayUpgradeMsg();
@@ -2399,7 +2344,7 @@ FSH.notification = { // jQuery
 	parseGoldUpgrades: function(data) { //jquery
 		if (!FSH.Helper.enableUpgradeAlert) {return;}
 		var doc;
-		if (location.search.search('cmd=points&type=1') === -1) {
+		if (location.search.indexOf('cmd=points&type=1') === -1) {
 			doc = data;
 		} else {
 			doc = document;
@@ -2409,7 +2354,9 @@ FSH.notification = { // jQuery
 		var limit = $('tr:contains("+1 Maximum Stamina") > td:eq(2)', doc);
 		var checkDoneUpgrade = limit.text().split(' / ');
 		if (checkDoneUpgrade[0] !== checkDoneUpgrade[1]) {
-			FSH.notification.displayUpgradeMsg();
+			if (location.search.indexOf('cmd=points&type=1') === -1) {
+				FSH.notification.displayUpgradeMsg();
+			}
 			FSH.System.setValue('needToDoUpgrade', true);
 		} else {
 			FSH.System.setValue('needToDoUpgrade', false);
@@ -2419,15 +2366,17 @@ FSH.notification = { // jQuery
 	},
 
 	displayUpgradeMsg: function() { //jquery
-		$('#notifications').prepend(FSH.Layout.goldUpgradeMsg);
+		document.getElementById('notifications').insertAdjacentHTML('afterbegin',
+			FSH.Layout.goldUpgradeMsg);
 	},
 
 	injectJoinAllLink: function() { // jQuery
+		var nodeList = document.querySelectorAll('#pCL li');
+		Array.prototype.forEach.call(nodeList, FSH.notification.findNewGroup);
+	},
 
-		FSH.ga.start('JS Perf', 'notification.injectJoinAllLink');
-
-		var newGroup = $('#pCL li:contains("New attack group created.")');
-		if (newGroup.length !== 1) {return;}
+	findNewGroup: function(el) {
+		if (el.textContent.indexOf('New attack group created.') === -1) {return;}
 		var groupJoinHTML = '';
 		if (!FSH.System.getValue('enableMaxGroupSizeToJoin')) {
 			groupJoinHTML = '<a href="index.php?cmd=guild&subcmd=groups&' +
@@ -2440,10 +2389,8 @@ FSH.notification = { // jQuery
 				'</span><p class="notification-content">Join all attack groups ' +
 				'less than size ' + maxGroupSizeToJoin + '.</p></a>';
 		}
-		newGroup.after('<li class="notification">' + groupJoinHTML + '</li>');
-
-		FSH.ga.end('JS Perf', 'notification.injectJoinAllLink');
-
+		el.insertAdjacentHTML('afterend',
+			'<li class="notification">' + groupJoinHTML + '</li>');
 	},
 
 };
@@ -2455,10 +2402,12 @@ FSH.guildReport = { // bad jQuery
 			.done(FSH.guildReport.reportHeader);
 		var innerTable = document.querySelector('#pCC table table');
 		FSH.guildReport.searchUser(innerTable);
-		var nodeList = innerTable
-			.querySelectorAll('tr:not(.fshHide) td:nth-of-type(3n+0)');
-		Array.prototype.forEach.call(nodeList, FSH.guildReport.reportChild);
+		// var nodeList = innerTable
+			// .querySelectorAll('tr:not(.fshHide) td:nth-of-type(3n+0)');
+		// Array.prototype.forEach.call(nodeList, FSH.guildReport.reportChildOld);
+		setTimeout(FSH.guildReport.prepareChildRows);
 		FSH.guildReport.eventHandlers($(innerTable));
+		// FSH.guildReport.triggerChild();
 	},
 
 	searchUser: function(innerTable) {
@@ -2493,12 +2442,100 @@ FSH.guildReport = { // bad jQuery
 					'</a> [ <span class="a-reply fshLink" target_player=' +
 					oldhtml + '>m</span> ]';
 			});
+		// FSH.guildReport.triggerChild();
 	},
 
 	wearRE: /<b>|Bottle|Brew|Draft|Elixir|Potion|Jagua Egg|Gut Rot Head Splitter|Serum/,
 
-	reportChild: function(el) { // bad native
-		el.className = 'fshNoWrap';
+	triggerChildChunk: function() {
+		var nodeList = document
+			.querySelectorAll('#pCC table table tr:not(.fshHide) td:nth-of-type(3n+0)');
+		FSH.guildReport.nodeList = nodeList;
+		FSH.guildReport.counter = 0;
+		// setTimeout(window.requestAnimationFrame, 500, FSH.guildReport.reportChild);
+		// requestAnimationFrame(FSH.guildReport.reportChild);
+		setTimeout(FSH.guildReport.reportChild, 0);
+	},
+
+	reportChildChunk: function() { // bad native
+		// var limit = timestamp + 3;
+		var limit = performance.now() + 30;
+		while (performance.now() < limit && FSH.guildReport.counter < FSH.guildReport.nodeList.length) {
+			var el = FSH.guildReport.nodeList[FSH.guildReport.counter];
+			el.className = 'fshNoWrap';
+			var inject = document.createElement('span');
+			var secondHref = el.children.length === 2;
+			var firstHref = secondHref ? '': ' class="fshHide"';
+			var itemName = el.previousElementSibling.innerHTML;
+			var wearable = FSH.guildReport.wearRE.test(itemName) ?
+				' class="fshHide"' : '';
+			var equipable = secondHref ? 'recall': 'equip';
+			inject.innerHTML = '<span' + firstHref +
+				'> | <span class="reportLink recall tip-static" data-tipped="' +
+				'Click to recall to backpack" mode="0" action="recall">Fast BP' +
+				'</span></span>' +
+				' | <span class="reportLink recall tip-static" ' +
+				'data-tipped="Click to recall to guild store" mode="1" ' +
+				'action="recall">Fast GS</span>' +
+				'<span' + wearable +
+				'> | <span class="reportLink ' +
+				equipable +
+				'" mode="0" action="wear">Fast Wear</span></span>';
+			el.appendChild(inject);
+			FSH.guildReport.counter += 1;
+		}
+		if (FSH.guildReport.counter < FSH.guildReport.nodeList.length) {
+			// requestAnimationFrame(FSH.guildReport.reportChild);
+			// setTimeout(requestAnimationFrame, 100, FSH.guildReport.reportChild);
+			setTimeout(FSH.guildReport.reportChild, 0);
+		} else {
+			FSH.guildReport.eventHandlers($('#pCC table table'));
+		}
+	},
+
+	prepareChildRows: function () {
+		var nodeList = document.querySelectorAll('#pCC table table ' +
+			'tr:not(.fshHide) td:nth-of-type(3n+0)');
+		FSH.guildReport.nodeList = nodeList;
+		FSH.guildReport.nodeArray = [];
+		FSH.guildReport.counter = 0;
+		setTimeout(FSH.guildReport.makeSpan, 0);
+	},
+
+	makeSpan: function () {
+		var limit = performance.now() + 15;
+		while (performance.now() < limit &&
+				FSH.guildReport.counter < FSH.guildReport.nodeList.length) {
+			var el = FSH.guildReport.nodeList[FSH.guildReport.counter];
+			el.className = 'fshNoWrap';
+			FSH.guildReport.nodeArray.push([el, FSH.guildReport.mySpan(el)]);
+			FSH.guildReport.counter += 1;
+		}
+		if (FSH.guildReport.counter < FSH.guildReport.nodeList.length) {
+			setTimeout(FSH.guildReport.makeSpan, 0);
+		} else {
+			FSH.guildReport.counter = 0;
+			setTimeout(FSH.guildReport.paintChild, 0);
+		}
+	},
+
+	paintChild: function() {
+		// FSH.debug('FSH.guildReport.counter', FSH.guildReport.counter);
+		var limit = performance.now() + 1;
+		while (performance.now() < limit &&
+				FSH.guildReport.counter < FSH.guildReport.nodeArray.length) {
+			var el = FSH.guildReport.nodeArray[FSH.guildReport.counter][0];
+			var inject = FSH.guildReport.nodeArray[FSH.guildReport.counter][1];
+			// el.className = 'fshNoWrap';
+			el.appendChild(inject);
+			FSH.guildReport.counter += 1;
+		}
+		if (FSH.guildReport.counter < FSH.guildReport.nodeArray.length) {
+			setTimeout(FSH.guildReport.paintChild, 0);
+		}
+	},
+
+	mySpan: function(el) {
 		var inject = document.createElement('span');
 		var secondHref = el.children.length === 2;
 		var firstHref = secondHref ? '': ' class="fshHide"';
@@ -2517,7 +2554,32 @@ FSH.guildReport = { // bad jQuery
 			'> | <span class="reportLink ' +
 			equipable +
 			'" mode="0" action="wear">Fast Wear</span></span>';
+		return inject;
+	},
+
+	reportChildOld: function(el) { // bad native
+		el.className = 'fshNoWrap';
+		var inject = document.createElement('span');
+		var secondHref = el.children.length === 2;
+		var firstHref = secondHref ? '': ' class="fshHide"';
+		var itemName = el.previousElementSibling.innerHTML;
+		var wearable = FSH.guildReport.wearRE.test(itemName) ?
+			' class="fshHide"' : '';
+		var equipable = secondHref ? 'recall': 'equip';
+		inject.innerHTML = '<span' + firstHref +
+		// var inject = '<span' + firstHref +
+			'> | <span class="reportLink recall tip-static" data-tipped="' +
+			'Click to recall to backpack" mode="0" action="recall">Fast BP' +
+			'</span></span>' +
+			' | <span class="reportLink recall tip-static" ' +
+			'data-tipped="Click to recall to guild store" mode="1" ' +
+			'action="recall">Fast GS</span>' +
+			'<span' + wearable +
+			'> | <span class="reportLink ' +
+			equipable +
+			'" mode="0" action="wear">Fast Wear</span></span>';
 		el.appendChild(inject);
+		// el.insertAdjacentHTML('beforeend', inject);
 	},
 
 	recallItem: function() { // jQuery
@@ -7747,15 +7809,18 @@ FSH.ga = { // Native
 	start: function(category, variable, label) { // Native
 		if (FSH.ga.isAuto() || typeof ga === 'undefined') {return;}
 		FSH.ga.times[category + ':' + variable + ':' + label] =
-			Math.round(performance.now());
+			// Math.round(performance.now());
+			performance.now() * 1000;
 	},
 
 	end: function(category, variable, label) { // Native
 		if (FSH.ga.isAuto() || typeof ga === 'undefined') {return;}
-		var myTime = Math.round(performance.now()) -
-			FSH.ga.times[category + ':' + variable + ':' + label];
+		// var myTime = Math.round(performance.now()) -
+		var myTime = Math.round(performance.now() * 1000 -
+			FSH.ga.times[category + ':' + variable + ':' + label]) / 1000;
 		if (myTime > 10) {
-			ga('fshApp.send', 'timing', category, variable, myTime, label);
+			ga('fshApp.send', 'timing', category, variable, Math.round(myTime),
+				label);
 		}
 
 		FSH.debug(variable, myTime + 'ms');
