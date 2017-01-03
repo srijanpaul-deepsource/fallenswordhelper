@@ -526,6 +526,7 @@ var dataObj = {
     disableDeactivatePrompts: false,
     // monsterLog: '{}',
     moveComposingButtons: false,
+    expandMenuOnKeyPress: false,
 
   },
 
@@ -2930,7 +2931,8 @@ var saveBoxes$1 = [
   'hideLegendaryGroup',
   'disableDeactivatePrompts',
   'moveComposingButtons',
-  'showExtraLinks'
+  'showExtraLinks',
+  'expandMenuOnKeyPress'
 ];
 
 var mySimpleCheckboxes$1 = {
@@ -3222,6 +3224,12 @@ var mySimpleCheckboxes$1 = {
     helpText: 'If enabled, allows the quick link box to ' +
       'be dragged around the screen.'
   },
+  expandMenuOnKeyPress: {
+    id: 'expandMenuOnKeyPress',
+    helpTitle: 'Expand Menu on Key Press',
+    helpText: 'If enabled, expands the left hand menu ' +
+      'when you use hotkeys.'
+  },
 };
 
 var settingObj = {
@@ -3479,6 +3487,7 @@ function injectSettings() { // Legacy
       system.getValue('quickLinksLeftPx') +
       '"></td></tr>' +
     simpleCheckbox('draggableQuickLinks') +
+    simpleCheckbox('expandMenuOnKeyPress') +
 
     //Guild Manage
     '<tr><th colspan="2" align="left"><b>Guild>Manage preferences' +
@@ -3567,10 +3576,10 @@ function injectSettings() { // Legacy
       '<option value="3"' + (combatEvaluatorBias === 3 ? ' SELECTED' : '') +
       '>Conservative+</option></select></td></tr>' +
 
-    '<tr><td align="right">Keep Creature Log' +
+    '<tr><td align="right">' + networkIcon +'Keep Creature Log' +
       helpLink('Keep Creature Log',
       'This will show the creature log for each creature you see when ' +
-      'you travel. This requires Show Creature Info enabled!') +
+      'you travel.') +
       ':</td><td><input name="showMonsterLog" type="checkbox" value="on"' +
       (system.getValue('showMonsterLog') ? ' checked' : '') + '>' +
       '&nbsp;&nbsp;<input type="button" class="custombutton" ' +
@@ -7063,7 +7072,7 @@ function injectViewRecipeLinks(responseText, callback) { // Legacy
   if (itemName !== plantFromComponent) {
     var itemLinks = document.createElement('td');
     itemLinks.innerHTML = '<a href="' + system.server +
-      '?cmd=auctionhouse&type=-1&order_by=1&search_text=' +
+      '?cmd=auctionhouse&search_text=' +
       encodeURI(plantFromComponent) + '">AH</a>';
     var counter=system.findNode('../../../../tr[2]/td', callback);
     counter.setAttribute('colspan', '2');
@@ -11354,7 +11363,7 @@ function dropItemsPaint() { // Native - abstract this pattern
     if (!extraLinks && showExtraLinks) {
       o.injectHere.insertAdjacentHTML('afterbegin',
         '<span>[<a href="index.php?cmd=auctionhouse' +
-        '&type=-1&order_by=1&search_text=' + encodeURIComponent(o.itemName) +
+        '&search_text=' + encodeURIComponent(o.itemName) +
         '">AH</a>] [<a href="http://guide.fallensword.com/' +
         'index.php?cmd=items&subcmd=view' + '&item_id=' + o.itemId +
         '" target="_blank">UFSG</a>]</span>');
@@ -13576,6 +13585,7 @@ var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
   'Friday', 'Saturday'];
 var months = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
+var expandMenuOnKeyPress;
 
 function getCoreFunction() { // Native
   var cmd;
@@ -13658,20 +13668,20 @@ function keyPress(evt) { // Native
     }
     break;
   case 71: // create group [G]
-    // localStorage.setItem('hcs.nav.openIndex', '4');
+    if (expandMenuOnKeyPress) {localStorage.setItem('hcs.nav.openIndex', '4');}
     location.href =
       'index.php?cmd=guild&subcmd=groups&subcmd2=create&fromworld=1';
     break;
   case 76: // Log Page [L]
-    // localStorage.setItem('hcs.nav.openIndex', '2');
+    if (expandMenuOnKeyPress) {localStorage.setItem('hcs.nav.openIndex', '2');}
     location.href = 'index.php?cmd=log';
     break;
   case 103: // go to guild [g]
-    // localStorage.setItem('hcs.nav.openIndex', '4');
+    if (expandMenuOnKeyPress) {localStorage.setItem('hcs.nav.openIndex', '4');}
     location.href = 'index.php?cmd=guild&subcmd=manage';
     break;
   case 106: // join all group [j]
-    // localStorage.setItem('hcs.nav.openIndex', '4');
+    if (expandMenuOnKeyPress) {localStorage.setItem('hcs.nav.openIndex', '4');}
     if (!system.getValue('enableMaxGroupSizeToJoin')) {
       location.href = 'index.php?cmd=guild&subcmd=groups&subcmd2=joinall';
     } else {
@@ -13680,21 +13690,21 @@ function keyPress(evt) { // Native
     }
     break;
   case 98: // backpack [b]
-    // localStorage.setItem('hcs.nav.openIndex', '2');
+    if (expandMenuOnKeyPress) {localStorage.setItem('hcs.nav.openIndex', '2');}
     location.href = 'index.php?cmd=profile&subcmd=dropitems';
     break;
   case 116: // quick buy [t]
     legacy.quickBuyItem();
     break;
   case 118: // fast wear manager [v]
-    // localStorage.setItem('hcs.nav.openIndex', '2');
+    if (expandMenuOnKeyPress) {localStorage.setItem('hcs.nav.openIndex', '2');}
     location.href = 'index.php?cmd=notepad&blank=1&subcmd=quickwear';
     break;
   case 121: // fast send gold [y]
     sendGold.doSendGold();
     break;
   case 112: // profile [p]
-    // localStorage.setItem('hcs.nav.openIndex', '2');
+    if (expandMenuOnKeyPress) {localStorage.setItem('hcs.nav.openIndex', '2');}
     location.href = 'index.php?cmd=profile';
     break;
   case 62: // move to next page [>]
@@ -13755,6 +13765,7 @@ function replaceKeyHandler() { // Native
   // window.document.onkeypress = null;
   // window.document.combatKeyHandler = null;
   // window.document.realmKeyHandler = null;
+  expandMenuOnKeyPress = system.getValue('expandMenuOnKeyPress');
   document.onkeypress = keyPress;
 }
 
