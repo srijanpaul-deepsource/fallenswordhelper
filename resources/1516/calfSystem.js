@@ -984,7 +984,7 @@ function end(category, variable, label) { // Native
 
 }
 
-function fixupUrl() {
+function fixupUrl() { // Native
   var origPath = window.location.pathname + window.location.search;
   var page = origPath.replace(/&m=.*/, '')
     .replace(/&subcmd=&.*/, '')
@@ -1423,8 +1423,8 @@ var ajax = {
 
 var composeMsg =
   '<li class="notification"><a href="index.php?cmd=composing"><span' +
-  ' class="notification-icon"></span><p class="notification-content">Co' +
-  'mposing to do</p></a></li>';
+  ' class="notification-icon"></span><p class="notification-content">' +
+  'Composing to do</p></a></li>';
 
 function displayComposeMsg() { // Native
   document.getElementById('notifications')
@@ -3254,7 +3254,7 @@ function simpleCheckbox(name) { // Native
     (o.network ? networkIcon : '') +
     '<label for="' + o.id + '">' + o.helpTitle +
     helpLink(o.helpTitle, o.helpText) +
-    ':<label></td><td><input id="' + o.id +
+    ':</label></td><td><input id="' + o.id +
     '" name="' + o.id + '" type="checkbox" value="on"' +
     (system.getValue(o.id) ? ' checked' : '') + '></td></tr>';
 }
@@ -3949,7 +3949,7 @@ function injectSaveSettings(){ // Hybrid
 var settingsPage = {
   injectSettings: injectSettings,
   injectSaveSettings: injectSaveSettings,
-  helpLink : helpLink
+  helpLink : helpLink,
 };
 
 function uniq(arr, removeBy){ // Ugly but fast
@@ -6262,7 +6262,7 @@ function injectHomePageTwoLink() { // jQuery
 var news = {
   newsFsbox: newsFsbox,
   newsShoutbox: newsShoutbox,
-  injectHomePageTwoLink: injectHomePageTwoLink
+  injectHomePageTwoLink: injectHomePageTwoLink,
 };
 
 function showMsgTemplate() { // jQuery
@@ -9285,6 +9285,7 @@ function unknownPage() { // Legacy
     'the relic")').length > 0) {
     fshGa.screenview('unknown.oldRelic.injectRelic');
     oldRelic.injectRelic();
+    return;
   }
 
   // var isBuffResult = system.findNode('//td[contains(.,"Back to Quick Buff Menu")]');
@@ -9292,17 +9293,20 @@ function unknownPage() { // Legacy
   if (isBuffResult) {
     fshGa.screenview('unknown.quickBuff.updateBuffLog');
     quickBuff.updateBuffLog();
+    return;
   }
 
   if ($('#shop-info').length > 0) {
     fshGa.screenview('unknown.legacy.injectShop');
     injectShop();
+    return;
   }
 
   var isQuestBookPage = system.findNode('//td[.="Quest Name"]');
   if (isQuestBookPage) {
     fshGa.screenview('unknown.questBook.injectQuestBookFull');
     questBook.injectQuestBookFull();
+    return;
   }
 
   var isAdvisorPageClue1 = system.findNode('//font[@size=2 and .="Advisor"]');
@@ -9311,6 +9315,7 @@ function unknownPage() { // Legacy
   if (isAdvisorPageClue1 && isAdvisorPageClue2) {
     fshGa.screenview('unknown.guildAdvisor.injectAdvisor');
     guildAdvisor.injectAdvisor();
+    return;
   }
 
   // if (system.findNode('//a[.="Back to Scavenging"]')) {
@@ -9321,6 +9326,7 @@ function unknownPage() { // Legacy
   if ($('#pCC img[title="Inventing"]').length > 0) {
     fshGa.screenview('unknown.recipes.inventing');
     recipes.inventing();
+    return;
   }
 }
 
@@ -13452,6 +13458,7 @@ var pageSwitcher = {
     'dropitems': {'-': {'-': {'-': dropItems.injectProfileDropItems,
       '1': dropItems.injectProfileDropItems}}}},
   auctionhouse: {'-': {'-': {'-': {'-': misc.injectAuctionHouse},
+    '-1': {'-': misc.injectAuctionHouse},
     '-2': {'-': misc.injectAuctionHouse},
     '-3': {'-': misc.injectAuctionHouse}}}},
   guild: {
@@ -13576,7 +13583,8 @@ var pageSwitcher = {
   composing: {'-': {'-': {'-': {'-': composing.injectComposing}}},
     'create': {'-': {'-': {'-': composing.composingCreate}}}},
   pvpladder: {'-': {'-': {'-': {'-': misc.ladder}}}},
-  '-': {'-': {'-': {'-': {'-': legacy.unknownPage}}}}
+  '-': {
+    '-': {'-': {'-': {'-': legacy.unknownPage}}}}
 };
 
 var coreFunction;
