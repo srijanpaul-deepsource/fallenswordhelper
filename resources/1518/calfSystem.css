@@ -501,7 +501,7 @@ table.fshInvFilter td {
   color: blue;
   cursor: pointer;
   font-family : inherit;
-  font-size: 84%;
+  /*font-size: 84%;*/
   margin: 0;
   padding: 0;
   text-decoration: underline;
@@ -511,6 +511,13 @@ table.fshInvFilter td {
 .fshBl::-moz-focus-inner {
   border: none;
   padding: 0;
+}
+
+/* Create Aution Craft Buttons */
+
+.fshAC {
+  margin: 10px auto 10px auto;
+  text-align: center;
 }
 
 /*
