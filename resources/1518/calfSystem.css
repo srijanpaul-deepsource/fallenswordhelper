@@ -244,6 +244,7 @@ input.fshFindOnlinePlayers {
   text-decoration: underline;
 }
 .buffLink {cursor: pointer;}
+.fshPoint {cursor: pointer;}
 .smallLink {
   cursor: pointer;
   text-decoration: underline;
@@ -537,6 +538,7 @@ table.fshInvFilter td {
   padding: 0;
   text-decoration: underline;
   -moz-user-select: text;
+  user-select: text;
 }
 .fshBl::-moz-focus-inner {
   border: none;
