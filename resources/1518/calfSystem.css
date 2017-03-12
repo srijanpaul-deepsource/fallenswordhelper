@@ -206,6 +206,12 @@ input.fshFindOnlinePlayers {
   text-decoration: underline;
   color: #A0CFEC;
 }
+/*.alert {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5em;
+}*/
 
 /* General */
 .custombutton[disabled] {
@@ -549,6 +555,16 @@ table.fshInvFilter td {
 .fshAC {
   margin: 10px auto 10px auto;
   text-align: center;
+}
+
+/* Composing Potion*/
+.fshPot {
+  background-repeat: no-repeat;
+  background-position: center;
+}
+/* Success Msg */
+.fshScs {
+  height: 26px;
 }
 
 /*
