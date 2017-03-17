@@ -544,6 +544,7 @@ table.fshInvFilter td {
   border: none;
   padding: 0;
 }
+.fshBls {font-size: 84%;}
 
 /* Create Aution Craft Buttons */
 .fshAC {
@@ -576,6 +577,12 @@ table.fshInvFilter td {
 .fshBf {
   color: blue;
   font-size: 84%;
+}
+
+/* AH Quick Search - Category Header */
+.fshQs {
+  font-weight: bold;
+  font-size: large;
 }
 
 /*
