@@ -9,8 +9,8 @@
 // @include        http://local.huntedcow.com/fallensword/*
 // @exclude        http://forum.fallensword.com/*
 // @exclude        http://wiki.fallensword.com/*
-// @version        1518b2
-// @downloadURL    https://fallenswordhelper.github.io/fallenswordhelper/Releases/Beta/fallenswordhelper.user.js
+// @version        $_VER
+// @downloadURL    $_DLURL
 // @grant          none
 // ==/UserScript==
 
@@ -21,21 +21,21 @@ function fshMain() {
 
   window.FSH = window.FSH || {};
 
-  FSH.version = '1518b2';
+  FSH.version = '$_VER';
 
   var resources = {
-    calfSystemJs: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1518/calfSystem.min.js',
-    calfSystemCss: 'https://fallenswordhelper.github.io/fallenswordhelper/resources/1518/calfSystem.css',
+    calfSystemJs: '$_CALFJS',
+    calfSystemCss: '$_CALFCSS',
     localForage: 'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.5.0/localforage.min.js',
     dataTablesLoc: 'https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js',
+    //#if _DEV  //  Dable resources
+    // dableDev: 'https://raw.githack.com/deltreey/Dable/1.2.1/Dable.js',
+    // dableDev: 'http://localhost/Dable/.build/dable.js'
+    //#endif
   };
 
   if (typeof GM_info === 'undefined') {
     FSH.version += '_native';
-  } else if (typeof GM_info.script === 'undefined') {
-    FSH.version += '_noScript';
-  } else if (typeof GM_info.script.version === 'undefined') {
-    FSH.version += '_noVersion';
   }
 
   function appendHead(o) { // native
@@ -77,6 +77,9 @@ function fshMain() {
     js: [
       resources.localForage,
       resources.calfSystemJs,
+      //#if _DEV  //  Dable resources
+      // resources.dableDev,
+      //#endif
       resources.dataTablesLoc
     ],
     callback: onPageLoad
