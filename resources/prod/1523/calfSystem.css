@@ -191,6 +191,11 @@
 }
 
 /* Guild Manage */
+.fsh-tracker {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
 .fsh-dialog-overlay {
   position: fixed;
   top: 0;
@@ -508,7 +513,7 @@
 }
 
 /* Trade */
-.itemDiv {width: 427px;}
+.itemDiv {width: 403px;}
 .isInST {background-color: red;}
 
 /* Quest Page */
