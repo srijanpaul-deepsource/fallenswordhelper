@@ -9,8 +9,15 @@ function byFolder(items, folder) {
   };
 }
 
+function addExtra(item) {
+  if (item.x) {
+    return { ...item, extra: { design: item.x.d, color: item.x.c } };
+  }
+  return item;
+}
+
 function formatResponse(json) {
-  const itemsByFolder = json.folders.map(partial(byFolder, json.items));
+  const itemsByFolder = json.folders.map(partial(byFolder, json.items.map(addExtra)));
   return { r: itemsByFolder, s: true };
 }
 
