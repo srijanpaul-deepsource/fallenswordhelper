@@ -1,4 +1,3 @@
-import './newGuildLog.css';
 import addGuildLogWidgets from '../../logs/addGuildLogWidgets';
 import addLogColoring from '../../logs/addLogColoring';
 import all from '../../common/all';
@@ -131,7 +130,7 @@ function dataRow(r) {
   r.push(myRow);
   if (!options.checks[r[4]]) { myRow.className = 'fshHide'; }
   makeCell(myRow,
-    '<span class="newGuildLog"></span>');
+    '<i class="fas fa-user-friends" style="color: rgb(122,95,46);"></i>');
   makeCell(myRow, `<nobr>${r[2]}</nobr>`);
   makeCell(myRow, r[3]);
 }
