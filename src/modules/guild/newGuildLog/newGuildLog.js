@@ -157,7 +157,7 @@ function buildTable() {
 
   const injector = getElementById('fshInjectHere');
   pCC.replaceChild(myTable, injector);
-  addLogColoring('myGuildLog', 1);
+  addLogColoring('myGuildLog', 1, 3);
   addGuildLogWidgets();
 }
 
