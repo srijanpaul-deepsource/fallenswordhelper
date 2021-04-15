@@ -50,6 +50,7 @@ function keypress(sendBtn, evt) {
 function makeTextArea(sendBtn) {
   const fshTxt = createTextArea({
     cols: 72,
+    maxLength: 512,
     name: 'msg',
     required: true,
     rows: 2,
