@@ -5,10 +5,11 @@ import guildChatStyling from './guildChatStyling';
 
 export default function guildChat() {
   guildChatStyling();
-  if (!getUrlParameter('chat_type')) {
-    addChatTextArea();
-    addLogColoring('Chat', 0, 3);
-  } else {
+  addChatTextArea();
+  const chatType = getUrlParameter('chat_type');
+  if (chatType && chatType === '1') {
     addLogColoring('Leader', 0, 3);
+  } else {
+    addLogColoring('Chat', 0, 3);
   }
 }
