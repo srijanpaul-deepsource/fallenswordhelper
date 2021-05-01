@@ -1,7 +1,7 @@
 import AjaxError from './AjaxError';
 import on from '../common/on';
 import partial from '../common/partial';
-import { sendException } from '../support/fshGa';
+import sendException from '../analytics/sendException';
 
 let paused = true;
 let queue = [];

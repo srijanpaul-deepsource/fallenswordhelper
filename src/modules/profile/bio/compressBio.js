@@ -5,7 +5,7 @@ import getElementById from '../../common/getElement';
 import insertElementBefore from '../../common/insertElementBefore';
 import on from '../../common/on';
 import partial from '../../common/partial';
-import { sendEvent } from '../../support/fshGa';
+import sendEvent from '../../analytics/sendEvent';
 
 function injectToggle(bioCell) {
   const toggle = insertElementBefore(
