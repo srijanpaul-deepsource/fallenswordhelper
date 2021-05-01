@@ -32,7 +32,11 @@ function getFontSize(bioCell) {
 export default function compressBio() {
   const bioCell = getElementById('profile-bio');
   if (!bioCell) { return; }
+  const parent = bioCell.parentNode;
+  const { style: { display } } = parent;
+  parent.style.display = 'block';
   if (bioCell.clientHeight / getFontSize(bioCell) > 10) {
     doCompression(bioCell);
   }
+  parent.style.display = display;
 }
