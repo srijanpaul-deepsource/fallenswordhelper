@@ -31,7 +31,7 @@ function selfRecallLink(leftHandSideColumnTable) {
   const selfRecall = getLi[getLi.length - 1].parentNode;
   insertHtmlBeforeEnd(selfRecall,
     `<li><a href="${recallUserUrl}${playerName()
-    }" class="tip-static" data-tipped="Self Recall">Self Recall</a></li>`);
+    }" data-tooltip="Self Recall">Self Recall</a></li>`);
 }
 
 function getLhsColTab() {
