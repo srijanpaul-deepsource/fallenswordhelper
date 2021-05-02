@@ -40,20 +40,21 @@ function fixupUrl() {
   ga('fsh.set', 'page', page);
 }
 
+function setPlayerId(cmd) {
+  const pid = playerId();
+  if (pid) { ga(cmd, 'userId', pid); }
+}
+
 function initApp() {
-  ga('create', 'UA-76488113-1', 'auto', 'fshApp', {
-    userId: playerId(),
-    siteSpeedSampleRate: 10,
-  });
+  ga('create', 'UA-76488113-1', 'auto', 'fshApp', { siteSpeedSampleRate: 10 });
   ga('fshApp.set', 'appName', 'fshApp');
   ga('fshApp.set', 'appVersion', `${calf.fshVer}(${calf.calfVer})`);
+  setPlayerId('fshApp.set');
 }
 
 function initSite() {
-  ga('create', 'UA-76488113-2', 'auto', 'fsh', {
-    userId: playerId(),
-    siteSpeedSampleRate: 10,
-  });
+  ga('create', 'UA-76488113-2', 'auto', 'fsh', { siteSpeedSampleRate: 10 });
+  setPlayerId('fsh.set');
   fixupUrl();
   ga('fsh.send', 'pageview');
 }
