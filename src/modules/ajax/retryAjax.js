@@ -98,8 +98,6 @@ function add(options, retries, resolve, reject) {
 export default function retryAjax(options) {
   initGlobalHandler();
   if (options) {
-    return new Promise(((resolve, reject) => {
-      add(options, 10, resolve, reject);
-    }));
+    return new Promise((resolve, reject) => { add(options, 10, resolve, reject); });
   }
 }
