@@ -62,6 +62,7 @@ function ajaxStuff(leftHandSideColumnTable) {
 }
 
 export default function manage() {
+  if (!pCC) { return; }
   const leftHandSideColumnTable = getLhsColTab();
   lhsAdditions(leftHandSideColumnTable);
   add(3, buffLinks);
