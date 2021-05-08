@@ -45,9 +45,9 @@ function makeButton() {
 }
 
 export default function nekidBtn() {
-  const profileRightColumn = getElementById('profileRightColumn');
   profileCombatSetDiv = getElementById('profileCombatSetDiv');
+  if (!profileCombatSetDiv) { return; }
   const targetBr = profileCombatSetDiv.parentNode.nextElementSibling;
   const nekidDiv = makeButton();
-  profileRightColumn.replaceChild(nekidDiv, targetBr);
+  getElementById('profileRightColumn').replaceChild(nekidDiv, targetBr);
 }
