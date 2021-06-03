@@ -5,6 +5,7 @@ import dataRows from '../../common/dataRows';
 import getLastTable from '../playerLogWidgets/getLastTable';
 import getTextTrim from '../../common/getTextTrim';
 import getUrlParameter from '../../system/getUrlParameter';
+import getValue from '../../system/getValue';
 import insertHtmlBeforeEnd from '../../common/insertHtmlBeforeEnd';
 import interceptLinks from './interceptLinks';
 import { secureUrl, tradeUrl } from '../../support/constants';
@@ -12,6 +13,7 @@ import { secureUrl, tradeUrl } from '../../support/constants';
 const getMsgCell = (tr) => [getTextTrim(tr.children[2]), tr.children[3]];
 
 function addMsgButtons(logTable) {
+  if (!getValue('privateMsgButtons')) { return; }
   const msgCells = dataRows(logTable.rows, 6, 0).map(getMsgCell);
   msgCells.forEach(([sender, msgCell]) => {
     insertHtmlBeforeEnd(msgCell, '&nbsp;&nbsp;[ '
