@@ -37,6 +37,7 @@ const points = () => { runDefault(import('./points')); };
 const superelite = () => { runDefault(import('../../seLog/superelite')); };
 const privateMsg = () => { runDefault(import('../../logs/privateMsg/privateMsg')); };
 const playerLog = () => { runDefault(import('../../logs/playerLog')); };
+const injectBuffmarket = () => { runDefault(import('../../buffmarket/injectBuffmarket')); };
 
 export default {
   settings: { '-': { '-': injectSettings } },
@@ -77,4 +78,5 @@ export default {
   '-': noCmd,
   combat: { attackplayer: { '-': injectProfile } },
   privatemessage: { '-': { '-': privateMsg } },
+  buffmarket: { '-': { '-': injectBuffmarket } },
 };
