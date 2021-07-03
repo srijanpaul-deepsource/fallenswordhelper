@@ -3,6 +3,7 @@ import allthen from '../../common/allthen';
 import { buildInv } from './buildInv';
 import calf from '../../support/calf';
 import clearButton from './clearButton';
+import currentGuildId from '../../common/currentGuildId';
 import decorate from './decorate';
 import doTable from './table';
 import entries from '../../common/entries';
@@ -91,6 +92,7 @@ function syncInvMan() { // jQuery
 
 export default function injectInventoryManagerNew() {
   if (jQueryNotPresent()) { return; }
+  if (calf.subcmd === 'guildinvmgr' && !currentGuildId()) { return; }
   doSpinner();
   syncInvMan();
 }

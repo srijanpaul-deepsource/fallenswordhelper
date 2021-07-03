@@ -36,7 +36,9 @@ function makeRightCell(newRow) {
 }
 
 function lastReset() {
-  const newRow = querySelector('#pCC table').insertRow(-1);
+  const firstTable = querySelector('#pCC table');
+  if (!firstTable) { return; }
+  const newRow = firstTable.insertRow(-1);
   makeLeftCell(newRow);
   makeRightCell(newRow);
 }
