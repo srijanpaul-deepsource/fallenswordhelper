@@ -1,6 +1,7 @@
 import arena from './arena';
 import auctionhouse from './auctionhouse';
 import composing from './composing';
+import creatures from './creatures';
 import guild from './guild/guild';
 import injectWorld from '../../world/injectWorld';
 import items from './items';
@@ -63,11 +64,11 @@ export default {
   findplayer: { '-': { '-': injectFindPlayer } },
   quests, // UFSG
   items, // UFSG
-  creatures: { '-': { '-': ufsgAllowBack } }, // UFSG
-  masterrealms: { '-': { '-': ufsgAllowBack } }, // UFSG
+  creatures, // UFSG
+  masterrealms: creatures, // UFSG
   realms: { '-': { '-': ufsgAllowBack } }, // UFSG
   relics: { '-': { '-': ufsgAllowBack } }, // UFSG
-  shops: { '-': { '-': ufsgAllowBack } }, // UFSG
+  shops: creatures, // UFSG
   scavenging,
   temple: { '-': { '-': parseTemplePage } },
   composing,
