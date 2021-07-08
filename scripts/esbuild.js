@@ -1,8 +1,9 @@
+'use strict';
+
 const { performance, PerformanceObserver } = require('perf_hooks');
 
 const perfObserver = new PerformanceObserver((items) => {
   items.getEntries().forEach((entry) => {
-    // eslint-disable-next-line no-console
     console.log(entry.name, entry.duration);
   });
 });
@@ -15,7 +16,7 @@ const cleanTarget = require('./cleanTarget');
 const esbuild = require('esbuild');
 const { github } = require('./config.json');
 const sveltePlugin = require('esbuild-svelte');
-const { calfVer, core } = require('./getVersion');
+const { calfVer, core, version } = require('./getVersion');
 const {
   copyFileSync,
   readFileSync,
@@ -56,7 +57,7 @@ esbuild.build({
   minify: true,
   outdir: `${dist}${calfPath}`,
   plugins: [sveltePlugin()],
-  sourceRoot: `https://rawcdn.githack.com/fallenswordhelper/fallenswordhelper/${process.env.npm_package_version}`,
+  sourceRoot: `https://rawcdn.githack.com/fallenswordhelper/fallenswordhelper/${version}`,
   sourcemap: true,
   sourcesContent: false,
   splitting: true,

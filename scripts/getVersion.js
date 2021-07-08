@@ -1,6 +1,8 @@
+'use strict';
+
 const version = process.env.npm_package_version;
 const varAry = version.split('.');
-const core = varAry[0] + varAry[1];
-const calfVer = varAry[2];
+const [major, minor, calfVer] = varAry;
+const core = major + minor;
 
 module.exports = { calfVer, core, version };
