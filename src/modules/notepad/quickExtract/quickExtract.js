@@ -3,6 +3,7 @@ import { composingFragmentType } from '../../support/constants';
 import createTable from '../../common/cElement/createTable';
 import daUseItem from '../../_dataAccess/daUseItem';
 import eventHandler5 from '../../common/eventHandler5';
+import getArrayByClassName from '../../common/getArrayByClassName';
 import getElementById from '../../common/getElement';
 import getInventory from '../../ajax/getInventory';
 import insertElement from '../../common/insertElement';
@@ -152,9 +153,7 @@ function extractEvents() {
   ];
 }
 
-export default function insertQuickExtract(injector) { // jQuery.min
-  if (jQueryNotPresent()) { return; }
-  const content = injector || pCC;
+function setupTable(content) {
   setInnerHtml('<div class="qeHead"><b>Quick Extract</b></div>'
     + 'Select which type of plants you wish to extract all of. Only '
     + 'select extractable resources.<br>'
@@ -164,8 +163,15 @@ export default function insertQuickExtract(injector) { // jQuery.min
     + ' Only extract items in Main Folder</label>', content);
   extTbl = createTable({ width: '100%' });
   insertElement(content, extTbl);
+}
+
+export default function insertQuickExtract(injector) { // jQuery.min
+  if (jQueryNotPresent()) { return; }
+  const content = injector || pCC;
+  setupTable(content);
   selectST = true;
   selectMain = true;
   onclick(content, eventHandler5(extractEvents()));
   getInventory().then(prepInv);
+  getArrayByClassName('ui-dialog-titlebar-close').forEach((e) => e.blur());
 }

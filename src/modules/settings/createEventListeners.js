@@ -13,8 +13,8 @@ import sendEvent from '../analytics/sendEvent';
 import setValue from '../system/setValue';
 import toggleVisibilty from '../common/toggleVisibilty';
 import {
+  combatLog,
   injectMonsterLog,
-  injectNotepadShowLogs,
 } from '../chrome/pageSwitcher/loader';
 
 function findEl(el, name) {
@@ -84,8 +84,8 @@ function saveConfig() { // jQuery
 }
 
 function showLogs() {
-  sendEvent('settingsPage', 'injectNotepadShowLogs');
-  jQueryDialog(injectNotepadShowLogs);
+  sendEvent('settingsPage', 'combatLog');
+  jQueryDialog(combatLog);
 }
 
 function showMonsterLogs() {
