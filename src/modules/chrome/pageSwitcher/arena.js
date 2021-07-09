@@ -9,9 +9,9 @@ const completedArenas = () => {
   runDefault(import('../../arena/completedArenas'));
 };
 const setupMoves = () => {
-  runDefault(import('../../arena/arenaSetup/setup'));
+  runDefault(import('../../arena/arenaSetup/setupMoves'));
 };
-const storeMoves = () => { runDefault(import('../../arena/store')); };
+const storeMoves = () => { runDefault(import('../../arena/storeMoves')); };
 
 const arena = {
   '-': { '-': injectArena },
