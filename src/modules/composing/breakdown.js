@@ -1,5 +1,5 @@
 import doBreakdown from '../ajax/doBreakdown';
-import getElementById from '../common/getElement';
+import getElementById from '../common/getElementById';
 import getValue from '../system/getValue';
 import hasClass from '../common/hasClass';
 import insertHtmlBeforeEnd from '../common/insertHtmlBeforeEnd';
@@ -114,7 +114,7 @@ function setupHandlers() {
   onclick(getElementById(prefDisableBreakdownPrompts), togglePref);
 }
 
-export default function composingBreakdown() {
+export default function breakdown() {
   if (jQueryNotPresent()) { return; }
   perfFilter('composing');
   disableBreakdownPrompts = getValue(prefDisableBreakdownPrompts);
