@@ -39,11 +39,11 @@ function forwardRequest(host, port, req, res) {
         || req.url.startsWith('/src/styles/')) {
     // Forward each incoming request to esbuild
     const proxyReq = http.request({
-      hostname: host,
-      port,
+      hostname: '0.0.0.0',
+      port: 8000,
       path: req.url,
-      method: req.method,
-      headers: req.headers,
+      method: 'GET',
+      // headers: req.headers,
     }, forwardResponse(res));
 
     // Forward the body of the request to esbuild
