@@ -1,2 +1,0 @@
-import{a as r}from"./chunk-KARVP4IF.js";import{a as t}from"./chunk-AVPY2BTL.js";import"./chunk-2FGL6JOK.js";import"./chunk-GJHRXFGS.js";import"./chunk-S2PPJ2GD.js";import{C as o}from"./chunk-XSTNX5IW.js";import"./chunk-UVCMQZY6.js";function p(){let e=r(`#profileLeftColumn a[href="${o}"]`);e&&t(e.parentNode.nextSibling)!=="N/A"&&(e.parentNode.parentNode.style.cssText="border: 3px solid red")}export{p as default};
-//# sourceMappingURL=highlightPvpProtection-FZIPUC6I.js.map
