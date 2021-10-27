@@ -1,2 +1,0 @@
-import{a as d}from"./chunk-MN3CDWN5.js";import{a as n}from"./chunk-IU6UWEI6.js";import{a as r}from"./chunk-DZUNDM2W.js";import{b as o}from"./chunk-PRVNUO5J.js";import{a as u}from"./chunk-FE2N6NBD.js";var t;function a(){return t||(t=n({subcmd:"manage"})),t}function e(){return r()?d(r()):Promise.reject(new Error("no guild id"))}function l(){return u(a,e)}function m(i){return Math.floor(Math.max(0,o-i)/86400)}export{l as a,m as b};
-//# sourceMappingURL=chunk-Z2DJKIU6.js.map

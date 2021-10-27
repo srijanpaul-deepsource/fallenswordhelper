@@ -1,2 +1,0 @@
-import{a as o}from"./chunk-5IONE3UD.js";import{a as f}from"./chunk-AVPY2BTL.js";import{a as e}from"./chunk-JZUIGPQK.js";import{a as i}from"./chunk-GRW7NX42.js";function n(t){e(t.parentNode,' <button class="fshBl fshBls">[b]</button>')}var r=t=>i("fshBl",t)&&t.previousElementSibling;function s(t){r(t.target)&&o(f(t.target.previousElementSibling))}export{n as a,s as b};
-//# sourceMappingURL=chunk-S2OLP3EN.js.map

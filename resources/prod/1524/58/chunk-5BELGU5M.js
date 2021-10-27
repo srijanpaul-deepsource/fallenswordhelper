@@ -1,0 +1,2 @@
+import{a as f}from"./chunk-OTYQJIQU.js";import{a as i}from"./chunk-UF6HKXEC.js";import{a}from"./chunk-KIPS4CXG.js";import{a as n}from"./chunk-J6WQ3WGO.js";function c(t,r){return{id:r.a,name:r.n,items:t.filter(m=>m.f===r.a)}}function p(t){return{r:t.folders.map(n(c,t.items)),s:!0}}function o(){return f().then(p)}function e(){return i({subcmd:"loadinventory"})}function l(){return a(e,o)}export{l as a};
+//# sourceMappingURL=chunk-5BELGU5M.js.map
