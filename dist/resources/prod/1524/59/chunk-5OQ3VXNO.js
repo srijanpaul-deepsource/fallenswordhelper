@@ -1,2 +1,0 @@
-import{b as m}from"./chunk-65WPNHIR.js";import{a as l}from"./chunk-UWBCLHYK.js";import{a}from"./chunk-J3KBZ4ZI.js";import{a as i}from"./chunk-SCZRPZMX.js";import{b as n}from"./chunk-AACPE6UD.js";import{e as o}from"./chunk-7JEA3TWT.js";function e(){return i('#pCC a[data-tipped*="Last Activity"]')}function p(r){let t=o.exec(r.dataset.tipped);a(m({min:t[3],hour:t[2],day:t[1]}),r.parentNode.previousElementSibling)}function s(){!n("enhanceOnlineDots")||l([5,3,e(),0,p])}export{e as a,s as b};
-//# sourceMappingURL=chunk-5OQ3VXNO.js.map
