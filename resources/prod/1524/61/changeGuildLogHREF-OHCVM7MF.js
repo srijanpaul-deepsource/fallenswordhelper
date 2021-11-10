@@ -1,0 +1,2 @@
+import{a as c}from"./chunk-RRDFH4PK.js";import{a as i}from"./chunk-SVOLGRZA.js";import"./chunk-AMLNDKL6.js";import"./chunk-A2JPUMZD.js";import{G as r,q as t,r as n}from"./chunk-I67LU25W.js";function u(o){return window.location.search!==t||o.parentNode.id!=="notification-guild-log"}function f(o){if(u(o))return;let e=o.parentNode;e&&c(e)}function l(o){o.href=n}function a(o){o.forEach(l),f(o[o.length-1])}function d(){let o=i(`#pCL a[href="${r}"]`);o.length>0&&a(o)}export{d as default};
+//# sourceMappingURL=changeGuildLogHREF-OHCVM7MF.js.map
