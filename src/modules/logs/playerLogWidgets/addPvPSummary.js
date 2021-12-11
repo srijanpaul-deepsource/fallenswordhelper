@@ -3,7 +3,6 @@ import closestTr from '../../common/closestTr';
 import { combatSelector } from '../../support/constants';
 import createDiv from '../../common/cElement/createDiv';
 import getCombat from './getCombat';
-import getText from '../../common/getText';
 import insertElement from '../../common/insertElement';
 import insertHtmlAfterBegin from '../../common/insertHtmlAfterBegin';
 import querySelector from '../../common/querySelector';
@@ -18,7 +17,7 @@ const getCombats = async ([r, msgHtml]) => [
   r, msgHtml, await getCombat(r, /combat_id=(\d+)/.exec(msgHtml)[1]),
 ];
 
-function parseCombatWinner(r, msgHtml) {
+function parseCombatWinner(msgHtml) {
   const victory = /You were victorious over/.test(msgHtml);
   if (victory) {
     return [green, `You were <span class="${green}">victorious</span> over `];
@@ -27,7 +26,7 @@ function parseCombatWinner(r, msgHtml) {
   if (defeat) {
     return [red, `You were <span class="${red}">defeated</span> by `];
   }
-  return ['', getText(r.cells[2].firstChild)];
+  return ['', null]; // unresolved combat
 }
 
 function result(stat, desc, color) {
@@ -60,11 +59,13 @@ function parseCombat(combat, color) {
 }
 
 function updateTd([r, msgHtml, json]) {
-  const [color, pre] = parseCombatWinner(r, msgHtml);
-  const summaryDiv = parseCombat(json.r.combat, color);
-  r.cells[2].firstChild.remove();
-  insertHtmlAfterBegin(r.cells[2], pre);
-  insertElement(r.cells[2], createDiv({ innerHTML: summaryDiv }));
+  const [color, pre] = parseCombatWinner(msgHtml);
+  if (pre) {
+    const summaryDiv = parseCombat(json.r.combat, color);
+    r.cells[2].firstChild.remove();
+    insertHtmlAfterBegin(r.cells[2], pre);
+    insertElement(r.cells[2], createDiv({ innerHTML: summaryDiv }));
+  }
 }
 
 function notGuild(combatLinks) {
