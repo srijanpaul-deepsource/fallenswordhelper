@@ -1,0 +1,2 @@
+import{a as e,b as i,c as t,d as r}from"./chunk-I5RXO3C6.js";import"./chunk-72P7VEAP.js";import"./chunk-CYTNSAKG.js";import{a as l}from"./chunk-FM7OJ7NO.js";import"./chunk-JQPK3YVC.js";import"./chunk-VU3PZWN5.js";import"./chunk-27JTUOQX.js";import"./chunk-POXCGSYQ.js";import"./chunk-ZP7KCDX3.js";function n(o){i(o,{l1:"fshDodgerBlue",l2:"fshLightSkyBlue",l3:"fshPowderBlue"})}function f(){let o=l("minibox-allies-list");!o||(t(o,2),r(o,"ally"),e(o,n))}export{f as default};
+//# sourceMappingURL=addOnlineAlliesWidgets-2BZKUHV6.js.map
