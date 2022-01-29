@@ -1,2 +1,0 @@
-import{a as r}from"./chunk-FVHC5KKT.js";import{a as n}from"./chunk-RF4ISCAB.js";import{e as o}from"./chunk-TD2HJ4A4.js";function u(t){return`${r(t.getHours())}:${r(t.getMinutes())} ${t.toLocaleString("en",{weekday:"short"})} ${r(t.getDate())}/${o[t.getMonth()]}/${t.getFullYear()}`}function f(t,i){let e=t.split(" ").map(m=>m.slice(0,-1));if(!!e)return`<dd>${u(new Date(n+((i*60+Number(e[0]))*60+Number(e[1]))*1e3))}</dd>`}export{f as a};
-//# sourceMappingURL=chunk-NJW2Q7G4.js.map
