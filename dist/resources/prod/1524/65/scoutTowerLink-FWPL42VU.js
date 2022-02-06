@@ -1,2 +1,0 @@
-import{a as i}from"./chunk-6F7QE44M.js";import"./chunk-DLQ3WG6P.js";import{a as r}from"./chunk-2COHD5H3.js";import{H as n,b as e}from"./chunk-3IHZF2GE.js";function c(){let t=r("minibox-spoilsofwar");if(!t)return;let o=t.children[1];if(!o)return;let s=o.children[0];i(s,`&nbsp;<a href="${n}" data-tooltip="View Scout Report"><img id="fshScoutTower" src="${e}/structures/27.png"></a>`)}export{c as default};
-//# sourceMappingURL=scoutTowerLink-FWPL42VU.js.map
