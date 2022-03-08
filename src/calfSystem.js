@@ -5,6 +5,7 @@ import './styles/css-tooltip.css';
 import './styles/grids.css';
 import './styles/spinners.css';
 import dispatch from './modules/chrome/dispatch';
-import dispatch from './modules/chrome/dispatch';
+
+let x = 1;
 
 export default dispatch;
