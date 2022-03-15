@@ -6,6 +6,6 @@ import './styles/grids.css';
 import './styles/spinners.css';
 import dispatch from './modules/chrome/dispatch';
 
-let x = 1;
+const y = 2;
 
 export default dispatch;
